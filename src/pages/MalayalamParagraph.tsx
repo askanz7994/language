@@ -10,9 +10,9 @@ const MalayalamParagraph = () => {
   const [playingAudio, setPlayingAudio] = useState(false);
 
   const paragraph = {
-    malayalam: "എൻ്റെ പേര് ആര്യ. ഞാൻ രാവിലെ ആറ് മണിക്ക് എഴുന്നേൽക്കുന്നു. പിന്നീട് പല്ല് തേക്കുകയും കുളിക്കുകയും ചെയ്യുന്നു. ഞാൻ എന്റെ പ്രഭാതഭക്ഷണം എട്ട് മണിക്ക് കഴിക്കുന്നു. സാധാരണയായി ഞാൻ ദോശയോ ഇഡ്ഡലിയോ ആണ് കഴിക്കാറ്. പിന്നീട് ഞാൻ സ്കൂളിലേക്ക് പോകുന്നു. വൈകുന്നേരം ഞാൻ കളിക്കാനും പഠിക്കാനും സമയം കണ്ടെത്തുന്നു. രാത്രിയിൽ ഞാൻ പുസ്തകങ്ങൾ വായിക്കുകയും കുടുംബത്തോടൊപ്പം സമയം ചിലവഴിക്കുകയും ചെയ്യുന്നു. ഉറങ്ങുന്നതിന് മുമ്പ് ഞാൻ ദൈവത്തോട് പ്രാർത്ഥിക്കുന്നു.",
-    transliteration: "Enṟe pēru ārya. Ñān rāvile āṟu maṇikku eḻunnēlkkunnu. Pinīṭu pallu tēkkukayuṁ kuḷikkukayuṁ ceyyunnu. Ñān enṟe prabhātābhakṣaṇaṁ eṭṭu maṇikku kaḻikkunnu. Sādhāraṇayāyi ñān dōśayō iḍḍaliyō āṇu kaḻikkāṟu. Pinīṭu ñān skūḷilēkku pōkunnu. Vaikunēraṁ ñān kaḷikkānuṁ paṭhikkānuṁ samayaṁ kaṇṭettunnu. Rātriyil ñān pustakaṅṅaḷ vāyikkukayuṁ kuṭumbaṭeāppaṁ samayaṁ cilavaḻikkukayuṁ ceyyunnu. Uraṅṅunnatinu munpu ñān daivattōṭu prārthikkunnu.",
-    english: "My name is Arya. I wake up at six in the morning. Then I brush my teeth and take a bath. I eat my breakfast at eight o'clock. Usually, I eat dosa or idli. Then I go to school. In the evening, I find time to play and study. At night, I read books and spend time with my family. Before sleeping, I pray to God."
+    malayalam: "കേരളം ഒരു മനോഹരമായ സംസ്ഥാനമാണ്. ഇവിടെ പച്ചപ്പ് നിറഞ്ഞ മലകളും, വെള്ളി നിറത്തിലുള്ള കടലും, സ്വർണ്ണനിറത്തിലുള്ള കടൽത്തീരങ്ങളും കാണാം. മലയാളികൾ വളരെ സൗഹൃദപരമായ ആളുകളാണ്. അവർ അതിഥികളെ സ്വാഗതം ചെയ്യുന്നത് വളരെ ഊഷ്മളതയോടെയാണ്. കേരളത്തിലെ പ്രധാന ഉത്സവങ്ങൾ ഓണം, വിഷു, ക്രിസ്തുമസ്, ഈദ് എന്നിവയാണ്. ഇവിടുത്തെ പരമ്പരാഗത നൃത്തങ്ങളായ കഥകളിയും മോഹിനിയാട്ടവും ലോകപ്രസിദ്ധമാണ്. കേരളത്തിലെ ആയുർവേദ ചികിത്സകളും വളരെ പ്രശസ്തമാണ്.",
+    transliteration: "Kēraḷam oru manōharamāya saṁsthānamāṇ. Iviṭe paccappu niṟañña malakaḷuṁ, veḷḷi niṟattilulla kaṭaluṁ, svarṇṇaniṟattilulla kaṭaltīraṅṅaḷuṁ kāṇāṁ. Malayāḷikaḷ vaḷare sauhr̥daparamāya āḷukaḷāṇ. Avar atithikaḷe svāgataṁ ceyyunnat vaḷare ūṣmaḷatayēṭeyāṇ. Kēraḷattile pradhāna utsavaṅṅaḷ Ēṇaṁ, Viṣu, Kristumas, Īd ennivayāṇ. Iviṭutte paramparāgata nr̥ttaṅṅaḷāya katakaḷiyuṁ mōhiniyāṭṭavuṁ lōkaprasiddhamāṇ. Kēraḷattile āyurvēda cikitsakaḷuṁ vaḷare praśastamāṇ.",
+    english: "Kerala is a beautiful state. Here you can see green-filled mountains, silver-colored seas, and golden beaches. Malayalis are very friendly people. They welcome guests with great warmth. The main festivals of Kerala are Onam, Vishu, Christmas, and Eid. The traditional dances here like Kathakali and Mohiniyattam are world-famous. Ayurvedic treatments in Kerala are also very famous."
   };
 
   const playAudio = () => {
@@ -21,7 +21,7 @@ const MalayalamParagraph = () => {
   };
 
   return (
-    <div className="min-h-screen animated-bg">
+    <div className="min-h-screen blur-bg">
       <div className="container mx-auto px-4 py-16">
         {/* Back Button */}
         <Link to="/learn-malayalam" className="inline-flex items-center text-primary hover:text-primary/80 mb-8">
@@ -32,10 +32,10 @@ const MalayalamParagraph = () => {
         {/* Page Title */}
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
-            My Day
+            Beautiful Kerala
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Read and understand a Malayalam paragraph about daily routine
+            Read and understand a Malayalam paragraph about Kerala's beauty and culture
           </p>
         </div>
 
@@ -100,20 +100,20 @@ const MalayalamParagraph = () => {
             <h3 className="text-2xl font-bold mb-6">Key Vocabulary</h3>
             <div className="grid md:grid-cols-2 gap-4">
               <div className="flex justify-between items-center p-3 bg-muted rounded">
-                <span className="font-semibold">ആര്യ (ārya)</span>
-                <span className="text-muted-foreground">Arya (name)</span>
+                <span className="font-semibold">കേരളം (kēraḷam)</span>
+                <span className="text-muted-foreground">Kerala</span>
               </div>
               <div className="flex justify-between items-center p-3 bg-muted rounded">
-                <span className="font-semibold">രാവിലെ (rāvile)</span>
-                <span className="text-muted-foreground">morning</span>
+                <span className="font-semibold">മനോഹരം (manōharam)</span>
+                <span className="text-muted-foreground">beautiful</span>
               </div>
               <div className="flex justify-between items-center p-3 bg-muted rounded">
-                <span className="font-semibold">സ്കൂൾ (skūḷ)</span>
-                <span className="text-muted-foreground">school</span>
+                <span className="font-semibold">മലകൾ (malakaḷ)</span>
+                <span className="text-muted-foreground">mountains</span>
               </div>
               <div className="flex justify-between items-center p-3 bg-muted rounded">
-                <span className="font-semibold">കുടുംബം (kuṭumbam)</span>
-                <span className="text-muted-foreground">family</span>
+                <span className="font-semibold">ആയുർവേദം (āyurvēdam)</span>
+                <span className="text-muted-foreground">Ayurveda</span>
               </div>
             </div>
           </div>

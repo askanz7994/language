@@ -37,11 +37,28 @@
 }
 
 @layer components {
-  .animated-bg {
-    background: radial-gradient(circle at 20% 50%, rgba(4, 203, 224, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(4, 203, 224, 0.08) 0%, transparent 50%),
-                radial-gradient(circle at 40% 80%, rgba(4, 203, 224, 0.06) 0%, transparent 50%);
-    animation: float 6s ease-in-out infinite;
+  .blur-bg {
+    background: 
+      radial-gradient(circle at 15% 30%, rgba(4, 203, 224, 0.15) 0%, transparent 60%),
+      radial-gradient(circle at 85% 70%, rgba(4, 203, 224, 0.12) 0%, transparent 70%),
+      radial-gradient(circle at 60% 20%, rgba(4, 203, 224, 0.08) 0%, transparent 80%),
+      radial-gradient(circle at 25% 80%, rgba(4, 203, 224, 0.1) 0%, transparent 65%);
+    position: relative;
+  }
+
+  .blur-bg::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      radial-gradient(ellipse 800px 400px at 20% 40%, rgba(4, 203, 224, 0.1) 0%, transparent 70%),
+      radial-gradient(ellipse 600px 300px at 80% 20%, rgba(4, 203, 224, 0.08) 0%, transparent 60%);
+    filter: blur(40px);
+    z-index: -1;
+    animation: blur-drift 8s ease-in-out infinite;
   }
 
   .glow-button {
@@ -76,12 +93,18 @@
   }
 }
 
-@keyframes float {
+@keyframes blur-drift {
   0%, 100% {
-    transform: translateY(0px) scale(1);
+    transform: translateX(0px) translateY(0px) scale(1);
+  }
+  25% {
+    transform: translateX(20px) translateY(-15px) scale(1.05);
   }
   50% {
-    transform: translateY(-10px) scale(1.02);
+    transform: translateX(-15px) translateY(10px) scale(0.95);
+  }
+  75% {
+    transform: translateX(10px) translateY(-5px) scale(1.02);
   }
 }
 

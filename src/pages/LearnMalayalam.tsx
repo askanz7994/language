@@ -1,11 +1,10 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 
 const LearnMalayalam = () => {
   return (
-    <div className="min-h-screen animated-bg">
+    <div className="min-h-screen blur-bg">
       <div className="container mx-auto px-4 py-16">
         {/* Back Button */}
         <Link to="/languages" className="inline-flex items-center text-primary hover:text-primary/80 mb-8">
