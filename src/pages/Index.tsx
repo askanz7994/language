@@ -1,8 +1,37 @@
+
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, User } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+
 const Index = () => {
-  return <div className="min-h-screen blur-bg">
+  const { user, loading } = useAuth();
+
+  return (
+    <div className="min-h-screen blur-bg">
+      {/* Navigation Bar */}
+      <nav className="container mx-auto px-4 py-6 flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-primary">Language Learning</h1>
+        <div className="flex items-center space-x-4">
+          {loading ? (
+            <div className="w-8 h-8 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+          ) : user ? (
+            <Link to="/profile">
+              <Button variant="outline" size="sm" className="flex items-center space-x-2">
+                <User className="h-4 w-4" />
+                <span>Profile</span>
+              </Button>
+            </Link>
+          ) : (
+            <Link to="/auth">
+              <Button variant="outline" size="sm">
+                Sign In
+              </Button>
+            </Link>
+          )}
+        </div>
+      </nav>
+
       {/* Hero Section */}
       <div className="container mx-auto px-4 py-16">
         <div className="text-center max-w-4xl mx-auto">
@@ -81,6 +110,8 @@ const Index = () => {
           <p className="text-muted-foreground">&copy; 2024 Language Learning Platform. Start your journey today!</p>
         </div>
       </footer>
-    </div>;
+    </div>
+  );
 };
+
 export default Index;

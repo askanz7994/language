@@ -9,7 +9,66 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      content_translations: {
+        Row: {
+          content_key: string
+          content_type: string
+          created_at: string
+          id: string
+          language: Database["public"]["Enums"]["language_code"]
+          original_text: string
+          translated_text: string
+          transliteration: string | null
+        }
+        Insert: {
+          content_key: string
+          content_type: string
+          created_at?: string
+          id?: string
+          language: Database["public"]["Enums"]["language_code"]
+          original_text: string
+          translated_text: string
+          transliteration?: string | null
+        }
+        Update: {
+          content_key?: string
+          content_type?: string
+          created_at?: string
+          id?: string
+          language?: Database["public"]["Enums"]["language_code"]
+          original_text?: string
+          translated_text?: string
+          transliteration?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          first_name: string | null
+          id: string
+          last_name: string | null
+          preferred_language: Database["public"]["Enums"]["language_code"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+          preferred_language?: Database["public"]["Enums"]["language_code"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          preferred_language?: Database["public"]["Enums"]["language_code"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +77,30 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      language_code:
+        | "malayalam"
+        | "english"
+        | "hindi"
+        | "spanish"
+        | "french"
+        | "german"
+        | "chinese"
+        | "japanese"
+        | "korean"
+        | "portuguese"
+        | "russian"
+        | "arabic"
+        | "indonesian"
+        | "italian"
+        | "turkish"
+        | "vietnamese"
+        | "thai"
+        | "polish"
+        | "dutch"
+        | "swedish"
+        | "telugu"
+        | "urdu"
+        | "kannada"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +215,32 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      language_code: [
+        "malayalam",
+        "english",
+        "hindi",
+        "spanish",
+        "french",
+        "german",
+        "chinese",
+        "japanese",
+        "korean",
+        "portuguese",
+        "russian",
+        "arabic",
+        "indonesian",
+        "italian",
+        "turkish",
+        "vietnamese",
+        "thai",
+        "polish",
+        "dutch",
+        "swedish",
+        "telugu",
+        "urdu",
+        "kannada",
+      ],
+    },
   },
 } as const
