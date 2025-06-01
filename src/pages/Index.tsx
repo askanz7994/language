@@ -14,7 +14,7 @@ const Index = () => {
             Master Malayalam, English, Hindi, and more. Connect with cultures, expand your mind, and achieve your linguistic goals.
           </p>
           <Link to="/languages">
-            <Button className="glow-button text-lg px-8 py-[32px] bg-white">
+            <Button className="glow-button text-lg px-8 py-[32px] text-[#03022e] bg-[#04cbe0]">
               Get Started Now! <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </Link>
