@@ -1,11 +1,8 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
-
 const Index = () => {
-  return (
-    <div className="min-h-screen blur-bg">
+  return <div className="min-h-screen blur-bg">
       {/* Hero Section */}
       <div className="container mx-auto px-4 py-16">
         <div className="text-center max-w-4xl mx-auto">
@@ -17,7 +14,7 @@ const Index = () => {
             Master Malayalam, English, Hindi, and more. Connect with cultures, expand your mind, and achieve your linguistic goals.
           </p>
           <Link to="/languages">
-            <Button className="glow-button text-lg px-8 py-4">
+            <Button className="glow-button text-lg px-8 py-[32px] bg-white">
               Get Started Now! <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </Link>
@@ -84,8 +81,6 @@ const Index = () => {
           <p className="text-muted-foreground">&copy; 2024 Language Learning Platform. Start your journey today!</p>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
