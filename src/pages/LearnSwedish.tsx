@@ -48,7 +48,7 @@ const LearnSwedish = () => {
             </div>
           </Link>
 
-          <Route to="/swedish/paragraph">
+          <Link to="/swedish/paragraph">
             <div className="language-card text-center cursor-pointer">
               <BookOpen className="h-12 w-12 text-primary mx-auto mb-4" />
               <h2 className="text-2xl font-bold mb-3">Paragraphs</h2>
