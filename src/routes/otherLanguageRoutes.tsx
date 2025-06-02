@@ -1,3 +1,4 @@
+
 import { Route } from "react-router-dom";
 import LearnChinese from "@/pages/LearnChinese";
 import ChineseAlphabets from "@/pages/ChineseAlphabets";
@@ -17,10 +18,15 @@ import KoreanParagraph from "@/pages/KoreanParagraph";
 import LearnPortuguese from "@/pages/LearnPortuguese";
 import PortugueseAlphabets from "@/pages/PortugueseAlphabets";
 import LearnRussian from "@/pages/LearnRussian";
+import RussianAlphabets from "@/pages/RussianAlphabets";
 import LearnArabic from "@/pages/LearnArabic";
+import ArabicAlphabets from "@/pages/ArabicAlphabets";
 import LearnIndonesian from "@/pages/LearnIndonesian";
+import IndonesianAlphabets from "@/pages/IndonesianAlphabets";
 import LearnItalian from "@/pages/LearnItalian";
+import ItalianAlphabets from "@/pages/ItalianAlphabets";
 import LearnTurkish from "@/pages/LearnTurkish";
+import TurkishAlphabets from "@/pages/TurkishAlphabets";
 import LearnVietnamese from "@/pages/LearnVietnamese";
 import LearnThai from "@/pages/LearnThai";
 import LearnPolish from "@/pages/LearnPolish";
@@ -63,30 +69,35 @@ export const otherLanguageRoutes = (
     
     {/* Russian */}
     <Route path="/learn-russian" element={<LearnRussian />} />
+    <Route path="/russian/alphabets" element={<RussianAlphabets />} />
     <Route path="/russian/numbers" element={<NotFound />} />
     <Route path="/russian/words" element={<NotFound />} />
     <Route path="/russian/paragraph" element={<NotFound />} />
     
     {/* Arabic */}
     <Route path="/learn-arabic" element={<LearnArabic />} />
+    <Route path="/arabic/alphabets" element={<ArabicAlphabets />} />
     <Route path="/arabic/numbers" element={<NotFound />} />
     <Route path="/arabic/words" element={<NotFound />} />
     <Route path="/arabic/paragraph" element={<NotFound />} />
     
     {/* Indonesian */}
     <Route path="/learn-indonesian" element={<LearnIndonesian />} />
+    <Route path="/indonesian/alphabets" element={<IndonesianAlphabets />} />
     <Route path="/indonesian/numbers" element={<NotFound />} />
     <Route path="/indonesian/words" element={<NotFound />} />
     <Route path="/indonesian/paragraph" element={<NotFound />} />
     
     {/* Italian */}
     <Route path="/learn-italian" element={<LearnItalian />} />
+    <Route path="/italian/alphabets" element={<ItalianAlphabets />} />
     <Route path="/italian/numbers" element={<NotFound />} />
     <Route path="/italian/words" element={<NotFound />} />
     <Route path="/italian/paragraph" element={<NotFound />} />
     
     {/* Turkish */}
     <Route path="/learn-turkish" element={<LearnTurkish />} />
+    <Route path="/turkish/alphabets" element={<TurkishAlphabets />} />
     <Route path="/turkish/numbers" element={<NotFound />} />
     <Route path="/turkish/words" element={<NotFound />} />
     <Route path="/turkish/paragraph" element={<NotFound />} />
