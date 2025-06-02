@@ -46,6 +46,8 @@ import FrenchNumbers from "./pages/FrenchNumbers";
 import FrenchWords from "./pages/FrenchWords";
 import FrenchParagraph from "./pages/FrenchParagraph";
 import GermanNumbers from "./pages/GermanNumbers";
+import GermanWords from "./pages/GermanWords";
+import GermanParagraph from "./pages/GermanParagraph";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
@@ -98,8 +100,8 @@ const App = () => (
             {/* German */}
             <Route path="/learn-german" element={<LearnGerman />} />
             <Route path="/german/numbers" element={<GermanNumbers />} />
-            <Route path="/german/words" element={<NotFound />} />
-            <Route path="/german/paragraph" element={<NotFound />} />
+            <Route path="/german/words" element={<GermanWords />} />
+            <Route path="/german/paragraph" element={<GermanParagraph />} />
             
             {/* Chinese */}
             <Route path="/learn-chinese" element={<LearnChinese />} />
