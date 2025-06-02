@@ -128,12 +128,17 @@ const Auth = () => {
                   <div className="space-y-2">
                     <Label htmlFor="preferredLanguage">Preferred Language</Label>
                     <Select value={preferredLanguage} onValueChange={(value: LanguageCode) => setPreferredLanguage(value)}>
-                      <SelectTrigger>
+                      <SelectTrigger style={{ color: '#03022E', backgroundColor: '#04CBE0' }}>
                         <SelectValue placeholder="Select your preferred language" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent style={{ backgroundColor: '#04CBE0', color: '#03022E' }}>
                         {languages.map((lang) => (
-                          <SelectItem key={lang.code} value={lang.code}>
+                          <SelectItem 
+                            key={lang.code} 
+                            value={lang.code}
+                            style={{ color: '#03022E' }}
+                            className="hover:bg-[#03022E] hover:text-[#04CBE0]"
+                          >
                             {lang.name}
                           </SelectItem>
                         ))}

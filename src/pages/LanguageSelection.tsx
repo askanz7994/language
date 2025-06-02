@@ -8,26 +8,26 @@ const LanguageSelection = () => {
     { name: "Malayalam", symbol: "മ", path: "/learn-malayalam", description: "Learn the beautiful language of Kerala, spoken by over 34 million people" },
     { name: "English", symbol: "A", path: "/learn-english", description: "Master the global language of communication and opportunity" },
     { name: "Hindi", symbol: "अ", path: "/learn-hindi", description: "Discover India's most widely spoken language with rich cultural heritage" },
-    { name: "Spanish", symbol: "Ñ", path: "#", description: "Learn the second most spoken language in the world" },
-    { name: "French", symbol: "À", path: "#", description: "Master the language of love and diplomacy" },
-    { name: "German", symbol: "Ä", path: "#", description: "Learn the language of innovation and engineering" },
-    { name: "Chinese (Simplified)", symbol: "中", path: "#", description: "Explore the world's most spoken language" },
-    { name: "Japanese", symbol: "あ", path: "#", description: "Discover the language of technology and tradition" },
-    { name: "Korean", symbol: "한", path: "#", description: "Learn the language of K-pop and Korean culture" },
-    { name: "Portuguese", symbol: "Ç", path: "#", description: "Master the language spoken across continents" },
-    { name: "Russian", symbol: "Я", path: "#", description: "Learn the language of literature and science" },
-    { name: "Arabic", symbol: "ع", path: "#", description: "Discover the language of the Quran and poetry" },
-    { name: "Indonesian", symbol: "ñ", path: "#", description: "Learn the language of Southeast Asia's largest country" },
-    { name: "Italian", symbol: "È", path: "#", description: "Master the language of art, food, and fashion" },
-    { name: "Turkish", symbol: "Ğ", path: "#", description: "Learn the bridge language between Europe and Asia" },
-    { name: "Vietnamese", symbol: "ă", path: "#", description: "Discover the tonal language of Vietnam" },
-    { name: "Thai", symbol: "ก", path: "#", description: "Learn the beautiful script of Thailand" },
-    { name: "Polish", symbol: "Ł", path: "#", description: "Master the language of Poland and its rich history" },
-    { name: "Dutch", symbol: "ij", path: "#", description: "Learn the language of the Netherlands" },
-    { name: "Swedish", symbol: "Å", path: "#", description: "Discover the language of Scandinavia" },
-    { name: "Telugu", symbol: "తె", path: "#", description: "Learn one of India's classical languages" },
-    { name: "Urdu", symbol: "اُ", path: "#", description: "Master the language of poetry and literature" },
-    { name: "Kannada", symbol: "ಕ", path: "#", description: "Learn the language of Karnataka" }
+    { name: "Spanish", symbol: "Ñ", path: "/learn-spanish", description: "Learn the second most spoken language in the world" },
+    { name: "French", symbol: "À", path: "/learn-french", description: "Master the language of love and diplomacy" },
+    { name: "German", symbol: "Ä", path: "/learn-german", description: "Learn the language of innovation and engineering" },
+    { name: "Chinese (Simplified)", symbol: "中", path: "/learn-chinese", description: "Explore the world's most spoken language" },
+    { name: "Japanese", symbol: "あ", path: "/learn-japanese", description: "Discover the language of technology and tradition" },
+    { name: "Korean", symbol: "한", path: "/learn-korean", description: "Learn the language of K-pop and Korean culture" },
+    { name: "Portuguese", symbol: "Ç", path: "/learn-portuguese", description: "Master the language spoken across continents" },
+    { name: "Russian", symbol: "Я", path: "/learn-russian", description: "Learn the language of literature and science" },
+    { name: "Arabic", symbol: "ع", path: "/learn-arabic", description: "Discover the language of the Quran and poetry" },
+    { name: "Indonesian", symbol: "ñ", path: "/learn-indonesian", description: "Learn the language of Southeast Asia's largest country" },
+    { name: "Italian", symbol: "È", path: "/learn-italian", description: "Master the language of art, food, and fashion" },
+    { name: "Turkish", symbol: "Ğ", path: "/learn-turkish", description: "Learn the bridge language between Europe and Asia" },
+    { name: "Vietnamese", symbol: "ă", path: "/learn-vietnamese", description: "Discover the tonal language of Vietnam" },
+    { name: "Thai", symbol: "ก", path: "/learn-thai", description: "Learn the beautiful script of Thailand" },
+    { name: "Polish", symbol: "Ł", path: "/learn-polish", description: "Master the language of Poland and its rich history" },
+    { name: "Dutch", symbol: "ij", path: "/learn-dutch", description: "Learn the language of the Netherlands" },
+    { name: "Swedish", symbol: "Å", path: "/learn-swedish", description: "Discover the language of Scandinavia" },
+    { name: "Telugu", symbol: "తె", path: "/learn-telugu", description: "Learn one of India's classical languages" },
+    { name: "Urdu", symbol: "اُ", path: "/learn-urdu", description: "Master the language of poetry and literature" },
+    { name: "Kannada", symbol: "ಕ", path: "/learn-kannada", description: "Learn the language of Karnataka" }
   ];
 
   return (
@@ -58,17 +58,11 @@ const LanguageSelection = () => {
               <p className="text-muted-foreground mb-6 text-sm min-h-[3rem]">
                 {language.description}
               </p>
-              {language.path !== "#" ? (
-                <Link to={language.path}>
-                  <Button className="glow-button w-full">
-                    Learn {language.name}
-                  </Button>
-                </Link>
-              ) : (
-                <Button className="glow-button w-full" disabled>
-                  Coming Soon
+              <Link to={language.path}>
+                <Button className="glow-button w-full">
+                  Learn {language.name}
                 </Button>
-              )}
+              </Link>
             </div>
           ))}
         </div>
