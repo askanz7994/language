@@ -39,6 +39,13 @@ import EnglishParagraph from "./pages/EnglishParagraph";
 import HindiNumbers from "./pages/HindiNumbers";
 import HindiWords from "./pages/HindiWords";
 import HindiParagraph from "./pages/HindiParagraph";
+import SpanishNumbers from "./pages/SpanishNumbers";
+import SpanishWords from "./pages/SpanishWords";
+import SpanishParagraph from "./pages/SpanishParagraph";
+import FrenchNumbers from "./pages/FrenchNumbers";
+import FrenchWords from "./pages/FrenchWords";
+import FrenchParagraph from "./pages/FrenchParagraph";
+import GermanNumbers from "./pages/GermanNumbers";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
@@ -78,19 +85,19 @@ const App = () => (
             
             {/* Spanish */}
             <Route path="/learn-spanish" element={<LearnSpanish />} />
-            <Route path="/spanish/numbers" element={<NotFound />} />
-            <Route path="/spanish/words" element={<NotFound />} />
-            <Route path="/spanish/paragraph" element={<NotFound />} />
+            <Route path="/spanish/numbers" element={<SpanishNumbers />} />
+            <Route path="/spanish/words" element={<SpanishWords />} />
+            <Route path="/spanish/paragraph" element={<SpanishParagraph />} />
             
             {/* French */}
             <Route path="/learn-french" element={<LearnFrench />} />
-            <Route path="/french/numbers" element={<NotFound />} />
-            <Route path="/french/words" element={<NotFound />} />
-            <Route path="/french/paragraph" element={<NotFound />} />
+            <Route path="/french/numbers" element={<FrenchNumbers />} />
+            <Route path="/french/words" element={<FrenchWords />} />
+            <Route path="/french/paragraph" element={<FrenchParagraph />} />
             
             {/* German */}
             <Route path="/learn-german" element={<LearnGerman />} />
-            <Route path="/german/numbers" element={<NotFound />} />
+            <Route path="/german/numbers" element={<GermanNumbers />} />
             <Route path="/german/words" element={<NotFound />} />
             <Route path="/german/paragraph" element={<NotFound />} />
             
