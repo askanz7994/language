@@ -1,7 +1,7 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, BookOpen, Hash, Type, Languages } from "lucide-react";
+import { ArrowLeft, BookOpen, Hash, Type } from "lucide-react";
 
 const LearnSpanish = () => {
   return (
@@ -21,20 +21,7 @@ const LearnSpanish = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
-          <Link to="/spanish/alphabet">
-            <div className="language-card text-center cursor-pointer">
-              <Languages className="h-12 w-12 text-primary mx-auto mb-4" />
-              <h2 className="text-2xl font-bold mb-3">Alphabet</h2>
-              <p className="text-muted-foreground mb-6">
-                Learn the Spanish alphabet with pronunciation and examples
-              </p>
-              <Button className="glow-button w-full">
-                Learn Alphabet
-              </Button>
-            </div>
-          </Link>
-
+        <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
           <Link to="/spanish/numbers">
             <div className="language-card text-center cursor-pointer">
               <Hash className="h-12 w-12 text-primary mx-auto mb-4" />

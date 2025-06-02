@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -24,21 +23,7 @@ const LearnEnglish = () => {
         </div>
 
         {/* Learning Modules */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
-          {/* Alphabet Module */}
-          <div className="language-card text-center">
-            <div className="text-6xl mb-6">A</div>
-            <h2 className="text-3xl font-bold mb-4">Alphabet</h2>
-            <p className="text-muted-foreground mb-6">
-              Learn the English alphabet from A to Z
-            </p>
-            <Link to="/english/alphabet">
-              <Button className="glow-button w-full">
-                Learn Alphabet
-              </Button>
-            </Link>
-          </div>
-
+        <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
           {/* Numbers Module */}
           <div className="language-card text-center">
             <div className="text-6xl mb-6">1</div>

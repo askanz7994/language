@@ -4,12 +4,10 @@ import LearnMalayalam from "@/pages/LearnMalayalam";
 import MalayalamNumbers from "@/pages/MalayalamNumbers";
 import MalayalamWords from "@/pages/MalayalamWords";
 import MalayalamParagraph from "@/pages/MalayalamParagraph";
-import MalayalamAlphabet from "@/pages/MalayalamAlphabet";
 
 export const malayalamRoutes = (
   <>
     <Route path="/learn-malayalam" element={<LearnMalayalam />} />
-    <Route path="/malayalam/alphabet" element={<MalayalamAlphabet />} />
     <Route path="/malayalam/numbers" element={<MalayalamNumbers />} />
     <Route path="/malayalam/words" element={<MalayalamWords />} />
     <Route path="/malayalam/paragraph" element={<MalayalamParagraph />} />
