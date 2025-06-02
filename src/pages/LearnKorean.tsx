@@ -1,7 +1,7 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, BookOpen, Hash, Type } from "lucide-react";
+import { ArrowLeft, BookOpen, Hash, Type, Zap } from "lucide-react";
 
 const LearnKorean = () => {
   return (
@@ -21,7 +21,20 @@ const LearnKorean = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
+          <Link to="/korean/alphabet">
+            <div className="language-card text-center cursor-pointer">
+              <Zap className="h-12 w-12 text-primary mx-auto mb-4" />
+              <h2 className="text-2xl font-bold mb-3">Hangul</h2>
+              <p className="text-muted-foreground mb-6">
+                Learn the Korean alphabet - Hangul with all basic letters
+              </p>
+              <Button className="glow-button w-full">
+                Learn Hangul
+              </Button>
+            </div>
+          </Link>
+
           <Link to="/korean/numbers">
             <div className="language-card text-center cursor-pointer">
               <Hash className="h-12 w-12 text-primary mx-auto mb-4" />
