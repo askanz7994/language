@@ -28,13 +28,21 @@ import ItalianAlphabets from "@/pages/ItalianAlphabets";
 import LearnTurkish from "@/pages/LearnTurkish";
 import TurkishAlphabets from "@/pages/TurkishAlphabets";
 import LearnVietnamese from "@/pages/LearnVietnamese";
+import VietnameseAlphabets from "@/pages/VietnameseAlphabets";
 import LearnThai from "@/pages/LearnThai";
+import ThaiAlphabets from "@/pages/ThaiAlphabets";
 import LearnPolish from "@/pages/LearnPolish";
+import PolishAlphabets from "@/pages/PolishAlphabets";
 import LearnDutch from "@/pages/LearnDutch";
+import DutchAlphabets from "@/pages/DutchAlphabets";
 import LearnSwedish from "@/pages/LearnSwedish";
+import SwedishAlphabets from "@/pages/SwedishAlphabets";
 import LearnTelugu from "@/pages/LearnTelugu";
+import TeluguAlphabets from "@/pages/TeluguAlphabets";
 import LearnUrdu from "@/pages/LearnUrdu";
+import UrduAlphabets from "@/pages/UrduAlphabets";
 import LearnKannada from "@/pages/LearnKannada";
+import KannadaAlphabets from "@/pages/KannadaAlphabets";
 import NotFound from "@/pages/NotFound";
 
 export const otherLanguageRoutes = (
@@ -104,48 +112,56 @@ export const otherLanguageRoutes = (
     
     {/* Vietnamese */}
     <Route path="/learn-vietnamese" element={<LearnVietnamese />} />
+    <Route path="/vietnamese/alphabets" element={<VietnameseAlphabets />} />
     <Route path="/vietnamese/numbers" element={<NotFound />} />
     <Route path="/vietnamese/words" element={<NotFound />} />
     <Route path="/vietnamese/paragraph" element={<NotFound />} />
     
     {/* Thai */}
     <Route path="/learn-thai" element={<LearnThai />} />
+    <Route path="/thai/alphabets" element={<ThaiAlphabets />} />
     <Route path="/thai/numbers" element={<NotFound />} />
     <Route path="/thai/words" element={<NotFound />} />
     <Route path="/thai/paragraph" element={<NotFound />} />
     
     {/* Polish */}
     <Route path="/learn-polish" element={<LearnPolish />} />
+    <Route path="/polish/alphabets" element={<PolishAlphabets />} />
     <Route path="/polish/numbers" element={<NotFound />} />
     <Route path="/polish/words" element={<NotFound />} />
     <Route path="/polish/paragraph" element={<NotFound />} />
     
     {/* Dutch */}
     <Route path="/learn-dutch" element={<LearnDutch />} />
+    <Route path="/dutch/alphabets" element={<DutchAlphabets />} />
     <Route path="/dutch/numbers" element={<NotFound />} />
     <Route path="/dutch/words" element={<NotFound />} />
     <Route path="/dutch/paragraph" element={<NotFound />} />
     
     {/* Swedish */}
     <Route path="/learn-swedish" element={<LearnSwedish />} />
+    <Route path="/swedish/alphabets" element={<SwedishAlphabets />} />
     <Route path="/swedish/numbers" element={<NotFound />} />
     <Route path="/swedish/words" element={<NotFound />} />
     <Route path="/swedish/paragraph" element={<NotFound />} />
     
     {/* Telugu */}
     <Route path="/learn-telugu" element={<LearnTelugu />} />
+    <Route path="/telugu/alphabets" element={<TeluguAlphabets />} />
     <Route path="/telugu/numbers" element={<NotFound />} />
     <Route path="/telugu/words" element={<NotFound />} />
     <Route path="/telugu/paragraph" element={<NotFound />} />
     
     {/* Urdu */}
     <Route path="/learn-urdu" element={<LearnUrdu />} />
+    <Route path="/urdu/alphabets" element={<UrduAlphabets />} />
     <Route path="/urdu/numbers" element={<NotFound />} />
     <Route path="/urdu/words" element={<NotFound />} />
     <Route path="/urdu/paragraph" element={<NotFound />} />
     
     {/* Kannada */}
     <Route path="/learn-kannada" element={<LearnKannada />} />
+    <Route path="/kannada/alphabets" element={<KannadaAlphabets />} />
     <Route path="/kannada/numbers" element={<NotFound />} />
     <Route path="/kannada/words" element={<NotFound />} />
     <Route path="/kannada/paragraph" element={<NotFound />} />
