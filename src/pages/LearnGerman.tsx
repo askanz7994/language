@@ -1,7 +1,7 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, BookOpen, Hash, Type } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 const LearnGerman = () => {
   return (
@@ -21,11 +21,24 @@ const LearnGerman = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
+          <Link to="/german/alphabets">
+            <div className="language-card text-center cursor-pointer">
+              <div className="text-6xl mb-6">A</div>
+              <h2 className="text-3xl font-bold mb-4">Alphabets</h2>
+              <p className="text-muted-foreground mb-6">
+                Learn German letters and their sounds
+              </p>
+              <Button className="glow-button w-full">
+                Learn Alphabets
+              </Button>
+            </div>
+          </Link>
+
           <Link to="/german/numbers">
             <div className="language-card text-center cursor-pointer">
-              <Hash className="h-12 w-12 text-primary mx-auto mb-4" />
-              <h2 className="text-2xl font-bold mb-3">Numbers</h2>
+              <div className="text-6xl mb-6">1</div>
+              <h2 className="text-3xl font-bold mb-4">Numbers</h2>
               <p className="text-muted-foreground mb-6">
                 Learn German numbers from 1 to 100 with pronunciation and examples
               </p>
@@ -37,8 +50,8 @@ const LearnGerman = () => {
 
           <Link to="/german/words">
             <div className="language-card text-center cursor-pointer">
-              <Type className="h-12 w-12 text-primary mx-auto mb-4" />
-              <h2 className="text-2xl font-bold mb-3">Words</h2>
+              <div className="text-6xl mb-6">W</div>
+              <h2 className="text-3xl font-bold mb-4">Words</h2>
               <p className="text-muted-foreground mb-6">
                 Build your German vocabulary with essential words and phrases
               </p>
@@ -50,8 +63,8 @@ const LearnGerman = () => {
 
           <Link to="/german/paragraph">
             <div className="language-card text-center cursor-pointer">
-              <BookOpen className="h-12 w-12 text-primary mx-auto mb-4" />
-              <h2 className="text-2xl font-bold mb-3">Paragraphs</h2>
+              <div className="text-6xl mb-6">P</div>
+              <h2 className="text-3xl font-bold mb-4">Paragraphs</h2>
               <p className="text-muted-foreground mb-6">
                 Practice reading and understanding German through contextual paragraphs
               </p>
