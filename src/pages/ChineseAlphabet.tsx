@@ -8,32 +8,32 @@ const ChineseAlphabet = () => {
   const [playingAudio, setPlayingAudio] = useState<number | null>(null);
 
   const pinyin = [
-    { letter: "A", pinyin: "a", tone: "ā á ǎ à", pronunciation: "/a/", example: "爱 (ài) - Love" },
-    { letter: "B", pinyin: "b", tone: "ba bo bi bu", pronunciation: "/p/", example: "爸爸 (bàba) - Father" },
-    { letter: "C", pinyin: "c", tone: "ca co ci cu", pronunciation: "/tsʰ/", example: "茶 (chá) - Tea" },
-    { letter: "D", pinyin: "d", tone: "da do di du", pronunciation: "/t/", example: "大 (dà) - Big" },
-    { letter: "E", pinyin: "e", tone: "ē é ě è", pronunciation: "/ɤ/", example: "饿 (è) - Hungry" },
-    { letter: "F", pinyin: "f", tone: "fa fo fi fu", pronunciation: "/f/", example: "饭 (fàn) - Rice" },
-    { letter: "G", pinyin: "g", tone: "ga go gi gu", pronunciation: "/k/", example: "狗 (gǒu) - Dog" },
-    { letter: "H", pinyin: "h", tone: "ha ho hi hu", pronunciation: "/x/", example: "好 (hǎo) - Good" },
-    { letter: "I", pinyin: "i", tone: "ī í ǐ ì", pronunciation: "/i/", example: "一 (yī) - One" },
-    { letter: "J", pinyin: "j", tone: "ja jo ji ju", pronunciation: "/tɕ/", example: "家 (jiā) - Home" },
-    { letter: "K", pinyin: "k", tone: "ka ko ki ku", pronunciation: "/kʰ/", example: "看 (kàn) - See" },
-    { letter: "L", pinyin: "l", tone: "la lo li lu", pronunciation: "/l/", example: "来 (lái) - Come" },
-    { letter: "M", pinyin: "m", tone: "ma mo mi mu", pronunciation: "/m/", example: "妈妈 (māma) - Mother" },
-    { letter: "N", pinyin: "n", tone: "na no ni nu", pronunciation: "/n/", example: "你 (nǐ) - You" },
-    { letter: "O", pinyin: "o", tone: "ō ó ǒ ò", pronunciation: "/o/", example: "我 (wǒ) - I" },
-    { letter: "P", pinyin: "p", tone: "pa po pi pu", pronunciation: "/pʰ/", example: "朋友 (péngyǒu) - Friend" },
-    { letter: "Q", pinyin: "q", tone: "qa qo qi qu", pronunciation: "/tɕʰ/", example: "去 (qù) - Go" },
-    { letter: "R", pinyin: "r", tone: "ra ro ri ru", pronunciation: "/ʐ/", example: "人 (rén) - Person" },
-    { letter: "S", pinyin: "s", tone: "sa so si su", pronunciation: "/s/", example: "三 (sān) - Three" },
-    { letter: "T", pinyin: "t", tone: "ta to ti tu", pronunciation: "/tʰ/", example: "他 (tā) - He" },
-    { letter: "U", pinyin: "u", tone: "ū ú ǔ ù", pronunciation: "/u/", example: "五 (wǔ) - Five" },
-    { letter: "V", pinyin: "v", tone: "va vo vi vu", pronunciation: "/v/", example: "Very rare in Chinese" },
-    { letter: "W", pinyin: "w", tone: "wa wo wi wu", pronunciation: "/w/", example: "我 (wǒ) - I" },
-    { letter: "X", pinyin: "x", tone: "xa xo xi xu", pronunciation: "/ɕ/", example: "小 (xiǎo) - Small" },
-    { letter: "Y", pinyin: "y", tone: "ya yo yi yu", pronunciation: "/j/", example: "月 (yuè) - Moon" },
-    { letter: "Z", pinyin: "z", tone: "za zo zi zu", pronunciation: "/ts/", example: "再见 (zàijiàn) - Goodbye" },
+    { letter: "A", pinyin: "a", pronunciation: "ā á ǎ à" },
+    { letter: "B", pinyin: "b", pronunciation: "ba bo bi bu" },
+    { letter: "C", pinyin: "c", pronunciation: "ca co ci cu" },
+    { letter: "D", pinyin: "d", pronunciation: "da do di du" },
+    { letter: "E", pinyin: "e", pronunciation: "ē é ě è" },
+    { letter: "F", pinyin: "f", pronunciation: "fa fo fi fu" },
+    { letter: "G", pinyin: "g", pronunciation: "ga go gi gu" },
+    { letter: "H", pinyin: "h", pronunciation: "ha ho hi hu" },
+    { letter: "I", pinyin: "i", pronunciation: "ī í ǐ ì" },
+    { letter: "J", pinyin: "j", pronunciation: "ja jo ji ju" },
+    { letter: "K", pinyin: "k", pronunciation: "ka ko ki ku" },
+    { letter: "L", pinyin: "l", pronunciation: "la lo li lu" },
+    { letter: "M", pinyin: "m", pronunciation: "ma mo mi mu" },
+    { letter: "N", pinyin: "n", pronunciation: "na no ni nu" },
+    { letter: "O", pinyin: "o", pronunciation: "ō ó ǒ ò" },
+    { letter: "P", pinyin: "p", pronunciation: "pa po pi pu" },
+    { letter: "Q", pinyin: "q", pronunciation: "qa qo qi qu" },
+    { letter: "R", pinyin: "r", pronunciation: "ra ro ri ru" },
+    { letter: "S", pinyin: "s", pronunciation: "sa so si su" },
+    { letter: "T", pinyin: "t", pronunciation: "ta to ti tu" },
+    { letter: "U", pinyin: "u", pronunciation: "ū ú ǔ ù" },
+    { letter: "V", pinyin: "v", pronunciation: "va vo vi vu" },
+    { letter: "W", pinyin: "w", pronunciation: "wa wo wi wu" },
+    { letter: "X", pinyin: "x", pronunciation: "xa xo xi xu" },
+    { letter: "Y", pinyin: "y", pronunciation: "ya yo yi yu" },
+    { letter: "Z", pinyin: "z", pronunciation: "za zo zi zu" },
   ];
 
   const playAudio = (index: number) => {
@@ -72,11 +72,7 @@ const ChineseAlphabet = () => {
                   🔊
                 </Button>
               </div>
-              <div className="text-lg mb-2 font-semibold">{item.tone}</div>
-              <div className="text-muted-foreground mb-3 italic">{item.pronunciation}</div>
-              <div className="text-sm border-t border-border pt-3">
-                <strong>例子:</strong> {item.example}
-              </div>
+              <div className="text-lg mb-2 font-semibold text-center">{item.pronunciation}</div>
             </div>
           ))}
         </div>
