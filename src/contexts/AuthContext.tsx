@@ -4,14 +4,8 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-type LanguageCode = 'malayalam' | 'english' | 'hindi' | 'spanish' | 'french' | 'german' | 
-  'chinese' | 'japanese' | 'korean' | 'portuguese' | 'russian' | 'arabic' | 
-  'indonesian' | 'italian' | 'turkish' | 'vietnamese' | 'thai' | 'polish' | 
-  'dutch' | 'swedish' | 'telugu' | 'urdu' | 'kannada';
-
 interface UserProfile {
   id: string;
-  preferred_language: LanguageCode;
   first_name?: string;
   last_name?: string;
   created_at: string;
@@ -23,7 +17,7 @@ interface AuthContextType {
   session: Session | null;
   profile: UserProfile | null;
   loading: boolean;
-  signUp: (email: string, password: string, firstName?: string, lastName?: string, preferredLanguage?: LanguageCode) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, firstName?: string, lastName?: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   updateProfile: (updates: Partial<UserProfile>) => Promise<{ error: any }>;
@@ -103,8 +97,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     email: string, 
     password: string, 
     firstName?: string, 
-    lastName?: string, 
-    preferredLanguage: LanguageCode = 'english'
+    lastName?: string
   ) => {
     const redirectUrl = `${window.location.origin}/`;
     
@@ -115,8 +108,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         emailRedirectTo: redirectUrl,
         data: {
           first_name: firstName,
-          last_name: lastName,
-          preferred_language: preferredLanguage
+          last_name: lastName
         }
       }
     });

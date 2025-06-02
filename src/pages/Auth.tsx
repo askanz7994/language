@@ -5,14 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-
-type LanguageCode = 'malayalam' | 'english' | 'hindi' | 'spanish' | 'french' | 'german' | 
-  'chinese' | 'japanese' | 'korean' | 'portuguese' | 'russian' | 'arabic' | 
-  'indonesian' | 'italian' | 'turkish' | 'vietnamese' | 'thai' | 'polish' | 
-  'dutch' | 'swedish' | 'telugu' | 'urdu' | 'kannada';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -20,7 +14,6 @@ const Auth = () => {
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [preferredLanguage, setPreferredLanguage] = useState<LanguageCode>('english');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
@@ -34,32 +27,6 @@ const Auth = () => {
     }
   }, [user, navigate]);
 
-  const languages = [
-    { code: 'malayalam' as LanguageCode, name: 'Malayalam' },
-    { code: 'english' as LanguageCode, name: 'English' },
-    { code: 'hindi' as LanguageCode, name: 'Hindi' },
-    { code: 'spanish' as LanguageCode, name: 'Spanish' },
-    { code: 'french' as LanguageCode, name: 'French' },
-    { code: 'german' as LanguageCode, name: 'German' },
-    { code: 'chinese' as LanguageCode, name: 'Chinese (Simplified)' },
-    { code: 'japanese' as LanguageCode, name: 'Japanese' },
-    { code: 'korean' as LanguageCode, name: 'Korean' },
-    { code: 'portuguese' as LanguageCode, name: 'Portuguese' },
-    { code: 'russian' as LanguageCode, name: 'Russian' },
-    { code: 'arabic' as LanguageCode, name: 'Arabic' },
-    { code: 'indonesian' as LanguageCode, name: 'Indonesian' },
-    { code: 'italian' as LanguageCode, name: 'Italian' },
-    { code: 'turkish' as LanguageCode, name: 'Turkish' },
-    { code: 'vietnamese' as LanguageCode, name: 'Vietnamese' },
-    { code: 'thai' as LanguageCode, name: 'Thai' },
-    { code: 'polish' as LanguageCode, name: 'Polish' },
-    { code: 'dutch' as LanguageCode, name: 'Dutch' },
-    { code: 'swedish' as LanguageCode, name: 'Swedish' },
-    { code: 'telugu' as LanguageCode, name: 'Telugu' },
-    { code: 'urdu' as LanguageCode, name: 'Urdu' },
-    { code: 'kannada' as LanguageCode, name: 'Kannada' }
-  ];
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -68,7 +35,7 @@ const Auth = () => {
       if (isLogin) {
         await signIn(email, password);
       } else {
-        await signUp(email, password, firstName, lastName, preferredLanguage);
+        await signUp(email, password, firstName, lastName);
       }
     } catch (error) {
       console.error('Auth error:', error);
@@ -101,51 +68,28 @@ const Auth = () => {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               {!isLogin && (
-                <>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="firstName">First Name</Label>
-                      <Input
-                        id="firstName"
-                        type="text"
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
-                        placeholder="Enter your first name"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="lastName">Last Name</Label>
-                      <Input
-                        id="lastName"
-                        type="text"
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
-                        placeholder="Enter your last name"
-                      />
-                    </div>
-                  </div>
-
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="preferredLanguage">Preferred Language</Label>
-                    <Select value={preferredLanguage} onValueChange={(value: LanguageCode) => setPreferredLanguage(value)}>
-                      <SelectTrigger style={{ color: '#03022E', backgroundColor: '#04CBE0' }}>
-                        <SelectValue placeholder="Select your preferred language" />
-                      </SelectTrigger>
-                      <SelectContent style={{ backgroundColor: '#04CBE0', color: '#03022E' }}>
-                        {languages.map((lang) => (
-                          <SelectItem 
-                            key={lang.code} 
-                            value={lang.code}
-                            style={{ color: '#03022E' }}
-                            className="hover:bg-[#03022E] hover:text-[#04CBE0]"
-                          >
-                            {lang.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Label htmlFor="firstName">First Name</Label>
+                    <Input
+                      id="firstName"
+                      type="text"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      placeholder="Enter your first name"
+                    />
                   </div>
-                </>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Last Name</Label>
+                    <Input
+                      id="lastName"
+                      type="text"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      placeholder="Enter your last name"
+                    />
+                  </div>
+                </div>
               )}
 
               <div className="space-y-2">
@@ -208,7 +152,6 @@ const Auth = () => {
                   setPassword('');
                   setFirstName('');
                   setLastName('');
-                  setPreferredLanguage('english');
                 }}
                 className="text-primary hover:text-primary/80"
               >
