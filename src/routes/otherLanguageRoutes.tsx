@@ -1,18 +1,21 @@
-
 import { Route } from "react-router-dom";
 import LearnChinese from "@/pages/LearnChinese";
+import ChineseAlphabets from "@/pages/ChineseAlphabets";
 import ChineseNumbers from "@/pages/ChineseNumbers";
 import ChineseWords from "@/pages/ChineseWords";
 import ChineseParagraph from "@/pages/ChineseParagraph";
 import LearnJapanese from "@/pages/LearnJapanese";
+import JapaneseAlphabets from "@/pages/JapaneseAlphabets";
 import JapaneseNumbers from "@/pages/JapaneseNumbers";
 import JapaneseWords from "@/pages/JapaneseWords";
 import JapaneseParagraph from "@/pages/JapaneseParagraph";
 import LearnKorean from "@/pages/LearnKorean";
+import KoreanAlphabets from "@/pages/KoreanAlphabets";
 import KoreanNumbers from "@/pages/KoreanNumbers";
 import KoreanWords from "@/pages/KoreanWords";
 import KoreanParagraph from "@/pages/KoreanParagraph";
 import LearnPortuguese from "@/pages/LearnPortuguese";
+import PortugueseAlphabets from "@/pages/PortugueseAlphabets";
 import LearnRussian from "@/pages/LearnRussian";
 import LearnArabic from "@/pages/LearnArabic";
 import LearnIndonesian from "@/pages/LearnIndonesian";
@@ -32,24 +35,28 @@ export const otherLanguageRoutes = (
   <>
     {/* Chinese */}
     <Route path="/learn-chinese" element={<LearnChinese />} />
+    <Route path="/chinese/alphabets" element={<ChineseAlphabets />} />
     <Route path="/chinese/numbers" element={<ChineseNumbers />} />
     <Route path="/chinese/words" element={<ChineseWords />} />
     <Route path="/chinese/paragraph" element={<ChineseParagraph />} />
     
     {/* Japanese */}
     <Route path="/learn-japanese" element={<LearnJapanese />} />
+    <Route path="/japanese/alphabets" element={<JapaneseAlphabets />} />
     <Route path="/japanese/numbers" element={<JapaneseNumbers />} />
     <Route path="/japanese/words" element={<JapaneseWords />} />
     <Route path="/japanese/paragraph" element={<JapaneseParagraph />} />
     
     {/* Korean */}
     <Route path="/learn-korean" element={<LearnKorean />} />
+    <Route path="/korean/alphabets" element={<KoreanAlphabets />} />
     <Route path="/korean/numbers" element={<KoreanNumbers />} />
     <Route path="/korean/words" element={<KoreanWords />} />
     <Route path="/korean/paragraph" element={<KoreanParagraph />} />
     
     {/* Portuguese */}
     <Route path="/learn-portuguese" element={<LearnPortuguese />} />
+    <Route path="/portuguese/alphabets" element={<PortugueseAlphabets />} />
     <Route path="/portuguese/numbers" element={<NotFound />} />
     <Route path="/portuguese/words" element={<NotFound />} />
     <Route path="/portuguese/paragraph" element={<NotFound />} />
