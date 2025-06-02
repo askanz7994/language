@@ -1,29 +1,28 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Play } from "lucide-react";
 import { useState } from "react";
 
 const SpanishWords = () => {
   const [playingAudio, setPlayingAudio] = useState<number | null>(null);
 
   const words = [
-    { english: "Hello", spanish: "Hola", pronunciation: "/ˈo.la/", example: "Hello, how are you? - Hola, ¿cómo estás?" },
-    { english: "Thank you", spanish: "Gracias", pronunciation: "/ˈɡɾa.θjas/", example: "Thank you very much - Muchas gracias" },
-    { english: "Water", spanish: "Agua", pronunciation: "/ˈa.ɣwa/", example: "I need water - Necesito agua" },
-    { english: "Food", spanish: "Comida", pronunciation: "/ko.ˈmi.da/", example: "The food is tasty - La comida está sabrosa" },
-    { english: "House", spanish: "Casa", pronunciation: "/ˈka.sa/", example: "My house is big - Mi casa es grande" },
-    { english: "School", spanish: "Escuela", pronunciation: "/es.ˈkwe.la/", example: "I go to school - Voy a la escuela" },
-    { english: "Mother", spanish: "Madre", pronunciation: "/ˈma.dɾe/", example: "My mother is kind - Mi madre es amable" },
-    { english: "Father", spanish: "Padre", pronunciation: "/ˈpa.dɾe/", example: "Father is working - Padre está trabajando" },
-    { english: "Friend", spanish: "Amigo", pronunciation: "/a.ˈmi.ɣo/", example: "He is my friend - Él es mi amigo" },
-    { english: "Book", spanish: "Libro", pronunciation: "/ˈli.βɾo/", example: "I read books - Leo libros" },
-    { english: "Love", spanish: "Amor", pronunciation: "/a.ˈmoɾ/", example: "Love is beautiful - El amor es hermoso" },
-    { english: "Happy", spanish: "Feliz", pronunciation: "/fe.ˈliθ/", example: "I am happy - Estoy feliz" },
+    "yo", "tú", "él", "ella", "nosotros", "vosotros", "ellos", "esto", "eso", "qué",
+    "quién", "dónde", "cuándo", "por qué", "cómo", "sí", "no", "por favor", "gracias", "lo siento",
+    "nombre", "casa", "agua", "comida", "tiempo", "día", "noche", "mañana", "tarde", "año",
+    "mes", "semana", "hoy", "mañana", "ayer", "madre", "padre", "hermano", "hermana", "niño",
+    "hombre", "mujer", "amigo", "profesor", "doctor", "libro", "pluma", "papel", "mesa", "silla",
+    "habitación", "puerta", "ventana", "techo", "suelo", "camino", "coche", "tren", "avión", "árbol",
+    "flor", "hoja", "fruta", "verdura", "arroz", "pan", "leche", "té", "café", "azúcar",
+    "sal", "aceite", "carne", "pescado", "huevo", "rojo", "blanco", "negro", "azul", "verde",
+    "amarillo", "rosa", "marrón", "pequeño", "grande", "nuevo", "viejo", "caliente", "frío", "bueno",
+    "malo", "feliz", "triste", "rápido", "lento", "arriba", "abajo", "dentro", "fuera", "aquí"
   ];
 
   const playAudio = (index: number) => {
     setPlayingAudio(index);
+    console.log(`Playing audio for Spanish word: ${words[index]}`);
     setTimeout(() => setPlayingAudio(null), 1000);
   };
 
@@ -36,32 +35,26 @@ const SpanishWords = () => {
         </Link>
 
         <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">Common Words in Spanish</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-6">
+            Palabras en Español (Spanish Words)
+          </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Expand your vocabulary with essential Spanish words
+            Listen and learn Spanish words
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-8xl mx-auto">
           {words.map((word, index) => (
             <div key={index} className="word-card">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <div className="text-2xl font-bold text-primary mb-1">{word.english}</div>
-                  <div className="text-3xl font-semibold">{word.spanish}</div>
-                </div>
+              <div className="flex items-center justify-between">
+                <div className="text-2xl font-semibold">{word}</div>
                 <Button
                   onClick={() => playAudio(index)}
                   className={`audio-button ${playingAudio === index ? 'animate-pulse' : ''}`}
                   size="sm"
                 >
-                  🔊
+                  <Play className="h-4 w-4" />
                 </Button>
-              </div>
-              <div className="text-muted-foreground mb-3 italic">{word.pronunciation}</div>
-              <div className="text-sm border-t border-border pt-3">
-                <strong>Example:</strong><br />
-                {word.example}
               </div>
             </div>
           ))}

@@ -1,29 +1,28 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Play } from "lucide-react";
 import { useState } from "react";
 
 const EnglishWords = () => {
   const [playingAudio, setPlayingAudio] = useState<number | null>(null);
 
   const words = [
-    { word: "Hello", pronunciation: "/həˈloʊ/", meaning: "A greeting", example: "Hello, how are you today?" },
-    { word: "Thank you", pronunciation: "/θæŋk juː/", meaning: "Expression of gratitude", example: "Thank you for your help" },
-    { word: "Water", pronunciation: "/ˈwɔːtər/", meaning: "Clear liquid for drinking", example: "I need a glass of water" },
-    { word: "Food", pronunciation: "/fuːd/", meaning: "Something to eat", example: "The food tastes delicious" },
-    { word: "House", pronunciation: "/haʊs/", meaning: "A building for living", example: "My house is near the park" },
-    { word: "School", pronunciation: "/skuːl/", meaning: "Place for education", example: "I go to school every day" },
-    { word: "Mother", pronunciation: "/ˈmʌðər/", meaning: "Female parent", example: "My mother is very kind" },
-    { word: "Father", pronunciation: "/ˈfɑːðər/", meaning: "Male parent", example: "Father is working in the office" },
-    { word: "Friend", pronunciation: "/frend/", meaning: "A close companion", example: "She is my best friend" },
-    { word: "Book", pronunciation: "/bʊk/", meaning: "Written or printed work", example: "I love reading books" },
-    { word: "Love", pronunciation: "/lʌv/", meaning: "Deep affection", example: "Love makes life beautiful" },
-    { word: "Happy", pronunciation: "/ˈhæpi/", meaning: "Feeling joy", example: "I am happy to see you" },
+    "I", "you", "he", "she", "we", "you", "they", "this", "that", "what",
+    "who", "where", "when", "why", "how", "yes", "no", "please", "thank you", "sorry",
+    "name", "house", "water", "food", "time", "day", "night", "morning", "evening", "year",
+    "month", "week", "today", "tomorrow", "yesterday", "mother", "father", "brother", "sister", "child",
+    "man", "woman", "friend", "teacher", "doctor", "book", "pen", "paper", "table", "chair",
+    "room", "door", "window", "ceiling", "floor", "road", "car", "train", "airplane", "tree",
+    "flower", "leaf", "fruit", "vegetable", "rice", "bread", "milk", "tea", "coffee", "sugar",
+    "salt", "oil", "meat", "fish", "egg", "red", "white", "black", "blue", "green",
+    "yellow", "pink", "brown", "small", "big", "new", "old", "hot", "cold", "good",
+    "bad", "happy", "sad", "fast", "slow", "above", "below", "inside", "outside", "here"
   ];
 
   const playAudio = (index: number) => {
     setPlayingAudio(index);
+    console.log(`Playing audio for English word: ${words[index]}`);
     setTimeout(() => setPlayingAudio(null), 1000);
   };
 
@@ -36,32 +35,26 @@ const EnglishWords = () => {
         </Link>
 
         <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">Common Words in English</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-6">
+            English Words
+          </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Expand your vocabulary with essential English words
+            Listen and learn English words
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-8xl mx-auto">
           {words.map((word, index) => (
             <div key={index} className="word-card">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <div className="text-2xl font-bold text-primary mb-1">{word.word}</div>
-                  <div className="text-muted-foreground italic">{word.pronunciation}</div>
-                </div>
+              <div className="flex items-center justify-between">
+                <div className="text-2xl font-semibold">{word}</div>
                 <Button
                   onClick={() => playAudio(index)}
                   className={`audio-button ${playingAudio === index ? 'animate-pulse' : ''}`}
                   size="sm"
                 >
-                  🔊
+                  <Play className="h-4 w-4" />
                 </Button>
-              </div>
-              <div className="text-lg mb-3">{word.meaning}</div>
-              <div className="text-sm border-t border-border pt-3">
-                <strong>Example:</strong><br />
-                {word.example}
               </div>
             </div>
           ))}

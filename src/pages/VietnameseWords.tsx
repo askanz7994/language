@@ -59,18 +59,6 @@ const VietnameseWords = () => {
             </div>
           ))}
         </div>
-
-        <div className="text-center mt-16">
-          <div className="language-card max-w-md mx-auto">
-            <h3 className="text-2xl font-bold mb-4">Vocabulary Builder</h3>
-            <p className="text-muted-foreground mb-4">
-              Click on any word card to hear the pronunciation
-            </p>
-            <p className="text-sm text-primary">
-              Audio pronunciation coming soon!
-            </p>
-          </div>
-        </div>
       </div>
     </div>
   );
