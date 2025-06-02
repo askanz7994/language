@@ -1,11 +1,8 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-
 const LearnSpanish = () => {
-  return (
-    <div className="min-h-screen blur-bg">
+  return <div className="min-h-screen blur-bg">
       <div className="container mx-auto px-4 py-16">
         <Link to="/languages" className="inline-flex items-center text-primary hover:text-primary/80 mb-8">
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -24,7 +21,7 @@ const LearnSpanish = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
           <Link to="/spanish/alphabets">
             <div className="language-card text-center cursor-pointer">
-              <div className="text-6xl mb-6">A</div>
+              <div className="text-6xl mb-6">Ñ</div>
               <h2 className="text-3xl font-bold mb-4">Alphabets</h2>
               <p className="text-muted-foreground mb-6">
                 Learn Spanish letters and their sounds
@@ -75,8 +72,6 @@ const LearnSpanish = () => {
           </Link>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default LearnSpanish;
