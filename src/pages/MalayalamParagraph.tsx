@@ -6,64 +6,54 @@ import { ArrowLeft } from "lucide-react";
 const MalayalamParagraph = () => {
   const topics = [
     {
-      id: "beautiful-kerala",
-      title: "Beautiful Kerala",
-      icon: "🌴",
-      malayalam: "കേരളം"
+      id: "kerala-natural-beauty",
+      title: "Kerala's Natural Beauty",
+      malayalam: "കേരളത്തിന്റെ പ്രകൃതി സൗന്ദര്യം"
     },
     {
-      id: "indian-culture",
-      title: "Indian Culture",
-      icon: "🎭",
-      malayalam: "സംസ്കാരം"
+      id: "malayalam-language-literature",
+      title: "Malayalam Language and Literature",
+      malayalam: "മലയാള ഭാഷയും സാഹിത്യവും"
     },
     {
-      id: "monsoon-season",
-      title: "Monsoon Season",
-      icon: "🌧️",
-      malayalam: "മഴക്കാലം"
+      id: "festivals-of-kerala",
+      title: "Festivals of Kerala",
+      malayalam: "കേരളത്തിലെ ഉത്സവങ്ങൾ"
     },
     {
-      id: "traditional-food",
-      title: "Traditional Food",
-      icon: "🍛",
-      malayalam: "ഭക്ഷണം"
+      id: "ayurveda-healthcare",
+      title: "Ayurveda and Healthcare",
+      malayalam: "ആയുർവേദവും ആരോഗ്യസംരക്ഷണവും"
     },
     {
-      id: "education-system",
-      title: "Education System",
-      icon: "📚",
-      malayalam: "വിദ്യാഭ്യാസം"
+      id: "kerala-cuisine",
+      title: "Kerala Cuisine",
+      malayalam: "കേരളത്തിലെ ഭക്ഷണം"
     },
     {
-      id: "festivals-celebrations",
-      title: "Festivals and Celebrations",
-      icon: "🎉",
-      malayalam: "ഉത്സവങ്ങൾ"
+      id: "education-in-kerala",
+      title: "Education in Kerala",
+      malayalam: "കേരളത്തിലെ വിദ്യാഭ്യാസം"
     },
     {
-      id: "art-literature",
-      title: "Art and Literature",
-      icon: "🎨",
-      malayalam: "കലയും സാഹിത്യവും"
+      id: "climate-of-kerala",
+      title: "Climate of Kerala",
+      malayalam: "കേരളത്തിലെ കാലാവസ്ഥ"
     },
     {
-      id: "wildlife-nature",
-      title: "Wildlife and Nature",
-      icon: "🐘",
-      malayalam: "വന്യജീവി"
+      id: "kerala-backwaters",
+      title: "Kerala Backwaters",
+      malayalam: "കേരളത്തിലെ കായലുകൾ"
     },
     {
-      id: "traditional-medicine",
-      title: "Traditional Medicine",
-      icon: "🌿",
-      malayalam: "ആയുർവേദം"
+      id: "art-forms-kerala",
+      title: "Art Forms of Kerala",
+      malayalam: "കേരളത്തിലെ കലാരൂപങ്ങൾ"
     },
     {
-      id: "modern-kerala",
-      title: "Modern Kerala",
-      icon: "🏙️",
-      malayalam: "ആധുനിക കേരളം"
+      id: "peace-and-harmony",
+      title: "Peace and Harmony",
+      malayalam: "സമാധാനവും ഐക്യവും"
     }
   ];
 
@@ -87,12 +77,11 @@ const MalayalamParagraph = () => {
         </div>
 
         {/* Topic Cards */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-8 max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {topics.map((topic) => (
             <div key={topic.id} className="language-card text-center">
-              <div className="text-6xl mb-6">{topic.icon}</div>
               <h2 className="text-2xl font-bold mb-4">{topic.title}</h2>
-              <div className="text-3xl mb-6 text-primary">{topic.malayalam}</div>
+              <div className="text-2xl mb-6 text-primary">{topic.malayalam}</div>
               <Link to={`/malayalam/paragraph/${topic.id}`}>
                 <Button className="glow-button w-full">
                   Read
