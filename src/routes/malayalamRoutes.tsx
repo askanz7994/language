@@ -5,6 +5,7 @@ import MalayalamAlphabets from "@/pages/MalayalamAlphabets";
 import MalayalamNumbers from "@/pages/MalayalamNumbers";
 import MalayalamWords from "@/pages/MalayalamWords";
 import MalayalamParagraph from "@/pages/MalayalamParagraph";
+import MalayalamTopicContent from "@/pages/MalayalamTopicContent";
 
 export const malayalamRoutes = (
   <>
@@ -13,5 +14,6 @@ export const malayalamRoutes = (
     <Route path="/malayalam/numbers" element={<MalayalamNumbers />} />
     <Route path="/malayalam/words" element={<MalayalamWords />} />
     <Route path="/malayalam/paragraph" element={<MalayalamParagraph />} />
+    <Route path="/malayalam/paragraph/:topicId" element={<MalayalamTopicContent />} />
   </>
 );
