@@ -2,7 +2,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Mic, Square, Play, Loader2 } from 'lucide-react';
+import { Mic, Square, Play, Loader2, Volume2, Save } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -19,14 +19,38 @@ interface AnalysisResult {
   encouragement: string;
 }
 
+interface SavedRecording {
+  id: string;
+  title: string;
+  text: string;
+  audioBlob: Blob;
+  timestamp: Date;
+  analysisResult?: AnalysisResult;
+}
+
 const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isReading, setIsReading] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  const [savedRecordings, setSavedRecordings] = useState<SavedRecording[]>([]);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const { toast } = useToast();
+
+  // Load saved recordings from localStorage on component mount
+  React.useEffect(() => {
+    const saved = localStorage.getItem('malayalam-recordings');
+    if (saved) {
+      try {
+        const recordings = JSON.parse(saved);
+        setSavedRecordings(recordings);
+      } catch (error) {
+        console.error('Error loading saved recordings:', error);
+      }
+    }
+  }, []);
 
   const startRecording = useCallback(async () => {
     try {
@@ -77,12 +101,60 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title }) 
     }
   }, [isRecording, toast]);
 
+  const readText = useCallback(async () => {
+    setIsReading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('text-to-speech', {
+        body: {
+          text: originalText,
+          language: 'malayalam'
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      // Simulate reading with speech synthesis as fallback
+      const utterance = new SpeechSynthesisUtterance(originalText);
+      utterance.lang = 'ml-IN'; // Malayalam language code
+      utterance.rate = 0.8; // Slower rate for learning
+      
+      utterance.onend = () => {
+        setIsReading(false);
+      };
+
+      utterance.onerror = () => {
+        setIsReading(false);
+        toast({
+          title: "Reading failed",
+          description: "Please try again.",
+          variant: "destructive",
+        });
+      };
+
+      speechSynthesis.speak(utterance);
+
+      toast({
+        title: "Reading text",
+        description: "Listen carefully to the pronunciation.",
+      });
+    } catch (error) {
+      console.error('Error reading text:', error);
+      setIsReading(false);
+      toast({
+        title: "Reading failed",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+    }
+  }, [originalText, toast]);
+
   const analyzeAudio = useCallback(async () => {
     if (!audioBlob) return;
 
     setIsAnalyzing(true);
     try {
-      // Convert blob to base64
       const reader = new FileReader();
       reader.onloadend = async () => {
         const base64Audio = (reader.result as string).split(',')[1];
@@ -118,6 +190,31 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title }) 
     }
   }, [audioBlob, originalText, toast]);
 
+  const saveRecording = useCallback(() => {
+    if (!audioBlob) return;
+
+    const recording: SavedRecording = {
+      id: Date.now().toString(),
+      title: title,
+      text: originalText,
+      audioBlob: audioBlob,
+      timestamp: new Date(),
+      analysisResult: analysisResult || undefined
+    };
+
+    const updatedRecordings = [...savedRecordings, recording];
+    setSavedRecordings(updatedRecordings);
+    
+    // Save to localStorage (note: Blob won't be serialized, but metadata will be saved)
+    const recordingsToSave = updatedRecordings.map(({ audioBlob, ...rest }) => rest);
+    localStorage.setItem('malayalam-recordings', JSON.stringify(recordingsToSave));
+
+    toast({
+      title: "Recording saved",
+      description: "Your practice session has been saved locally.",
+    });
+  }, [audioBlob, title, originalText, analysisResult, savedRecordings, toast]);
+
   const playRecording = useCallback(() => {
     if (audioBlob) {
       const audioUrl = URL.createObjectURL(audioBlob);
@@ -132,13 +229,34 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title }) 
         <CardTitle className="text-xl">Speech Practice - {title}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Reading Controls */}
+        <div className="flex gap-4 justify-center mb-4">
+          <Button
+            onClick={readText}
+            className="glow-button flex items-center gap-2"
+            disabled={isReading || isRecording}
+          >
+            {isReading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Reading...
+              </>
+            ) : (
+              <>
+                <Volume2 className="h-4 w-4" />
+                Read Text
+              </>
+            )}
+          </Button>
+        </div>
+
         {/* Recording Controls */}
         <div className="flex gap-4 justify-center">
           {!isRecording ? (
             <Button
               onClick={startRecording}
               className="glow-button flex items-center gap-2"
-              disabled={isAnalyzing}
+              disabled={isAnalyzing || isReading}
             >
               <Mic className="h-4 w-4" />
               Start Recording
@@ -155,14 +273,25 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title }) 
           )}
           
           {audioBlob && (
-            <Button
-              onClick={playRecording}
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              <Play className="h-4 w-4" />
-              Play Recording
-            </Button>
+            <>
+              <Button
+                onClick={playRecording}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <Play className="h-4 w-4" />
+                Play Recording
+              </Button>
+              
+              <Button
+                onClick={saveRecording}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <Save className="h-4 w-4" />
+                Save
+              </Button>
+            </>
           )}
           
           {audioBlob && !isAnalyzing && (
@@ -181,6 +310,13 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title }) 
             </Button>
           )}
         </div>
+
+        {/* Saved Recordings Count */}
+        {savedRecordings.length > 0 && (
+          <div className="text-center text-sm text-muted-foreground">
+            {savedRecordings.length} recording(s) saved locally
+          </div>
+        )}
 
         {/* Analysis Results */}
         {analysisResult && (
