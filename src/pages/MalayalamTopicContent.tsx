@@ -1,9 +1,9 @@
-
 import { Link, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Play } from "lucide-react";
 import { useState } from "react";
+import SpeechRecorder from "@/components/SpeechRecorder";
 
 const MalayalamTopicContent = () => {
   const { topicId } = useParams();
@@ -20,7 +20,7 @@ const MalayalamTopicContent = () => {
         { malayalam: "ഭൂപ്രദേശം", transliteration: "bhoopradesham", english: "region/terrain" },
         { malayalam: "തെങ്ങിൻതോപ്പുകൾ", transliteration: "thenginthoppukal", english: "coconut groves" },
         { malayalam: "കായലുകൾ", transliteration: "kayalukal", english: "backwaters" },
-        { malayalam: "അതുല്യമായ", transliteration: "athulayamaya", english: "unique" },
+        { malayalam: "അതുല്യമായ", transliteration: "athulyamaya", english: "unique" },
         { malayalam: "സൗന്ദര്യം", transliteration: "saundaryam", english: "beauty" },
         { malayalam: "അറബിക്കടൽ", transliteration: "arabikkadal", english: "Arabian Sea" },
         { malayalam: "സഞ്ചാരികൾ", transliteration: "sancharikal", english: "tourists" },
@@ -250,6 +250,12 @@ const MalayalamTopicContent = () => {
               )}
             </CardContent>
           </Card>
+
+          {/* Speech Recording Section */}
+          <SpeechRecorder 
+            originalText={currentTopic.malayalam}
+            title={currentTopic.title}
+          />
 
           {/* Vocabulary Section */}
           <Card className="language-card">
