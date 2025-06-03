@@ -1,9 +1,9 @@
 import { Link, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Play, Volume2, Mic, Loader2 } from "lucide-react";
-import { useState, useCallback } from "react";
-import SpeechRecorder from "@/components/SpeechRecorder";
+import { ArrowLeft, Volume2, Mic, Loader2 } from "lucide-react";
+import { useState, useCallback, useRef } from "react";
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 const MalayalamTopicContent = () => {
@@ -11,6 +11,12 @@ const MalayalamTopicContent = () => {
   const [playingAudio, setPlayingAudio] = useState(false);
   const [showTranslation, setShowTranslation] = useState(false);
   const [isReading, setIsReading] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [liveFeedback, setLiveFeedback] = useState<string>('');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const feedbackIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
 
   const topicData: { [key: string]: any } = {
@@ -188,6 +194,105 @@ const MalayalamTopicContent = () => {
 
   const currentTopic = topicData[topicId || ""] || topicData["kerala-natural-beauty"];
 
+  const provideLiveFeedback = useCallback(async (audioChunks: Blob[]) => {
+    if (audioChunks.length === 0) return;
+
+    try {
+      setIsProcessing(true);
+      const tempBlob = new Blob(audioChunks, { type: 'audio/webm' });
+      
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64Audio = (reader.result as string).split(',')[1];
+        
+        const { data, error } = await supabase.functions.invoke('analyze-pronunciation', {
+          body: {
+            audioBase64: base64Audio,
+            originalText: currentTopic.malayalam,
+            language: 'malayalam',
+            isLiveCorrection: true
+          }
+        });
+
+        if (!error && data) {
+          // Use the new voice feedback format
+          const feedback = data.feedback || 'Keep reading...';
+          setLiveFeedback(`${feedback} അല്ല. അത് ${feedback} ആണ്.`);
+        }
+      };
+      reader.readAsDataURL(tempBlob);
+    } catch (error) {
+      console.error('Live feedback error:', error);
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [currentTopic.malayalam]);
+
+  const startListening = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+      setLiveFeedback('Start reading the Malayalam text...');
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        setLiveFeedback('');
+        stream.getTracks().forEach(track => track.stop());
+        if (feedbackIntervalRef.current) {
+          clearInterval(feedbackIntervalRef.current);
+          feedbackIntervalRef.current = null;
+        }
+      };
+
+      mediaRecorder.start(1000);
+      setIsListening(true);
+
+      feedbackIntervalRef.current = setInterval(() => {
+        if (audioChunksRef.current.length > 0) {
+          provideLiveFeedback([...audioChunksRef.current]);
+        }
+      }, 3000);
+      
+      toast({
+        title: "Started listening",
+        description: "Begin reading the Malayalam text. You'll receive real-time feedback.",
+      });
+    } catch (error) {
+      console.error('Error starting microphone:', error);
+      toast({
+        title: "Microphone access failed",
+        description: "Please check your microphone permissions.",
+        variant: "destructive",
+      });
+    }
+  }, [toast, provideLiveFeedback]);
+
+  const stopListening = useCallback(() => {
+    if (mediaRecorderRef.current && isListening) {
+      mediaRecorderRef.current.stop();
+      setIsListening(false);
+      setIsProcessing(false);
+      
+      if (feedbackIntervalRef.current) {
+        clearInterval(feedbackIntervalRef.current);
+        feedbackIntervalRef.current = null;
+      }
+      
+      toast({
+        title: "Stopped listening",
+        description: "Practice session completed.",
+      });
+    }
+  }, [isListening, toast]);
+
   const readText = useCallback(async () => {
     setIsReading(true);
     try {
@@ -254,7 +359,7 @@ const MalayalamTopicContent = () => {
                 <Button
                   onClick={readText}
                   className={`audio-button ${isReading ? 'animate-pulse' : ''}`}
-                  disabled={isReading}
+                  disabled={isReading || isListening}
                 >
                   {isReading ? (
                     <>
@@ -268,13 +373,25 @@ const MalayalamTopicContent = () => {
                     </>
                   )}
                 </Button>
-                <Button
-                  onClick={toggleTranslation}
-                  variant={showTranslation ? "default" : "outline"}
-                  className="glow-button"
-                >
-                  {showTranslation ? "Hide" : "Show"} Translation
-                </Button>
+
+                {!isListening ? (
+                  <Button
+                    onClick={startListening}
+                    className="glow-button flex items-center gap-2"
+                    disabled={isReading}
+                  >
+                    <Mic className="h-4 w-4" />
+                    Start Reading
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={stopListening}
+                    variant="destructive"
+                    className="flex items-center gap-2"
+                  >
+                    Stop Reading
+                  </Button>
+                )}
               </div>
             </CardHeader>
             <CardContent>
@@ -282,24 +399,42 @@ const MalayalamTopicContent = () => {
               <div className="text-lg leading-relaxed mb-4 p-4 bg-muted rounded-lg">
                 {currentTopic.malayalam}
               </div>
-              
-              {/* Translation */}
-              {showTranslation && (
-                <div className="mt-4">
-                  <h4 className="text-lg font-semibold mb-2">English Translation:</h4>
-                  <div className="text-base leading-relaxed p-4 bg-muted/50 rounded-lg">
-                    {currentTopic.english}
+
+              {/* Live Feedback */}
+              {isListening && (
+                <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                    <h4 className="font-semibold text-blue-800">Live Feedback:</h4>
+                    {isProcessing && <Loader2 className="h-4 w-4 animate-spin text-blue-600" />}
                   </div>
+                  <p className="text-blue-700">
+                    {liveFeedback || "Listening... Start reading the text aloud."}
+                  </p>
                 </div>
               )}
+              
+              {/* Translation - moved to bottom */}
+              <div className="mt-6 pt-4 border-t">
+                <Button
+                  onClick={toggleTranslation}
+                  variant={showTranslation ? "default" : "outline"}
+                  className="glow-button mb-4"
+                >
+                  {showTranslation ? "Hide" : "Show"} Translation
+                </Button>
+                
+                {showTranslation && (
+                  <div>
+                    <h4 className="text-lg font-semibold mb-2">English Translation:</h4>
+                    <div className="text-base leading-relaxed p-4 bg-muted/50 rounded-lg">
+                      {currentTopic.english}
+                    </div>
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
-
-          {/* Real-time Speech Practice Section */}
-          <SpeechRecorder 
-            originalText={currentTopic.malayalam}
-            title={currentTopic.title}
-          />
 
           {/* Vocabulary Section */}
           <Card className="language-card">
