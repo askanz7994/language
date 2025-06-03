@@ -12,7 +12,6 @@ const MalayalamTopicContent = () => {
   const [showTranslation, setShowTranslation] = useState(false);
   const [isReading, setIsReading] = useState(false);
   const [isListening, setIsListening] = useState(false);
-  const [liveFeedback, setLiveFeedback] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -175,7 +174,7 @@ const MalayalamTopicContent = () => {
     },
     "peace-and-harmony": {
       title: "Peace and Harmony",
-      malayalam: "കേരളം ഒരു സുരക്ഷിതവും സമാധാനപരവുമായ സംസ്ഥാനമാണ്. ഇവിടെയുള്ള ജനങ്ങൾ സഹിഷ്ണുതയോടെയും പരസ്പര ബഹുമാനത്തോടെയും ജീവിക്കുന്നു. വിവിധ മതക്കാരും സമുദായക്കാരും സൗഹൃദത്തിലും സഹകരണത്തിലും കഴിയുന്നു. സ്ത്രീ സുരക്ഷയ്ക്ക് ഇവിടെ വലിയ പ്രാധാന്യം നൽകുന്നു, ഇത് സ്ത്രീകളെ കൂടുതൽ സുരക്ഷിതരാക്കുന്നു. സാമൂഹിക ഐക്യവും സമാധാനവുമാണ് കേരളത്തിന്റെ മുഖമുദ്ര. ഈ സമാധാനപരമായ അന്തരീക്ഷം വിനോദസഞ്ചാരികളെ കൂടുതൽ ആകർഷിക്കുന്നു. നിയമവാഴ്ചയും ക്രമസമാധാനവും ഇവിടെ ശക്തമാണ്, ഇത് ജനങ്ങൾക്ക് സുരക്ഷ ഉറപ്പാക്കുന്നു.",
+      malayalam: "കേരളം ഒരു സുരക്ഷിതവും സമാധാനപരവുമായ സംസ്ഥാനമാണ്. ഇവിടെയുള്ള ജനങ്ങൾ സഹിഷ്ണുതയോടെയും പരസ്പര ബഹുമാനത്തോടെയും ജീവിക്കുന്നു. വിവിധ മതക്കാരും സമുദായക്കാരും സൗഹൃദത്തിലും സഹകരണത്തിലും കഴിയുന്നു. സ്ത്രീ സുരക്ഷയ്ക്ക് ഇവിടെ വലിയ പ്രാധാന്യം നൽകുന്നു, ഇത് സ്ത്രീകളെ കൂടുതൽ സുരക്ഷിതരാക്കുന്നു. സാമൂഹിക ���ക്യവും സമാധാനവുമാണ് കേരളത്തിന്റെ മുഖമുദ്ര. ഈ സമാധാനപരമായ അന്തരീക്ഷം വിനോദസഞ്ചാരികളെ കൂടുതൽ ആകർഷിക്കുന്നു. നിയമവാഴ്ചയും ക്രമസമാധാനവും ഇവിടെ ശക്തമാണ്, ഇത് ജനങ്ങൾക്ക് സുരക്ഷ ഉറപ്പാക്കുന്നു.",
       english: "Kerala is a safe and peaceful state. The people here live with tolerance and mutual respect. People of various religions and communities live in friendship and cooperation. Great importance is given to women's safety here, which makes women feel more secure. Social harmony and peace are the hallmarks of Kerala. This peaceful atmosphere attracts more tourists. The rule of law and order here are strong, ensuring security for the people.",
       vocabulary: [
         { malayalam: "സുരക്ഷിതം", transliteration: "surakshitam", english: "safe" },
@@ -215,9 +214,12 @@ const MalayalamTopicContent = () => {
         });
 
         if (!error && data) {
-          // Use the new voice feedback format
+          // Convert feedback to speech using browser's speech synthesis
           const feedback = data.feedback || 'Keep reading...';
-          setLiveFeedback(`${feedback} അല്ല. അത് ${feedback} ആണ്.`);
+          const utterance = new SpeechSynthesisUtterance(feedback);
+          utterance.lang = 'ml-IN';
+          utterance.rate = 0.8;
+          speechSynthesis.speak(utterance);
         }
       };
       reader.readAsDataURL(tempBlob);
@@ -235,7 +237,6 @@ const MalayalamTopicContent = () => {
       
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
-      setLiveFeedback('Start reading the Malayalam text...');
 
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
@@ -244,7 +245,6 @@ const MalayalamTopicContent = () => {
       };
 
       mediaRecorder.onstop = () => {
-        setLiveFeedback('');
         stream.getTracks().forEach(track => track.stop());
         if (feedbackIntervalRef.current) {
           clearInterval(feedbackIntervalRef.current);
@@ -263,7 +263,7 @@ const MalayalamTopicContent = () => {
       
       toast({
         title: "Started listening",
-        description: "Begin reading the Malayalam text. You'll receive real-time feedback.",
+        description: "Begin reading the Malayalam text. You'll receive voice corrections.",
       });
     } catch (error) {
       console.error('Error starting microphone:', error);
@@ -382,6 +382,7 @@ const MalayalamTopicContent = () => {
                   >
                     <Mic className="h-4 w-4" />
                     Start Reading
+                    {isProcessing && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
                   </Button>
                 ) : (
                   <Button
@@ -390,6 +391,7 @@ const MalayalamTopicContent = () => {
                     className="flex items-center gap-2"
                   >
                     Stop Reading
+                    {isProcessing && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
                   </Button>
                 )}
               </div>
@@ -399,20 +401,6 @@ const MalayalamTopicContent = () => {
               <div className="text-lg leading-relaxed mb-4 p-4 bg-muted rounded-lg">
                 {currentTopic.malayalam}
               </div>
-
-              {/* Live Feedback */}
-              {isListening && (
-                <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                    <h4 className="font-semibold text-blue-800">Live Feedback:</h4>
-                    {isProcessing && <Loader2 className="h-4 w-4 animate-spin text-blue-600" />}
-                  </div>
-                  <p className="text-blue-700">
-                    {liveFeedback || "Listening... Start reading the text aloud."}
-                  </p>
-                </div>
-              )}
               
               {/* Translation - moved to bottom */}
               <div className="mt-6 pt-4 border-t">
