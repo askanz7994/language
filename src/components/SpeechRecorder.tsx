@@ -1,8 +1,7 @@
-
 import React, { useState, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Mic, Volume2, Loader2 } from 'lucide-react';
+import { Mic, Square, Play, Loader2, Volume2, Save } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -11,40 +10,55 @@ interface SpeechRecorderProps {
   title: string;
 }
 
+interface AnalysisResult {
+  transcription: string;
+  accuracyScore: number;
+  feedback: string;
+  improvements: string;
+  encouragement: string;
+}
+
+interface SavedRecording {
+  id: string;
+  title: string;
+  text: string;
+  audioBlob: Blob;
+  timestamp: Date;
+  analysisResult?: AnalysisResult;
+}
+
 const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title }) => {
-  const [isListening, setIsListening] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isReading, setIsReading] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [currentWordIndex, setCurrentWordIndex] = useState(-1);
-  const [incorrectWords, setIncorrectWords] = useState<number[]>([]);
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  const [savedRecordings, setSavedRecordings] = useState<SavedRecording[]>([]);
+  const [liveCorrection, setLiveCorrection] = useState<string>('');
+  const [recordingChunks, setRecordingChunks] = useState<Blob[]>([]);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
-  const feedbackIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const wordProgressRef = useRef<NodeJS.Timeout | null>(null);
+  const liveCorrectionIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
 
-  const words = originalText.split(' ');
-
-  const simulateWordProgress = useCallback(() => {
-    let wordIndex = 0;
-    const progressInterval = setInterval(() => {
-      if (wordIndex < words.length && isListening) {
-        setCurrentWordIndex(wordIndex);
-        wordIndex++;
-      } else {
-        setCurrentWordIndex(-1);
-        clearInterval(progressInterval);
+  // Load saved recordings from localStorage on component mount
+  React.useEffect(() => {
+    const saved = localStorage.getItem('malayalam-recordings');
+    if (saved) {
+      try {
+        const recordings = JSON.parse(saved);
+        setSavedRecordings(recordings);
+      } catch (error) {
+        console.error('Error loading saved recordings:', error);
       }
-    }, 2000); // Change word every 2 seconds
+    }
+  }, []);
 
-    wordProgressRef.current = progressInterval;
-  }, [words.length, isListening]);
-
-  const analyzePronunciation = useCallback(async (audioChunks: Blob[]) => {
+  const performLiveCorrection = useCallback(async (audioChunks: Blob[]) => {
     if (audioChunks.length === 0) return;
 
     try {
-      setIsProcessing(true);
+      // Create a temporary audio blob from current chunks
       const tempBlob = new Blob(audioChunks, { type: 'audio/webm' });
       
       const reader = new FileReader();
@@ -60,110 +74,107 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title }) 
           }
         });
 
-        if (!error && data && data.feedback) {
-          // Parse feedback to identify incorrect words
-          const feedback = data.feedback;
-          // Simple logic to mark words as incorrect based on feedback
-          if (feedback.includes('അല്ല')) {
-            // Mark current word as incorrect
-            setIncorrectWords(prev => [...prev, currentWordIndex]);
-          }
+        if (!error && data) {
+          setLiveCorrection(data.feedback || 'Keep going...');
         }
       };
       reader.readAsDataURL(tempBlob);
     } catch (error) {
-      console.error('Pronunciation analysis error:', error);
-    } finally {
-      setIsProcessing(false);
+      console.error('Live correction error:', error);
     }
-  }, [originalText, currentWordIndex]);
+  }, [originalText]);
 
-  const startListening = useCallback(async () => {
+  const startRecording = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
       
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
-      setIncorrectWords([]); // Reset incorrect words
-      setCurrentWordIndex(-1);
+      setRecordingChunks([]);
+      setLiveCorrection('');
 
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
           audioChunksRef.current.push(event.data);
+          setRecordingChunks(prev => [...prev, event.data]);
         }
       };
 
       mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        setAudioBlob(audioBlob);
         stream.getTracks().forEach(track => track.stop());
-        if (feedbackIntervalRef.current) {
-          clearInterval(feedbackIntervalRef.current);
-          feedbackIntervalRef.current = null;
+        
+        // Clear live correction when recording stops
+        setLiveCorrection('');
+        if (liveCorrectionIntervalRef.current) {
+          clearInterval(liveCorrectionIntervalRef.current);
+          liveCorrectionIntervalRef.current = null;
         }
-        if (wordProgressRef.current) {
-          clearInterval(wordProgressRef.current);
-          wordProgressRef.current = null;
-        }
-        setCurrentWordIndex(-1);
       };
 
-      mediaRecorder.start(1000); // Collect data every second
-      setIsListening(true);
+      // Start recording with time slices for live analysis
+      mediaRecorder.start(2000); // Collect data every 2 seconds
+      setIsRecording(true);
 
-      // Start word progress simulation
-      simulateWordProgress();
-
-      // Analyze pronunciation every 3 seconds
-      feedbackIntervalRef.current = setInterval(() => {
-        if (audioChunksRef.current.length > 0) {
-          analyzePronunciation([...audioChunksRef.current]);
+      // Set up live correction interval
+      liveCorrectionIntervalRef.current = setInterval(() => {
+        if (recordingChunks.length > 0) {
+          performLiveCorrection(recordingChunks);
         }
-      }, 3000);
+      }, 3000); // Analyze every 3 seconds
       
       toast({
-        title: "Started listening",
-        description: "Begin reading the Malayalam text. Incorrect words will be highlighted in red.",
+        title: "Recording started",
+        description: "Start reading the Malayalam text aloud. Live feedback will appear below.",
       });
     } catch (error) {
-      console.error('Error starting microphone:', error);
+      console.error('Error starting recording:', error);
       toast({
-        title: "Microphone access failed",
+        title: "Recording failed",
         description: "Please check your microphone permissions.",
         variant: "destructive",
       });
     }
-  }, [toast, simulateWordProgress, analyzePronunciation]);
+  }, [toast, recordingChunks, performLiveCorrection]);
 
-  const stopListening = useCallback(() => {
-    if (mediaRecorderRef.current && isListening) {
+  const stopRecording = useCallback(() => {
+    if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
-      setIsListening(false);
-      setIsProcessing(false);
-      setCurrentWordIndex(-1);
+      setIsRecording(false);
       
-      if (feedbackIntervalRef.current) {
-        clearInterval(feedbackIntervalRef.current);
-        feedbackIntervalRef.current = null;
-      }
-      
-      if (wordProgressRef.current) {
-        clearInterval(wordProgressRef.current);
-        wordProgressRef.current = null;
+      // Clear live correction interval
+      if (liveCorrectionIntervalRef.current) {
+        clearInterval(liveCorrectionIntervalRef.current);
+        liveCorrectionIntervalRef.current = null;
       }
       
       toast({
-        title: "Stopped listening",
-        description: "Practice session completed.",
+        title: "Recording stopped",
+        description: "Processing your pronunciation...",
       });
     }
-  }, [isListening, toast]);
+  }, [isRecording, toast]);
 
   const readText = useCallback(async () => {
     setIsReading(true);
     try {
+      const { data, error } = await supabase.functions.invoke('text-to-speech', {
+        body: {
+          text: originalText,
+          language: 'malayalam'
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      // Simulate reading with speech synthesis as fallback
       const utterance = new SpeechSynthesisUtterance(originalText);
-      utterance.lang = 'ml-IN';
-      utterance.rate = 0.7;
+      utterance.lang = 'ml-IN'; // Malayalam language code
+      utterance.rate = 0.8; // Slower rate for learning
       
       utterance.onend = () => {
         setIsReading(false);
@@ -195,97 +206,217 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title }) 
     }
   }, [originalText, toast]);
 
-  const renderTextWithHighlights = () => {
-    return words.map((word, index) => {
-      const isCurrentWord = index === currentWordIndex;
-      const isIncorrect = incorrectWords.includes(index);
-      
-      let className = 'inline-block mr-2 transition-all duration-300';
-      
-      if (isCurrentWord) {
-        className += ' underline decoration-2 decoration-blue-500';
-      }
-      
-      if (isIncorrect) {
-        className += ' text-red-500 font-bold';
-      }
-      
-      return (
-        <span key={index} className={className}>
-          {word}
-        </span>
-      );
+  const analyzeAudio = useCallback(async () => {
+    if (!audioBlob) return;
+
+    setIsAnalyzing(true);
+    try {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64Audio = (reader.result as string).split(',')[1];
+        
+        const { data, error } = await supabase.functions.invoke('analyze-pronunciation', {
+          body: {
+            audioBase64: base64Audio,
+            originalText: originalText,
+            language: 'malayalam'
+          }
+        });
+
+        if (error) {
+          throw error;
+        }
+
+        setAnalysisResult(data);
+        toast({
+          title: "Analysis complete",
+          description: `Pronunciation score: ${data.accuracyScore}/10`,
+        });
+      };
+      reader.readAsDataURL(audioBlob);
+    } catch (error) {
+      console.error('Error analyzing audio:', error);
+      toast({
+        title: "Analysis failed",
+        description: "Please try recording again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
+  }, [audioBlob, originalText, toast]);
+
+  const saveRecording = useCallback(() => {
+    if (!audioBlob) return;
+
+    const recording: SavedRecording = {
+      id: Date.now().toString(),
+      title: title,
+      text: originalText,
+      audioBlob: audioBlob,
+      timestamp: new Date(),
+      analysisResult: analysisResult || undefined
+    };
+
+    const updatedRecordings = [...savedRecordings, recording];
+    setSavedRecordings(updatedRecordings);
+    
+    // Save to localStorage (note: Blob won't be serialized, but metadata will be saved)
+    const recordingsToSave = updatedRecordings.map(({ audioBlob, ...rest }) => rest);
+    localStorage.setItem('malayalam-recordings', JSON.stringify(recordingsToSave));
+
+    toast({
+      title: "Recording saved",
+      description: "Your practice session has been saved locally.",
     });
-  };
+  }, [audioBlob, title, originalText, analysisResult, savedRecordings, toast]);
+
+  const playRecording = useCallback(() => {
+    if (audioBlob) {
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
+      audio.play();
+    }
+  }, [audioBlob]);
 
   return (
     <Card className="language-card">
       <CardHeader>
-        <CardTitle className="text-xl">Real-time Pronunciation Practice</CardTitle>
+        <CardTitle className="text-xl">Speech Practice - {title}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Control Buttons */}
-        <div className="flex gap-4 justify-center">
+        {/* Reading Controls */}
+        <div className="flex gap-4 justify-center mb-4">
           <Button
             onClick={readText}
             className="glow-button flex items-center gap-2"
-            disabled={isReading || isListening}
+            disabled={isReading || isRecording}
           >
             {isReading ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Reading...
+                Listening...
               </>
             ) : (
               <>
                 <Volume2 className="h-4 w-4" />
-                Listen
+                Listen Text
               </>
             )}
           </Button>
+        </div>
 
-          {!isListening ? (
+        {/* Recording Controls */}
+        <div className="flex gap-4 justify-center">
+          {!isRecording ? (
             <Button
-              onClick={startListening}
+              onClick={startRecording}
               className="glow-button flex items-center gap-2"
-              disabled={isReading}
+              disabled={isAnalyzing || isReading}
             >
               <Mic className="h-4 w-4" />
-              Start Reading Practice
+              Read Text
             </Button>
           ) : (
             <Button
-              onClick={stopListening}
+              onClick={stopRecording}
               variant="destructive"
               className="flex items-center gap-2"
             >
-              Stop Practice
+              <Square className="h-4 w-4" />
+              Stop Recording
+            </Button>
+          )}
+          
+          {audioBlob && (
+            <>
+              <Button
+                onClick={playRecording}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <Play className="h-4 w-4" />
+                Play Recording
+              </Button>
+              
+              <Button
+                onClick={saveRecording}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <Save className="h-4 w-4" />
+                Save
+              </Button>
+            </>
+          )}
+          
+          {audioBlob && !isAnalyzing && (
+            <Button
+              onClick={analyzeAudio}
+              className="glow-button flex items-center gap-2"
+            >
+              Analyze Pronunciation
+            </Button>
+          )}
+          
+          {isAnalyzing && (
+            <Button disabled className="flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Analyzing...
             </Button>
           )}
         </div>
 
-        {/* Text with real-time highlights */}
-        <div className="mt-6 p-4 bg-muted rounded-lg">
-          <div className="text-lg leading-relaxed">
-            {renderTextWithHighlights()}
-          </div>
-        </div>
-
-        {/* Status indicator */}
-        {isListening && (
-          <div className="flex items-center gap-2 justify-center">
-            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-            <span className="text-sm text-muted-foreground">
-              Listening... {isProcessing && "Processing..."}
-            </span>
-            {isProcessing && <Loader2 className="h-4 w-4 animate-spin" />}
+        {/* Live Correction Feedback */}
+        {isRecording && liveCorrection && (
+          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <h4 className="font-semibold text-blue-800 mb-2">Live Feedback:</h4>
+            <p className="text-blue-700">{liveCorrection}</p>
           </div>
         )}
 
-        <div className="text-center text-sm text-muted-foreground">
-          Click "Listen" to hear the correct pronunciation, then "Start Reading Practice" for real-time feedback. 
-          Incorrect words will be highlighted in red, and the current word being listened to will be underlined.
-        </div>
+        {/* Saved Recordings Count */}
+        {savedRecordings.length > 0 && (
+          <div className="text-center text-sm text-muted-foreground">
+            {savedRecordings.length} recording(s) saved locally
+          </div>
+        )}
+
+        {/* Analysis Results */}
+        {analysisResult && (
+          <div className="space-y-4 mt-6">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-primary mb-2">
+                {analysisResult.accuracyScore}/10
+              </div>
+              <div className="text-lg font-semibold">Pronunciation Score</div>
+            </div>
+            
+            {analysisResult.transcription && (
+              <div className="word-card">
+                <h4 className="font-semibold mb-2">What we heard:</h4>
+                <p className="text-muted-foreground">{analysisResult.transcription}</p>
+              </div>
+            )}
+            
+            <div className="word-card">
+              <h4 className="font-semibold mb-2">Feedback:</h4>
+              <p className="text-muted-foreground">{analysisResult.feedback}</p>
+            </div>
+            
+            {analysisResult.improvements && (
+              <div className="word-card">
+                <h4 className="font-semibold mb-2">Areas for improvement:</h4>
+                <p className="text-muted-foreground">{analysisResult.improvements}</p>
+              </div>
+            )}
+            
+            <div className="word-card bg-primary/10">
+              <h4 className="font-semibold mb-2">Encouragement:</h4>
+              <p className="text-primary">{analysisResult.encouragement}</p>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

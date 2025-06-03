@@ -1,5 +1,4 @@
 
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -26,9 +25,9 @@ serve(async (req) => {
       throw new Error('Gemini API key not configured');
     }
 
-    // Voice-based correction prompt for live feedback
+    // Adjust prompt based on whether this is live correction or final analysis
     const prompt = isLiveCorrection 
-      ? `Listen to this Malayalam pronunciation and provide a brief voice-based correction. If the pronunciation is incorrect, respond in this exact format: "{incorrect_pronunciation} അല്ല. അത് {correct_pronunciation} ആണ്." where {incorrect_pronunciation} is what you heard and {correct_pronunciation} is the correct pronunciation. If the pronunciation is good, give brief encouraging feedback. The original text is: "${originalText}"`
+      ? `Please provide brief live feedback for this Malayalam pronunciation attempt. The user is currently reading: "${originalText}". Give encouraging, concise feedback (1-2 sentences max) about their current pronunciation progress. Be supportive and helpful.`
       : `Please analyze this audio recording of someone reading Malayalam text and provide pronunciation feedback. 
 
 Original Malayalam text: "${originalText}"
@@ -46,7 +45,7 @@ Format your response as JSON with these fields:
 - improvements: string
 - encouragement: string`;
 
-    // Use Gemini 2.5 Pro for voice-based correction
+    // Convert base64 audio to speech using Gemini
     const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${geminiApiKey}`, {
       method: 'POST',
       headers: {
@@ -67,8 +66,8 @@ Format your response as JSON with these fields:
           ]
         }],
         generationConfig: {
-          temperature: 0.3,
-          maxOutputTokens: isLiveCorrection ? 150 : 1000,
+          temperature: 0.7,
+          maxOutputTokens: isLiveCorrection ? 100 : 1000,
         }
       }),
     });
@@ -84,7 +83,7 @@ Format your response as JSON with these fields:
 
     const responseText = geminiData.candidates[0]?.content?.parts[0]?.text || '';
     
-    // Handle live correction response with voice format
+    // Handle live correction response differently
     if (isLiveCorrection) {
       return new Response(JSON.stringify({ 
         feedback: responseText,
@@ -141,4 +140,3 @@ Format your response as JSON with these fields:
     });
   }
 });
-

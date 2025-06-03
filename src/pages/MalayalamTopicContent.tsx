@@ -1,12 +1,13 @@
 import { Link, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Play } from "lucide-react";
 import { useState } from "react";
 import SpeechRecorder from "@/components/SpeechRecorder";
 
 const MalayalamTopicContent = () => {
   const { topicId } = useParams();
+  const [playingAudio, setPlayingAudio] = useState(false);
   const [showTranslation, setShowTranslation] = useState(false);
 
   const topicData: { [key: string]: any } = {
@@ -46,12 +47,12 @@ const MalayalamTopicContent = () => {
     },
     "festivals-of-kerala": {
       title: "Festivals of Kerala",
-      malayalam: "കേരളത്തിലെ ഉത്സവങ്ങൾ വർണ്ണാഭമായതും വൈവിധ്യപൂർണ്ണവുമാണ്. ഓണം, വിഷു, തൃശ്ശൂർ പൂരം എന്നിവ പ്രധാന ആഘോഷങ്ങളാണ്. ഓണം ഒരു വിളവെടുപ്പ് ഉത്സവമാണ്, അത് ഐശ്വര്യത്തിന്റെയും സമൃദ്ധിയുടെയും പ്രതീകമാണ്. വിഷു പുതുവർഷത്തെയും നല്ല ഭാവിയെയും സൂചിപ്പിക്കുന്നു. തൃശ്ശൂർ പൂരം ആനകളും വർണ്ണാഭമായ കുടമാറ്റവും മേളവുമായി നടത്തുന്ന ഒരു മഹോത്സവമാണ്. ഈ ഉത്സവങ്ങൾ കേരളത്തിന്റെ സംസ്കാരത്തെയും പാരമ്പര്യത്തെയും പ്രതിഫലിക്കുന്നു. മതപരമായ അതിരുകളില്ലാതെ എല്ലാവരും ഒരുമിച്ച് ആഘോഷിക്കുന്നു, ഇത് സാമൂഹിക ���ക്യത്തിന്റെയും സമാധാനത്തിന്റെയും പ്രതീകമാണ്.",
+      malayalam: "കേരളത്തിലെ ഉത്സവങ്ങൾ വർണ്ണാഭമായതും വൈവിധ്യപൂർണ്ണവുമാണ്. ഓണം, വിഷു, തൃശ്ശൂർ പൂരം എന്നിവ പ്രധാന ആഘോഷങ്ങളാണ്. ഓണം ഒരു വിളവെടുപ്പ് ഉത്സവമാണ്, അത് ഐശ്വര്യത്തിന്റെയും സമൃദ്ധിയുടെയും പ്രതീകമാണ്. വിഷു പുതുവർഷത്തെയും നല്ല ഭാവിയെയും സൂചിപ്പിക്കുന്നു. തൃശ്ശൂർ പൂരം ആനകളും വർണ്ണാഭമായ കുടമാറ്റവും മേളവുമായി നടത്തുന്ന ഒരു മഹോത്സവമാണ്. ഈ ഉത്സവങ്ങൾ കേരളത്തിന്റെ സംസ്കാരത്തെയും പാരമ്പര്യത്തെയും പ്രതിഫലിക്കുന്നു. മതപരമായ അതിരുകളില്ലാതെ എല്ലാവരും ഒരുമിച്ച് ആഘോഷിക്കുന്നു, ഇത് സാമൂഹിക ഐക്യത്തിന്റെയും സമാധാനത്തിന്റെയും പ്രതീകമാണ്.",
       english: "Festivals in Kerala are colorful and diverse. Onam, Vishu, and Thrissur Pooram are major celebrations. Onam is a harvest festival, symbolizing prosperity and abundance. Vishu signifies the New Year and a hopeful future. Thrissur Pooram is a grand festival celebrated with elephants, colorful parasol displays, and traditional music. These festivals reflect Kerala's culture and tradition. Everyone celebrates together, transcending religious boundaries, symbolizing social harmony and peace.",
       vocabulary: [
         { malayalam: "ഉത്സവങ്ങൾ", transliteration: "utsavangal", english: "festivals" },
         { malayalam: "വർണ്ണാഭമായ", transliteration: "varnabhamaya", english: "colorful" },
-        { malayalam: "വൈവിധ്യപൂർണ്ണവുമാണ്", transliteration: "vaividhyapoornam", english: "diverse" },
+        { malayalam: "വൈവിധ്യപൂർണ്ണം", transliteration: "vaividhyapoornam", english: "diverse" },
         { malayalam: "വിളവെടുപ്പ്", transliteration: "vilaveduppu", english: "harvest" },
         { malayalam: "ഐശ്വര്യം", transliteration: "aishwaryam", english: "prosperity" },
         { malayalam: "സമൃദ്ധി", transliteration: "samruddhi", english: "abundance" },
@@ -63,13 +64,13 @@ const MalayalamTopicContent = () => {
     },
     "ayurveda-healthcare": {
       title: "Ayurveda and Healthcare",
-      malayalam: "കേരളത്തിന്റെ ആരോഗ്യമേഖലയും ആയുർവേദ ചികിത്സയും ലോകമെമ്പാടും പ്രശസ്തമാണ്. പ്രകൃതിദത്തം ഔഷധങ്ങളും ചികിത്സാരീതികളും ഇവിടെ ലഭ്യമാണ്. ശരീരത്തിനും മനസ്സിനും ഉന്മേഷം നൽകുന്ന ചികിത്സകളാണ് ആയുർവേദം നൽകുന്നത്. പഞ്ചകർമ്മ ചികിത്സകൾക്കും യുവജനങ്ങളെ ആകർഷിക്കുന്ന ആയുർവേദ റിസോർട്ടുകൾക്കും പേരുകേട്ടതാണ് കേരളം. പലരും ആരോഗ്യപരമായ പ്രശ്നങ്ങൾക്ക് പരിഹാരം തേടിയും മാനസികോല്ലാസത്തിനുവേണ്ടിയും കേരളത്തിൽ എത്തുന്നു. മസാജുകളും തെറാപ്പികളും വിനോദസഞ്ചാരികളെ ആകർഷിക്കുന്നു. ഇത് കേരളത്തിന്റെ ആരോഗ്യ ടൂറിസത്തിന് വലിയ സംഭാവന നൽകുന്നു.",
+      malayalam: "കേരളത്തിന്റെ ആരോഗ്യമേഖലയും ആയുർവേദ ചികിത്സയും ലോകമെമ്പാടും പ്രശസ്തമാണ്. പ്രകൃതിദത്തമായ ഔഷധങ്ങളും ചികിത്സാരീതികളും ഇവിടെ ലഭ്യമാണ്. ശരീരത്തിനും മനസ്സിനും ഉന്മേഷം നൽകുന്ന ചികിത്സകളാണ് ആയുർവേദം നൽകുന്നത്. പഞ്ചകർമ്മ ചികിത്സകൾക്കും യുവജനങ്ങളെ ആകർഷിക്കുന്ന ആയുർവേദ റിസോർട്ടുകൾക്കും പേരുകേട്ടതാണ് കേരളം. പലരും ആരോഗ്യപരമായ പ്രശ്നങ്ങൾക്ക് പരിഹാരം തേടിയും മാനസികോല്ലാസത്തിനുവേണ്ടിയും കേരളത്തിൽ എത്തുന്നു. മസാജുകളും തെറാപ്പികളും വിനോദസഞ്ചാരികളെ ആകർഷിക്കുന്നു. ഇത് കേരളത്തിന്റെ ആരോഗ്യ ടൂറിസത്തിന് വലിയ സംഭാവന നൽകുന്നു.",
       english: "Kerala's healthcare sector and Ayurvedic treatment are famous worldwide. Natural medicines and treatment methods are available here. Ayurveda provides treatments that rejuvenate the body and mind. Kerala is known for Panchakarma treatments and Ayurvedic resorts that attract young people. Many people come to Kerala seeking solutions for health problems and for mental relaxation. Massages and therapies attract tourists. This contributes significantly to Kerala's health tourism.",
       vocabulary: [
         { malayalam: "ആരോഗ്യമേഖല", transliteration: "arogyamekhala", english: "healthcare sector" },
         { malayalam: "ചികിത്സ", transliteration: "chikitsa", english: "treatment" },
         { malayalam: "പ്രകൃതിദത്തം", transliteration: "prakruthidattam", english: "natural" },
-        { malayalam: "ഔഷധങ്ങളും", transliteration: "aushadhangal", english: "medicines" },
+        { malayalam: "ഔഷധങ്ങൾ", transliteration: "aushadhangal", english: "medicines" },
         { malayalam: "ഉന്മേഷം", transliteration: "unmesham", english: "rejuvenation" },
         { malayalam: "പഞ്ചകർമ്മ", transliteration: "panchakarma", english: "panchakarma" },
         { malayalam: "മാനസികോല്ലാസം", transliteration: "manasikollasam", english: "mental relaxation" },
@@ -85,7 +86,7 @@ const MalayalamTopicContent = () => {
       vocabulary: [
         { malayalam: "രുചികരം", transliteration: "ruchikaram", english: "delicious" },
         { malayalam: "തേങ്ങാപ്പാൽ", transliteration: "thengappal", english: "coconut milk" },
-        { malayalam: "മസാലകളും", transliteration: "masalakal", english: "spices" },
+        { malayalam: "മസാലകൾ", transliteration: "masalakal", english: "spices" },
         { malayalam: "വിഭവങ്ങൾ", transliteration: "vibhavangal", english: "dishes" },
         { malayalam: "പുട്ട്", transliteration: "puttu", english: "puttu" },
         { malayalam: "അപ്പം", transliteration: "appam", english: "appam" },
@@ -139,7 +140,7 @@ const MalayalamTopicContent = () => {
         { malayalam: "ഹൗസ്ബോട്ട്", transliteration: "houseboat", english: "houseboat" },
         { malayalam: "ശാന്തമായ", transliteration: "shanthamaya", english: "calm" },
         { malayalam: "മനോഹരം", transliteration: "manoharam", english: "beautiful" },
-        { malayalam: "മത്സ്യസമ്പത്തിന്", transliteration: "matsyasampathu", english: "fish wealth" },
+        { malayalam: "മത്സ്യസമ്പത്ത്", transliteration: "matsyasampathu", english: "fish wealth" },
         { malayalam: "അവിഭാജ്യം", transliteration: "avibhajyam", english: "integral" },
         { malayalam: "വരുമാനം", transliteration: "varumanam", english: "income" },
         { malayalam: "ഗ്രാമീണം", transliteration: "grameenarn", english: "rural" },
@@ -165,7 +166,7 @@ const MalayalamTopicContent = () => {
     },
     "peace-and-harmony": {
       title: "Peace and Harmony",
-      malayalam: "കേരളം ഒരു സുരക്ഷിതവും സമാധാനപരവുമായ സംസ്ഥാനമാണ്. ഇവിടെയുള്ള ജനങ്ങൾ സഹിഷ്ണുതയോടെയും പരസ്പര ബഹുമാനത്തോടെയും ജീവിക്കുന്നു. വിവിധ മതക്കാരും സമുദായക്കാരും സൗഹൃദത്തിലും സഹകരണത്തിലും കഴിയുന്നു. സ്ത്രീ സുരക്ഷയ്ക്ക് ഇവിടെ വലിയ പ്രാധാന്യം നൽകുന്നു, ഇത് സ്ത്രീകളെ കൂടുതൽ സുരക്ഷിതരാക്കുന്നു. സാമൂഹിക ���ക്യവും സമാധാനവുമാണ് കേരളത്തിന്റെ മുഖമുദ്ര. ഈ സമാധാനപരമായ അന്തരീക്ഷം വിനോദസഞ്ചാരികളെ കൂടുതൽ ആകർഷിക്കുന്നു. നിയമവാഴ്ചയും ക്രമസമാധാനവും ഇവിടെ ശക്തമാണ്, ഇത് ജനങ്ങൾക്ക് സുരക്ഷ ഉറപ്പാക്കുന്നു.",
+      malayalam: "കേരളം ഒരു സുരക്ഷിതവും സമാധാനപരവുമായ സംസ്ഥാനമാണ്. ഇവിടെയുള്ള ജനങ്ങൾ സഹിഷ്ണുതയോടെയും പരസ്പര ബഹുമാനത്തോടെയും ജീവിക്കുന്നു. വിവിധ മതക്കാരും സമുദായക്കാരും സൗഹൃദത്തിലും സഹകരണത്തിലും കഴിയുന്നു. സ്ത്രീ സുരക്ഷയ്ക്ക് ഇവിടെ വലിയ പ്രാധാന്യം നൽകുന്നു, ഇത് സ്ത്രീകളെ കൂടുതൽ സുരക്ഷിതരാക്കുന്നു. സാമൂഹിക ഐക്യവും സമാധാനവുമാണ് കേരളത്തിന്റെ മുഖമുദ്ര. ഈ സമാധാനപരമായ അന്തരീക്ഷം വിനോദസഞ്ചാരികളെ കൂടുതൽ ആകർഷിക്കുന്നു. നിയമവാഴ്ചയും ക്രമസമാധാനവും ഇവിടെ ശക്തമാണ്, ഇത് ജനങ്ങൾക്ക് സുരക്ഷ ഉറപ്പാക്കുന്നു.",
       english: "Kerala is a safe and peaceful state. The people here live with tolerance and mutual respect. People of various religions and communities live in friendship and cooperation. Great importance is given to women's safety here, which makes women feel more secure. Social harmony and peace are the hallmarks of Kerala. This peaceful atmosphere attracts more tourists. The rule of law and order here are strong, ensuring security for the people.",
       vocabulary: [
         { malayalam: "സുരക്ഷിതം", transliteration: "surakshitam", english: "safe" },
@@ -183,6 +184,12 @@ const MalayalamTopicContent = () => {
   };
 
   const currentTopic = topicData[topicId || ""] || topicData["kerala-natural-beauty"];
+
+  const playAudio = () => {
+    setPlayingAudio(true);
+    console.log(`Playing audio for topic: ${currentTopic.title}`);
+    setTimeout(() => setPlayingAudio(false), 3000);
+  };
 
   const toggleTranslation = () => {
     setShowTranslation(!showTranslation);
@@ -209,36 +216,42 @@ const MalayalamTopicContent = () => {
           <Card className="language-card">
             <CardHeader>
               <CardTitle className="text-2xl mb-4">{currentTopic.title}</CardTitle>
+              <div className="flex gap-4 mb-4">
+                <Button
+                  onClick={playAudio}
+                  className={`audio-button ${playingAudio ? 'animate-pulse' : ''}`}
+                >
+                  <Play className="mr-2 h-4 w-4" />
+                  Read
+                </Button>
+                <Button
+                  onClick={toggleTranslation}
+                  variant={showTranslation ? "default" : "outline"}
+                  className="glow-button"
+                >
+                  {showTranslation ? "Hide" : "Show"} Translation
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
-              {/* Malayalam Text - removed audio controls from here */}
+              {/* Malayalam Text */}
               <div className="text-lg leading-relaxed mb-4 p-4 bg-muted rounded-lg">
                 {currentTopic.malayalam}
               </div>
               
-              {/* Translation - moved to bottom */}
-              <div className="mt-6 pt-4 border-t">
-                <Button
-                  onClick={toggleTranslation}
-                  variant={showTranslation ? "default" : "outline"}
-                  className="glow-button mb-4"
-                >
-                  {showTranslation ? "Hide" : "Show"} Translation
-                </Button>
-                
-                {showTranslation && (
-                  <div>
-                    <h4 className="text-lg font-semibold mb-2">English Translation:</h4>
-                    <div className="text-base leading-relaxed p-4 bg-muted/50 rounded-lg">
-                      {currentTopic.english}
-                    </div>
+              {/* Translation */}
+              {showTranslation && (
+                <div className="mt-4">
+                  <h4 className="text-lg font-semibold mb-2">English Translation:</h4>
+                  <div className="text-base leading-relaxed p-4 bg-muted/50 rounded-lg">
+                    {currentTopic.english}
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
-          {/* Speech Recorder Component */}
+          {/* Speech Recording Section */}
           <SpeechRecorder 
             originalText={currentTopic.malayalam}
             title={currentTopic.title}
