@@ -1,7 +1,8 @@
+
 import React, { useState, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Mic, Square, Play, Loader2, Volume2, Save } from 'lucide-react';
+import { Mic, Volume2, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -10,55 +11,21 @@ interface SpeechRecorderProps {
   title: string;
 }
 
-interface AnalysisResult {
-  transcription: string;
-  accuracyScore: number;
-  feedback: string;
-  improvements: string;
-  encouragement: string;
-}
-
-interface SavedRecording {
-  id: string;
-  title: string;
-  text: string;
-  audioBlob: Blob;
-  timestamp: Date;
-  analysisResult?: AnalysisResult;
-}
-
 const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title }) => {
-  const [isRecording, setIsRecording] = useState(false);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const [isReading, setIsReading] = useState(false);
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
-  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
-  const [savedRecordings, setSavedRecordings] = useState<SavedRecording[]>([]);
-  const [liveCorrection, setLiveCorrection] = useState<string>('');
-  const [recordingChunks, setRecordingChunks] = useState<Blob[]>([]);
+  const [liveFeedback, setLiveFeedback] = useState<string>('');
+  const [isProcessing, setIsProcessing] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
-  const liveCorrectionIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const feedbackIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
 
-  // Load saved recordings from localStorage on component mount
-  React.useEffect(() => {
-    const saved = localStorage.getItem('malayalam-recordings');
-    if (saved) {
-      try {
-        const recordings = JSON.parse(saved);
-        setSavedRecordings(recordings);
-      } catch (error) {
-        console.error('Error loading saved recordings:', error);
-      }
-    }
-  }, []);
-
-  const performLiveCorrection = useCallback(async (audioChunks: Blob[]) => {
+  const provideLiveFeedback = useCallback(async (audioChunks: Blob[]) => {
     if (audioChunks.length === 0) return;
 
     try {
-      // Create a temporary audio blob from current chunks
+      setIsProcessing(true);
       const tempBlob = new Blob(audioChunks, { type: 'audio/webm' });
       
       const reader = new FileReader();
@@ -75,106 +42,89 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title }) 
         });
 
         if (!error && data) {
-          setLiveCorrection(data.feedback || 'Keep going...');
+          setLiveFeedback(data.feedback || 'Keep reading...');
         }
       };
       reader.readAsDataURL(tempBlob);
     } catch (error) {
-      console.error('Live correction error:', error);
+      console.error('Live feedback error:', error);
+    } finally {
+      setIsProcessing(false);
     }
   }, [originalText]);
 
-  const startRecording = useCallback(async () => {
+  const startListening = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
       
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
-      setRecordingChunks([]);
-      setLiveCorrection('');
+      setLiveFeedback('Start reading the Malayalam text...');
 
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
           audioChunksRef.current.push(event.data);
-          setRecordingChunks(prev => [...prev, event.data]);
         }
       };
 
       mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        setAudioBlob(audioBlob);
+        setLiveFeedback('');
         stream.getTracks().forEach(track => track.stop());
-        
-        // Clear live correction when recording stops
-        setLiveCorrection('');
-        if (liveCorrectionIntervalRef.current) {
-          clearInterval(liveCorrectionIntervalRef.current);
-          liveCorrectionIntervalRef.current = null;
+        if (feedbackIntervalRef.current) {
+          clearInterval(feedbackIntervalRef.current);
+          feedbackIntervalRef.current = null;
         }
       };
 
-      // Start recording with time slices for live analysis
-      mediaRecorder.start(2000); // Collect data every 2 seconds
-      setIsRecording(true);
+      mediaRecorder.start(1000); // Collect data every second
+      setIsListening(true);
 
-      // Set up live correction interval
-      liveCorrectionIntervalRef.current = setInterval(() => {
-        if (recordingChunks.length > 0) {
-          performLiveCorrection(recordingChunks);
+      // Provide feedback every 3 seconds
+      feedbackIntervalRef.current = setInterval(() => {
+        if (audioChunksRef.current.length > 0) {
+          provideLiveFeedback([...audioChunksRef.current]);
         }
-      }, 3000); // Analyze every 3 seconds
+      }, 3000);
       
       toast({
-        title: "Recording started",
-        description: "Start reading the Malayalam text aloud. Live feedback will appear below.",
+        title: "Started listening",
+        description: "Begin reading the Malayalam text. You'll receive real-time feedback.",
       });
     } catch (error) {
-      console.error('Error starting recording:', error);
+      console.error('Error starting microphone:', error);
       toast({
-        title: "Recording failed",
+        title: "Microphone access failed",
         description: "Please check your microphone permissions.",
         variant: "destructive",
       });
     }
-  }, [toast, recordingChunks, performLiveCorrection]);
+  }, [toast, provideLiveFeedback]);
 
-  const stopRecording = useCallback(() => {
-    if (mediaRecorderRef.current && isRecording) {
+  const stopListening = useCallback(() => {
+    if (mediaRecorderRef.current && isListening) {
       mediaRecorderRef.current.stop();
-      setIsRecording(false);
+      setIsListening(false);
+      setIsProcessing(false);
       
-      // Clear live correction interval
-      if (liveCorrectionIntervalRef.current) {
-        clearInterval(liveCorrectionIntervalRef.current);
-        liveCorrectionIntervalRef.current = null;
+      if (feedbackIntervalRef.current) {
+        clearInterval(feedbackIntervalRef.current);
+        feedbackIntervalRef.current = null;
       }
       
       toast({
-        title: "Recording stopped",
-        description: "Processing your pronunciation...",
+        title: "Stopped listening",
+        description: "Practice session completed.",
       });
     }
-  }, [isRecording, toast]);
+  }, [isListening, toast]);
 
   const readText = useCallback(async () => {
     setIsReading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('text-to-speech', {
-        body: {
-          text: originalText,
-          language: 'malayalam'
-        }
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      // Simulate reading with speech synthesis as fallback
       const utterance = new SpeechSynthesisUtterance(originalText);
-      utterance.lang = 'ml-IN'; // Malayalam language code
-      utterance.rate = 0.8; // Slower rate for learning
+      utterance.lang = 'ml-IN';
+      utterance.rate = 0.7;
       
       utterance.onend = () => {
         setIsReading(false);
@@ -206,217 +156,69 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title }) 
     }
   }, [originalText, toast]);
 
-  const analyzeAudio = useCallback(async () => {
-    if (!audioBlob) return;
-
-    setIsAnalyzing(true);
-    try {
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64Audio = (reader.result as string).split(',')[1];
-        
-        const { data, error } = await supabase.functions.invoke('analyze-pronunciation', {
-          body: {
-            audioBase64: base64Audio,
-            originalText: originalText,
-            language: 'malayalam'
-          }
-        });
-
-        if (error) {
-          throw error;
-        }
-
-        setAnalysisResult(data);
-        toast({
-          title: "Analysis complete",
-          description: `Pronunciation score: ${data.accuracyScore}/10`,
-        });
-      };
-      reader.readAsDataURL(audioBlob);
-    } catch (error) {
-      console.error('Error analyzing audio:', error);
-      toast({
-        title: "Analysis failed",
-        description: "Please try recording again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsAnalyzing(false);
-    }
-  }, [audioBlob, originalText, toast]);
-
-  const saveRecording = useCallback(() => {
-    if (!audioBlob) return;
-
-    const recording: SavedRecording = {
-      id: Date.now().toString(),
-      title: title,
-      text: originalText,
-      audioBlob: audioBlob,
-      timestamp: new Date(),
-      analysisResult: analysisResult || undefined
-    };
-
-    const updatedRecordings = [...savedRecordings, recording];
-    setSavedRecordings(updatedRecordings);
-    
-    // Save to localStorage (note: Blob won't be serialized, but metadata will be saved)
-    const recordingsToSave = updatedRecordings.map(({ audioBlob, ...rest }) => rest);
-    localStorage.setItem('malayalam-recordings', JSON.stringify(recordingsToSave));
-
-    toast({
-      title: "Recording saved",
-      description: "Your practice session has been saved locally.",
-    });
-  }, [audioBlob, title, originalText, analysisResult, savedRecordings, toast]);
-
-  const playRecording = useCallback(() => {
-    if (audioBlob) {
-      const audioUrl = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioUrl);
-      audio.play();
-    }
-  }, [audioBlob]);
-
   return (
     <Card className="language-card">
       <CardHeader>
-        <CardTitle className="text-xl">Speech Practice - {title}</CardTitle>
+        <CardTitle className="text-xl">Real-time Pronunciation Practice</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Reading Controls */}
-        <div className="flex gap-4 justify-center mb-4">
+        {/* Control Buttons */}
+        <div className="flex gap-4 justify-center">
           <Button
             onClick={readText}
             className="glow-button flex items-center gap-2"
-            disabled={isReading || isRecording}
+            disabled={isReading || isListening}
           >
             {isReading ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Listening...
+                Reading...
               </>
             ) : (
               <>
                 <Volume2 className="h-4 w-4" />
-                Listen Text
+                Listen
               </>
             )}
           </Button>
-        </div>
 
-        {/* Recording Controls */}
-        <div className="flex gap-4 justify-center">
-          {!isRecording ? (
+          {!isListening ? (
             <Button
-              onClick={startRecording}
+              onClick={startListening}
               className="glow-button flex items-center gap-2"
-              disabled={isAnalyzing || isReading}
+              disabled={isReading}
             >
               <Mic className="h-4 w-4" />
-              Read Text
+              Start Reading Practice
             </Button>
           ) : (
             <Button
-              onClick={stopRecording}
+              onClick={stopListening}
               variant="destructive"
               className="flex items-center gap-2"
             >
-              <Square className="h-4 w-4" />
-              Stop Recording
-            </Button>
-          )}
-          
-          {audioBlob && (
-            <>
-              <Button
-                onClick={playRecording}
-                variant="outline"
-                className="flex items-center gap-2"
-              >
-                <Play className="h-4 w-4" />
-                Play Recording
-              </Button>
-              
-              <Button
-                onClick={saveRecording}
-                variant="outline"
-                className="flex items-center gap-2"
-              >
-                <Save className="h-4 w-4" />
-                Save
-              </Button>
-            </>
-          )}
-          
-          {audioBlob && !isAnalyzing && (
-            <Button
-              onClick={analyzeAudio}
-              className="glow-button flex items-center gap-2"
-            >
-              Analyze Pronunciation
-            </Button>
-          )}
-          
-          {isAnalyzing && (
-            <Button disabled className="flex items-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Analyzing...
+              Stop Practice
             </Button>
           )}
         </div>
 
-        {/* Live Correction Feedback */}
-        {isRecording && liveCorrection && (
-          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h4 className="font-semibold text-blue-800 mb-2">Live Feedback:</h4>
-            <p className="text-blue-700">{liveCorrection}</p>
+        {/* Live Feedback */}
+        {isListening && (
+          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+              <h4 className="font-semibold text-blue-800">Live Feedback:</h4>
+              {isProcessing && <Loader2 className="h-4 w-4 animate-spin text-blue-600" />}
+            </div>
+            <p className="text-blue-700">
+              {liveFeedback || "Listening... Start reading the text aloud."}
+            </p>
           </div>
         )}
 
-        {/* Saved Recordings Count */}
-        {savedRecordings.length > 0 && (
-          <div className="text-center text-sm text-muted-foreground">
-            {savedRecordings.length} recording(s) saved locally
-          </div>
-        )}
-
-        {/* Analysis Results */}
-        {analysisResult && (
-          <div className="space-y-4 mt-6">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-primary mb-2">
-                {analysisResult.accuracyScore}/10
-              </div>
-              <div className="text-lg font-semibold">Pronunciation Score</div>
-            </div>
-            
-            {analysisResult.transcription && (
-              <div className="word-card">
-                <h4 className="font-semibold mb-2">What we heard:</h4>
-                <p className="text-muted-foreground">{analysisResult.transcription}</p>
-              </div>
-            )}
-            
-            <div className="word-card">
-              <h4 className="font-semibold mb-2">Feedback:</h4>
-              <p className="text-muted-foreground">{analysisResult.feedback}</p>
-            </div>
-            
-            {analysisResult.improvements && (
-              <div className="word-card">
-                <h4 className="font-semibold mb-2">Areas for improvement:</h4>
-                <p className="text-muted-foreground">{analysisResult.improvements}</p>
-              </div>
-            )}
-            
-            <div className="word-card bg-primary/10">
-              <h4 className="font-semibold mb-2">Encouragement:</h4>
-              <p className="text-primary">{analysisResult.encouragement}</p>
-            </div>
-          </div>
-        )}
+        <div className="text-center text-sm text-muted-foreground">
+          Click "Listen" to hear the correct pronunciation, then "Start Reading Practice" for real-time feedback
+        </div>
       </CardContent>
     </Card>
   );

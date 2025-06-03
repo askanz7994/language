@@ -1,14 +1,22 @@
 import { Link, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Play } from "lucide-react";
-import { useState } from "react";
-import SpeechRecorder from "@/components/SpeechRecorder";
+import { ArrowLeft, Volume2, Mic, Loader2 } from "lucide-react";
+import { useState, useCallback, useRef } from "react";
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const MalayalamTopicContent = () => {
   const { topicId } = useParams();
   const [playingAudio, setPlayingAudio] = useState(false);
   const [showTranslation, setShowTranslation] = useState(false);
+  const [isReading, setIsReading] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const feedbackIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const { toast } = useToast();
 
   const topicData: { [key: string]: any } = {
     "kerala-natural-beauty": {
@@ -166,7 +174,7 @@ const MalayalamTopicContent = () => {
     },
     "peace-and-harmony": {
       title: "Peace and Harmony",
-      malayalam: "കേരളം ഒരു സുരക്ഷിതവും സമാധാനപരവുമായ സംസ്ഥാനമാണ്. ഇവിടെയുള്ള ജനങ്ങൾ സഹിഷ്ണുതയോടെയും പരസ്പര ബഹുമാനത്തോടെയും ജീവിക്കുന്നു. വിവിധ മതക്കാരും സമുദായക്കാരും സൗഹൃദത്തിലും സഹകരണത്തിലും കഴിയുന്നു. സ്ത്രീ സുരക്ഷയ്ക്ക് ഇവിടെ വലിയ പ്രാധാന്യം നൽകുന്നു, ഇത് സ്ത്രീകളെ കൂടുതൽ സുരക്ഷിതരാക്കുന്നു. സാമൂഹിക ഐക്യവും സമാധാനവുമാണ് കേരളത്തിന്റെ മുഖമുദ്ര. ഈ സമാധാനപരമായ അന്തരീക്ഷം വിനോദസഞ്ചാരികളെ കൂടുതൽ ആകർഷിക്കുന്നു. നിയമവാഴ്ചയും ക്രമസമാധാനവും ഇവിടെ ശക്തമാണ്, ഇത് ജനങ്ങൾക്ക് സുരക്ഷ ഉറപ്പാക്കുന്നു.",
+      malayalam: "കേരളം ഒരു സുരക്ഷിതവും സമാധാനപരവുമായ സംസ്ഥാനമാണ്. ഇവിടെയുള്ള ജനങ്ങൾ സഹിഷ്ണുതയോടെയും പരസ്പര ബഹുമാനത്തോടെയും ജീവിക്കുന്നു. വിവിധ മതക്കാരും സമുദായക്കാരും സൗഹൃദത്തിലും സഹകരണത്തിലും കഴിയുന്നു. സ്ത്രീ സുരക്ഷയ്ക്ക് ഇവിടെ വലിയ പ്രാധാന്യം നൽകുന്നു, ഇത് സ്ത്രീകളെ കൂടുതൽ സുരക്ഷിതരാക്കുന്നു. സാമൂഹിക ���ക്യവും സമാധാനവുമാണ് കേരളത്തിന്റെ മുഖമുദ്ര. ഈ സമാധാനപരമായ അന്തരീക്ഷം വിനോദസഞ്ചാരികളെ കൂടുതൽ ആകർഷിക്കുന്നു. നിയമവാഴ്ചയും ക്രമസമാധാനവും ഇവിടെ ശക്തമാണ്, ഇത് ജനങ്ങൾക്ക് സുരക്ഷ ഉറപ്പാക്കുന്നു.",
       english: "Kerala is a safe and peaceful state. The people here live with tolerance and mutual respect. People of various religions and communities live in friendship and cooperation. Great importance is given to women's safety here, which makes women feel more secure. Social harmony and peace are the hallmarks of Kerala. This peaceful atmosphere attracts more tourists. The rule of law and order here are strong, ensuring security for the people.",
       vocabulary: [
         { malayalam: "സുരക്ഷിതം", transliteration: "surakshitam", english: "safe" },
@@ -185,11 +193,142 @@ const MalayalamTopicContent = () => {
 
   const currentTopic = topicData[topicId || ""] || topicData["kerala-natural-beauty"];
 
-  const playAudio = () => {
-    setPlayingAudio(true);
-    console.log(`Playing audio for topic: ${currentTopic.title}`);
-    setTimeout(() => setPlayingAudio(false), 3000);
-  };
+  const provideLiveFeedback = useCallback(async (audioChunks: Blob[]) => {
+    if (audioChunks.length === 0) return;
+
+    try {
+      setIsProcessing(true);
+      const tempBlob = new Blob(audioChunks, { type: 'audio/webm' });
+      
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64Audio = (reader.result as string).split(',')[1];
+        
+        const { data, error } = await supabase.functions.invoke('analyze-pronunciation', {
+          body: {
+            audioBase64: base64Audio,
+            originalText: currentTopic.malayalam,
+            language: 'malayalam',
+            isLiveCorrection: true
+          }
+        });
+
+        if (!error && data) {
+          // Convert feedback to speech using browser's speech synthesis
+          const feedback = data.feedback || 'Keep reading...';
+          const utterance = new SpeechSynthesisUtterance(feedback);
+          utterance.lang = 'ml-IN';
+          utterance.rate = 0.8;
+          speechSynthesis.speak(utterance);
+        }
+      };
+      reader.readAsDataURL(tempBlob);
+    } catch (error) {
+      console.error('Live feedback error:', error);
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [currentTopic.malayalam]);
+
+  const startListening = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        stream.getTracks().forEach(track => track.stop());
+        if (feedbackIntervalRef.current) {
+          clearInterval(feedbackIntervalRef.current);
+          feedbackIntervalRef.current = null;
+        }
+      };
+
+      mediaRecorder.start(1000);
+      setIsListening(true);
+
+      feedbackIntervalRef.current = setInterval(() => {
+        if (audioChunksRef.current.length > 0) {
+          provideLiveFeedback([...audioChunksRef.current]);
+        }
+      }, 3000);
+      
+      toast({
+        title: "Started listening",
+        description: "Begin reading the Malayalam text. You'll receive voice corrections.",
+      });
+    } catch (error) {
+      console.error('Error starting microphone:', error);
+      toast({
+        title: "Microphone access failed",
+        description: "Please check your microphone permissions.",
+        variant: "destructive",
+      });
+    }
+  }, [toast, provideLiveFeedback]);
+
+  const stopListening = useCallback(() => {
+    if (mediaRecorderRef.current && isListening) {
+      mediaRecorderRef.current.stop();
+      setIsListening(false);
+      setIsProcessing(false);
+      
+      if (feedbackIntervalRef.current) {
+        clearInterval(feedbackIntervalRef.current);
+        feedbackIntervalRef.current = null;
+      }
+      
+      toast({
+        title: "Stopped listening",
+        description: "Practice session completed.",
+      });
+    }
+  }, [isListening, toast]);
+
+  const readText = useCallback(async () => {
+    setIsReading(true);
+    try {
+      const utterance = new SpeechSynthesisUtterance(currentTopic.malayalam);
+      utterance.lang = 'ml-IN';
+      utterance.rate = 0.7;
+      
+      utterance.onend = () => {
+        setIsReading(false);
+      };
+
+      utterance.onerror = () => {
+        setIsReading(false);
+        toast({
+          title: "Reading failed",
+          description: "Please try again.",
+          variant: "destructive",
+        });
+      };
+
+      speechSynthesis.speak(utterance);
+
+      toast({
+        title: "Reading text",
+        description: "Listen carefully to the pronunciation.",
+      });
+    } catch (error) {
+      console.error('Error reading text:', error);
+      setIsReading(false);
+      toast({
+        title: "Reading failed",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+    }
+  }, [currentTopic.malayalam, toast]);
 
   const toggleTranslation = () => {
     setShowTranslation(!showTranslation);
@@ -218,19 +357,43 @@ const MalayalamTopicContent = () => {
               <CardTitle className="text-2xl mb-4">{currentTopic.title}</CardTitle>
               <div className="flex gap-4 mb-4">
                 <Button
-                  onClick={playAudio}
-                  className={`audio-button ${playingAudio ? 'animate-pulse' : ''}`}
+                  onClick={readText}
+                  className={`audio-button ${isReading ? 'animate-pulse' : ''}`}
+                  disabled={isReading || isListening}
                 >
-                  <Play className="mr-2 h-4 w-4" />
-                  Read
+                  {isReading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Reading...
+                    </>
+                  ) : (
+                    <>
+                      <Volume2 className="mr-2 h-4 w-4" />
+                      Listen
+                    </>
+                  )}
                 </Button>
-                <Button
-                  onClick={toggleTranslation}
-                  variant={showTranslation ? "default" : "outline"}
-                  className="glow-button"
-                >
-                  {showTranslation ? "Hide" : "Show"} Translation
-                </Button>
+
+                {!isListening ? (
+                  <Button
+                    onClick={startListening}
+                    className="glow-button flex items-center gap-2"
+                    disabled={isReading}
+                  >
+                    <Mic className="h-4 w-4" />
+                    Start Reading
+                    {isProcessing && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={stopListening}
+                    variant="destructive"
+                    className="flex items-center gap-2"
+                  >
+                    Stop Reading
+                    {isProcessing && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
+                  </Button>
+                )}
               </div>
             </CardHeader>
             <CardContent>
@@ -239,23 +402,27 @@ const MalayalamTopicContent = () => {
                 {currentTopic.malayalam}
               </div>
               
-              {/* Translation */}
-              {showTranslation && (
-                <div className="mt-4">
-                  <h4 className="text-lg font-semibold mb-2">English Translation:</h4>
-                  <div className="text-base leading-relaxed p-4 bg-muted/50 rounded-lg">
-                    {currentTopic.english}
+              {/* Translation - moved to bottom */}
+              <div className="mt-6 pt-4 border-t">
+                <Button
+                  onClick={toggleTranslation}
+                  variant={showTranslation ? "default" : "outline"}
+                  className="glow-button mb-4"
+                >
+                  {showTranslation ? "Hide" : "Show"} Translation
+                </Button>
+                
+                {showTranslation && (
+                  <div>
+                    <h4 className="text-lg font-semibold mb-2">English Translation:</h4>
+                    <div className="text-base leading-relaxed p-4 bg-muted/50 rounded-lg">
+                      {currentTopic.english}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </CardContent>
           </Card>
-
-          {/* Speech Recording Section */}
-          <SpeechRecorder 
-            originalText={currentTopic.malayalam}
-            title={currentTopic.title}
-          />
 
           {/* Vocabulary Section */}
           <Card className="language-card">
