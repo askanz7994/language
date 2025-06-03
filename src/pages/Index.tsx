@@ -68,7 +68,7 @@ const Index = () => {
             
             <h3 className="text-xl font-semibold mb-3">Flexible
 Learning</h3>
-            <p className="text-muted-foreground py-[27px]">Learn at your own pace, anytime, anywhere.</p>
+            <p className="text-muted-foreground py-0">Learn at your own pace, anytime, anywhere.</p>
           </div>
         </div>
       </div>
