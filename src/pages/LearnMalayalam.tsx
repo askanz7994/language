@@ -1,11 +1,8 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-
 const LearnMalayalam = () => {
-  return (
-    <div className="min-h-screen blur-bg">
+  return <div className="min-h-screen blur-bg">
       <div className="container mx-auto px-4 py-16">
         {/* Back Button */}
         <Link to="/languages" className="inline-flex items-center text-primary hover:text-primary/80 mb-8">
@@ -41,7 +38,7 @@ const LearnMalayalam = () => {
 
           {/* Numbers Module */}
           <div className="language-card text-center">
-            <div className="text-6xl mb-6">൧</div>
+            <div className="text-6xl mb-6">1</div>
             <h2 className="text-3xl font-bold mb-4">Numbers</h2>
             <p className="text-muted-foreground mb-6">
               Learn to count and recognize numbers in Malayalam script
@@ -82,8 +79,6 @@ const LearnMalayalam = () => {
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default LearnMalayalam;
