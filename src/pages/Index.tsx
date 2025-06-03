@@ -1,34 +1,27 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-
 const Index = () => {
-  const { user, loading } = useAuth();
-
-  return (
-    <div className="min-h-screen blur-bg">
+  const {
+    user,
+    loading
+  } = useAuth();
+  return <div className="min-h-screen blur-bg">
       {/* Navigation Bar */}
       <nav className="container mx-auto px-4 py-6 flex justify-between items-center">
         <h1 className="text-2xl font-bold text-primary">Language Learning</h1>
         <div className="flex items-center space-x-4">
-          {loading ? (
-            <div className="w-8 h-8 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
-          ) : user ? (
-            <Link to="/profile">
+          {loading ? <div className="w-8 h-8 animate-spin rounded-full border-2 border-primary border-t-transparent"></div> : user ? <Link to="/profile">
               <Button variant="outline" size="sm" className="flex items-center space-x-2">
                 <User className="h-4 w-4" />
                 <span>Profile</span>
               </Button>
-            </Link>
-          ) : (
-            <Link to="/auth">
+            </Link> : <Link to="/auth">
               <Button variant="outline" size="sm">
                 Sign In
               </Button>
-            </Link>
-          )}
+            </Link>}
         </div>
       </nav>
 
@@ -55,24 +48,27 @@ const Index = () => {
         <h2 className="text-4xl font-bold text-center mb-12">Why Learn with Us?</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div className="language-card text-center">
-            <div className="text-3xl mb-4">🎯</div>
+            
             <h3 className="text-xl font-semibold mb-3">Practical & Engaging Lessons</h3>
             <p className="text-muted-foreground">Learn through real-world scenarios and interactive exercises.</p>
           </div>
           <div className="language-card text-center">
-            <div className="text-3xl mb-4">📈</div>
-            <h3 className="text-xl font-semibold mb-3">Structured Progress</h3>
-            <p className="text-muted-foreground">Follow a clear learning path designed for effective mastery.</p>
+            
+            <h3 className="text-xl font-semibold mb-3">Structured
+ Progress
+          </h3>
+            <p className="text-muted-foreground my-0">Follow a clear learning path designed for effective mastery.</p>
           </div>
           <div className="language-card text-center">
-            <div className="text-3xl mb-4">📚</div>
+            
             <h3 className="text-xl font-semibold mb-3">Comprehensive Content</h3>
             <p className="text-muted-foreground">From basic numbers to complex paragraphs, we cover it all.</p>
           </div>
           <div className="language-card text-center">
-            <div className="text-3xl mb-4">⏰</div>
-            <h3 className="text-xl font-semibold mb-3">Flexible Learning</h3>
-            <p className="text-muted-foreground">Learn at your own pace, anytime, anywhere.</p>
+            
+            <h3 className="text-xl font-semibold mb-3">Flexible
+Learning</h3>
+            <p className="text-muted-foreground py-[27px]">Learn at your own pace, anytime, anywhere.</p>
           </div>
         </div>
       </div>
@@ -110,8 +106,6 @@ const Index = () => {
           <p className="text-muted-foreground">&copy; 2024 Language Learning Platform. Start your journey today!</p>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
