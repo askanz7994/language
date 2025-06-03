@@ -1,14 +1,17 @@
 import { Link, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Play } from "lucide-react";
-import { useState } from "react";
+import { ArrowLeft, Play, Volume2, Mic, Loader2 } from "lucide-react";
+import { useState, useCallback } from "react";
 import SpeechRecorder from "@/components/SpeechRecorder";
+import { useToast } from '@/hooks/use-toast';
 
 const MalayalamTopicContent = () => {
   const { topicId } = useParams();
   const [playingAudio, setPlayingAudio] = useState(false);
   const [showTranslation, setShowTranslation] = useState(false);
+  const [isReading, setIsReading] = useState(false);
+  const { toast } = useToast();
 
   const topicData: { [key: string]: any } = {
     "kerala-natural-beauty": {
@@ -185,11 +188,42 @@ const MalayalamTopicContent = () => {
 
   const currentTopic = topicData[topicId || ""] || topicData["kerala-natural-beauty"];
 
-  const playAudio = () => {
-    setPlayingAudio(true);
-    console.log(`Playing audio for topic: ${currentTopic.title}`);
-    setTimeout(() => setPlayingAudio(false), 3000);
-  };
+  const readText = useCallback(async () => {
+    setIsReading(true);
+    try {
+      const utterance = new SpeechSynthesisUtterance(currentTopic.malayalam);
+      utterance.lang = 'ml-IN';
+      utterance.rate = 0.7;
+      
+      utterance.onend = () => {
+        setIsReading(false);
+      };
+
+      utterance.onerror = () => {
+        setIsReading(false);
+        toast({
+          title: "Reading failed",
+          description: "Please try again.",
+          variant: "destructive",
+        });
+      };
+
+      speechSynthesis.speak(utterance);
+
+      toast({
+        title: "Reading text",
+        description: "Listen carefully to the pronunciation.",
+      });
+    } catch (error) {
+      console.error('Error reading text:', error);
+      setIsReading(false);
+      toast({
+        title: "Reading failed",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+    }
+  }, [currentTopic.malayalam, toast]);
 
   const toggleTranslation = () => {
     setShowTranslation(!showTranslation);
@@ -218,11 +252,21 @@ const MalayalamTopicContent = () => {
               <CardTitle className="text-2xl mb-4">{currentTopic.title}</CardTitle>
               <div className="flex gap-4 mb-4">
                 <Button
-                  onClick={playAudio}
-                  className={`audio-button ${playingAudio ? 'animate-pulse' : ''}`}
+                  onClick={readText}
+                  className={`audio-button ${isReading ? 'animate-pulse' : ''}`}
+                  disabled={isReading}
                 >
-                  <Play className="mr-2 h-4 w-4" />
-                  Read
+                  {isReading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Reading...
+                    </>
+                  ) : (
+                    <>
+                      <Volume2 className="mr-2 h-4 w-4" />
+                      Listen
+                    </>
+                  )}
                 </Button>
                 <Button
                   onClick={toggleTranslation}
@@ -251,7 +295,7 @@ const MalayalamTopicContent = () => {
             </CardContent>
           </Card>
 
-          {/* Speech Recording Section */}
+          {/* Real-time Speech Practice Section */}
           <SpeechRecorder 
             originalText={currentTopic.malayalam}
             title={currentTopic.title}
