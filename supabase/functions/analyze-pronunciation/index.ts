@@ -14,7 +14,7 @@ serve(async (req) => {
   }
 
   try {
-    const { audioBase64, originalText, language } = await req.json();
+    const { audioBase64, originalText, language, isLiveCorrection } = await req.json();
 
     if (!audioBase64 || !originalText) {
       throw new Error('Audio data and original text are required');
@@ -25,17 +25,10 @@ serve(async (req) => {
       throw new Error('Gemini API key not configured');
     }
 
-    // Convert base64 audio to speech using Gemini
-    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${geminiApiKey}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: [
-            {
-              text: `Please analyze this audio recording of someone reading Malayalam text and provide pronunciation feedback. 
+    // Adjust prompt based on whether this is live correction or final analysis
+    const prompt = isLiveCorrection 
+      ? `Please provide brief live feedback for this Malayalam pronunciation attempt. The user is currently reading: "${originalText}". Give encouraging, concise feedback (1-2 sentences max) about their current pronunciation progress. Be supportive and helpful.`
+      : `Please analyze this audio recording of someone reading Malayalam text and provide pronunciation feedback. 
 
 Original Malayalam text: "${originalText}"
 
@@ -50,7 +43,19 @@ Format your response as JSON with these fields:
 - accuracyScore: number (1-10)
 - feedback: string
 - improvements: string
-- encouragement: string`
+- encouragement: string`;
+
+    // Convert base64 audio to speech using Gemini
+    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${geminiApiKey}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [
+            {
+              text: prompt
             },
             {
               inline_data: {
@@ -62,7 +67,7 @@ Format your response as JSON with these fields:
         }],
         generationConfig: {
           temperature: 0.7,
-          maxOutputTokens: 1000,
+          maxOutputTokens: isLiveCorrection ? 100 : 1000,
         }
       }),
     });
@@ -78,7 +83,17 @@ Format your response as JSON with these fields:
 
     const responseText = geminiData.candidates[0]?.content?.parts[0]?.text || '';
     
-    // Try to parse JSON from the response
+    // Handle live correction response differently
+    if (isLiveCorrection) {
+      return new Response(JSON.stringify({ 
+        feedback: responseText,
+        isLive: true 
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Try to parse JSON from the response for full analysis
     let analysisResult;
     try {
       // Extract JSON from the response if it's wrapped in other text

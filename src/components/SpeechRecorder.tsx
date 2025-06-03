@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -35,8 +34,11 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title }) 
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [savedRecordings, setSavedRecordings] = useState<SavedRecording[]>([]);
+  const [liveCorrection, setLiveCorrection] = useState<string>('');
+  const [recordingChunks, setRecordingChunks] = useState<Blob[]>([]);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const liveCorrectionIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
 
   // Load saved recordings from localStorage on component mount
@@ -52,6 +54,36 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title }) 
     }
   }, []);
 
+  const performLiveCorrection = useCallback(async (audioChunks: Blob[]) => {
+    if (audioChunks.length === 0) return;
+
+    try {
+      // Create a temporary audio blob from current chunks
+      const tempBlob = new Blob(audioChunks, { type: 'audio/webm' });
+      
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64Audio = (reader.result as string).split(',')[1];
+        
+        const { data, error } = await supabase.functions.invoke('analyze-pronunciation', {
+          body: {
+            audioBase64: base64Audio,
+            originalText: originalText,
+            language: 'malayalam',
+            isLiveCorrection: true
+          }
+        });
+
+        if (!error && data) {
+          setLiveCorrection(data.feedback || 'Keep going...');
+        }
+      };
+      reader.readAsDataURL(tempBlob);
+    } catch (error) {
+      console.error('Live correction error:', error);
+    }
+  }, [originalText]);
+
   const startRecording = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -59,10 +91,13 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title }) 
       
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
+      setRecordingChunks([]);
+      setLiveCorrection('');
 
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
           audioChunksRef.current.push(event.data);
+          setRecordingChunks(prev => [...prev, event.data]);
         }
       };
 
@@ -70,14 +105,29 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title }) 
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
         setAudioBlob(audioBlob);
         stream.getTracks().forEach(track => track.stop());
+        
+        // Clear live correction when recording stops
+        setLiveCorrection('');
+        if (liveCorrectionIntervalRef.current) {
+          clearInterval(liveCorrectionIntervalRef.current);
+          liveCorrectionIntervalRef.current = null;
+        }
       };
 
-      mediaRecorder.start();
+      // Start recording with time slices for live analysis
+      mediaRecorder.start(2000); // Collect data every 2 seconds
       setIsRecording(true);
+
+      // Set up live correction interval
+      liveCorrectionIntervalRef.current = setInterval(() => {
+        if (recordingChunks.length > 0) {
+          performLiveCorrection(recordingChunks);
+        }
+      }, 3000); // Analyze every 3 seconds
       
       toast({
         title: "Recording started",
-        description: "Start reading the Malayalam text aloud.",
+        description: "Start reading the Malayalam text aloud. Live feedback will appear below.",
       });
     } catch (error) {
       console.error('Error starting recording:', error);
@@ -87,12 +137,18 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title }) 
         variant: "destructive",
       });
     }
-  }, [toast]);
+  }, [toast, recordingChunks, performLiveCorrection]);
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
+      
+      // Clear live correction interval
+      if (liveCorrectionIntervalRef.current) {
+        clearInterval(liveCorrectionIntervalRef.current);
+        liveCorrectionIntervalRef.current = null;
+      }
       
       toast({
         title: "Recording stopped",
@@ -239,12 +295,12 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title }) 
             {isReading ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Reading...
+                Listening...
               </>
             ) : (
               <>
                 <Volume2 className="h-4 w-4" />
-                Read Text
+                Listen Text
               </>
             )}
           </Button>
@@ -259,7 +315,7 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title }) 
               disabled={isAnalyzing || isReading}
             >
               <Mic className="h-4 w-4" />
-              Start Recording
+              Read Text
             </Button>
           ) : (
             <Button
@@ -310,6 +366,14 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title }) 
             </Button>
           )}
         </div>
+
+        {/* Live Correction Feedback */}
+        {isRecording && liveCorrection && (
+          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <h4 className="font-semibold text-blue-800 mb-2">Live Feedback:</h4>
+            <p className="text-blue-700">{liveCorrection}</p>
+          </div>
+        )}
 
         {/* Saved Recordings Count */}
         {savedRecordings.length > 0 && (
