@@ -2,9 +2,10 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Mic, Volume2, Loader2 } from 'lucide-react';
+import { Mic, Volume2, Loader2, Square } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import RealTimeText from './RealTimeText';
 
 interface SpeechRecorderProps {
   originalText: string;
@@ -14,19 +15,18 @@ interface SpeechRecorderProps {
 const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title }) => {
   const [isListening, setIsListening] = useState(false);
   const [isReading, setIsReading] = useState(false);
-  const [liveFeedback, setLiveFeedback] = useState<string>('');
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [feedback, setFeedback] = useState<string>('');
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
-  const feedbackIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
 
-  const provideLiveFeedback = useCallback(async (audioChunks: Blob[]) => {
-    if (audioChunks.length === 0) return;
+  const analyzeRecording = useCallback(async () => {
+    if (audioChunksRef.current.length === 0) return;
 
     try {
-      setIsProcessing(true);
-      const tempBlob = new Blob(audioChunks, { type: 'audio/webm' });
+      setIsAnalyzing(true);
+      const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
       
       const reader = new FileReader();
       reader.onloadend = async () => {
@@ -36,22 +36,36 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title }) 
           body: {
             audioBase64: base64Audio,
             originalText: originalText,
-            language: 'malayalam',
-            isLiveCorrection: true
+            language: 'malayalam'
           }
         });
 
         if (!error && data) {
-          setLiveFeedback(data.feedback || 'Keep reading...');
+          setFeedback(data.feedback || 'No feedback available');
+          toast({
+            title: "Analysis complete",
+            description: "Check the pronunciation feedback below.",
+          });
+        } else {
+          toast({
+            title: "Analysis failed",
+            description: "Unable to analyze pronunciation. Please try again.",
+            variant: "destructive",
+          });
         }
       };
-      reader.readAsDataURL(tempBlob);
+      reader.readAsDataURL(audioBlob);
     } catch (error) {
-      console.error('Live feedback error:', error);
+      console.error('Analysis error:', error);
+      toast({
+        title: "Analysis failed",
+        description: "An error occurred during analysis.",
+        variant: "destructive",
+      });
     } finally {
-      setIsProcessing(false);
+      setIsAnalyzing(false);
     }
-  }, [originalText]);
+  }, [originalText, toast]);
 
   const startListening = useCallback(async () => {
     try {
@@ -60,7 +74,7 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title }) 
       
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
-      setLiveFeedback('Start reading the Malayalam text...');
+      setFeedback(''); // Clear previous feedback
 
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
@@ -69,27 +83,16 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title }) 
       };
 
       mediaRecorder.onstop = () => {
-        setLiveFeedback('');
         stream.getTracks().forEach(track => track.stop());
-        if (feedbackIntervalRef.current) {
-          clearInterval(feedbackIntervalRef.current);
-          feedbackIntervalRef.current = null;
-        }
+        analyzeRecording();
       };
 
-      mediaRecorder.start(1000); // Collect data every second
+      mediaRecorder.start(1000);
       setIsListening(true);
-
-      // Provide feedback every 3 seconds
-      feedbackIntervalRef.current = setInterval(() => {
-        if (audioChunksRef.current.length > 0) {
-          provideLiveFeedback([...audioChunksRef.current]);
-        }
-      }, 3000);
       
       toast({
         title: "Started listening",
-        description: "Begin reading the Malayalam text. You'll receive real-time feedback.",
+        description: "Begin reading the Malayalam text aloud.",
       });
     } catch (error) {
       console.error('Error starting microphone:', error);
@@ -99,22 +102,16 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title }) 
         variant: "destructive",
       });
     }
-  }, [toast, provideLiveFeedback]);
+  }, [toast, analyzeRecording]);
 
   const stopListening = useCallback(() => {
     if (mediaRecorderRef.current && isListening) {
       mediaRecorderRef.current.stop();
       setIsListening(false);
-      setIsProcessing(false);
-      
-      if (feedbackIntervalRef.current) {
-        clearInterval(feedbackIntervalRef.current);
-        feedbackIntervalRef.current = null;
-      }
       
       toast({
         title: "Stopped listening",
-        description: "Practice session completed.",
+        description: "Analyzing your pronunciation...",
       });
     }
   }, [isListening, toast]);
@@ -167,7 +164,7 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title }) 
           <Button
             onClick={readText}
             className="glow-button flex items-center gap-2"
-            disabled={isReading || isListening}
+            disabled={isReading || isListening || isAnalyzing}
           >
             {isReading ? (
               <>
@@ -186,10 +183,10 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title }) 
             <Button
               onClick={startListening}
               className="glow-button flex items-center gap-2"
-              disabled={isReading}
+              disabled={isReading || isAnalyzing}
             >
               <Mic className="h-4 w-4" />
-              Start Reading Practice
+              Start Reading
             </Button>
           ) : (
             <Button
@@ -197,27 +194,32 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title }) 
               variant="destructive"
               className="flex items-center gap-2"
             >
-              Stop Practice
+              <Square className="h-4 w-4" />
+              Stop Reading
             </Button>
           )}
         </div>
 
-        {/* Live Feedback */}
-        {isListening && (
-          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-              <h4 className="font-semibold text-blue-800">Live Feedback:</h4>
-              {isProcessing && <Loader2 className="h-4 w-4 animate-spin text-blue-600" />}
+        {/* Real-time Text Display */}
+        <RealTimeText 
+          text={originalText} 
+          isListening={isListening}
+          feedback={feedback}
+        />
+
+        {/* Analysis Status */}
+        {isAnalyzing && (
+          <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin text-yellow-600" />
+              <h4 className="font-semibold text-yellow-800">Analyzing pronunciation...</h4>
             </div>
-            <p className="text-blue-700">
-              {liveFeedback || "Listening... Start reading the text aloud."}
-            </p>
+            <p className="text-yellow-700">Please wait while we analyze your recording.</p>
           </div>
         )}
 
         <div className="text-center text-sm text-muted-foreground">
-          Click "Listen" to hear the correct pronunciation, then "Start Reading Practice" for real-time feedback
+          Click "Listen" to hear the correct pronunciation, then "Start Reading" to practice
         </div>
       </CardContent>
     </Card>
