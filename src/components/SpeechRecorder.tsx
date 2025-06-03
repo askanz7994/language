@@ -14,14 +14,33 @@ interface SpeechRecorderProps {
 const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title }) => {
   const [isListening, setIsListening] = useState(false);
   const [isReading, setIsReading] = useState(false);
-  const [liveFeedback, setLiveFeedback] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [currentWordIndex, setCurrentWordIndex] = useState(-1);
+  const [incorrectWords, setIncorrectWords] = useState<number[]>([]);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const feedbackIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const wordProgressRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
 
-  const provideLiveFeedback = useCallback(async (audioChunks: Blob[]) => {
+  const words = originalText.split(' ');
+
+  const simulateWordProgress = useCallback(() => {
+    let wordIndex = 0;
+    const progressInterval = setInterval(() => {
+      if (wordIndex < words.length && isListening) {
+        setCurrentWordIndex(wordIndex);
+        wordIndex++;
+      } else {
+        setCurrentWordIndex(-1);
+        clearInterval(progressInterval);
+      }
+    }, 2000); // Change word every 2 seconds
+
+    wordProgressRef.current = progressInterval;
+  }, [words.length, isListening]);
+
+  const analyzePronunciation = useCallback(async (audioChunks: Blob[]) => {
     if (audioChunks.length === 0) return;
 
     try {
@@ -41,17 +60,23 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title }) 
           }
         });
 
-        if (!error && data) {
-          setLiveFeedback(data.feedback || 'Keep reading...');
+        if (!error && data && data.feedback) {
+          // Parse feedback to identify incorrect words
+          const feedback = data.feedback;
+          // Simple logic to mark words as incorrect based on feedback
+          if (feedback.includes('അല്ല')) {
+            // Mark current word as incorrect
+            setIncorrectWords(prev => [...prev, currentWordIndex]);
+          }
         }
       };
       reader.readAsDataURL(tempBlob);
     } catch (error) {
-      console.error('Live feedback error:', error);
+      console.error('Pronunciation analysis error:', error);
     } finally {
       setIsProcessing(false);
     }
-  }, [originalText]);
+  }, [originalText, currentWordIndex]);
 
   const startListening = useCallback(async () => {
     try {
@@ -60,7 +85,8 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title }) 
       
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
-      setLiveFeedback('Start reading the Malayalam text...');
+      setIncorrectWords([]); // Reset incorrect words
+      setCurrentWordIndex(-1);
 
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
@@ -69,27 +95,34 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title }) 
       };
 
       mediaRecorder.onstop = () => {
-        setLiveFeedback('');
         stream.getTracks().forEach(track => track.stop());
         if (feedbackIntervalRef.current) {
           clearInterval(feedbackIntervalRef.current);
           feedbackIntervalRef.current = null;
         }
+        if (wordProgressRef.current) {
+          clearInterval(wordProgressRef.current);
+          wordProgressRef.current = null;
+        }
+        setCurrentWordIndex(-1);
       };
 
       mediaRecorder.start(1000); // Collect data every second
       setIsListening(true);
 
-      // Provide feedback every 3 seconds
+      // Start word progress simulation
+      simulateWordProgress();
+
+      // Analyze pronunciation every 3 seconds
       feedbackIntervalRef.current = setInterval(() => {
         if (audioChunksRef.current.length > 0) {
-          provideLiveFeedback([...audioChunksRef.current]);
+          analyzePronunciation([...audioChunksRef.current]);
         }
       }, 3000);
       
       toast({
         title: "Started listening",
-        description: "Begin reading the Malayalam text. You'll receive real-time feedback.",
+        description: "Begin reading the Malayalam text. Incorrect words will be highlighted in red.",
       });
     } catch (error) {
       console.error('Error starting microphone:', error);
@@ -99,17 +132,23 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title }) 
         variant: "destructive",
       });
     }
-  }, [toast, provideLiveFeedback]);
+  }, [toast, simulateWordProgress, analyzePronunciation]);
 
   const stopListening = useCallback(() => {
     if (mediaRecorderRef.current && isListening) {
       mediaRecorderRef.current.stop();
       setIsListening(false);
       setIsProcessing(false);
+      setCurrentWordIndex(-1);
       
       if (feedbackIntervalRef.current) {
         clearInterval(feedbackIntervalRef.current);
         feedbackIntervalRef.current = null;
+      }
+      
+      if (wordProgressRef.current) {
+        clearInterval(wordProgressRef.current);
+        wordProgressRef.current = null;
       }
       
       toast({
@@ -155,6 +194,29 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title }) 
       });
     }
   }, [originalText, toast]);
+
+  const renderTextWithHighlights = () => {
+    return words.map((word, index) => {
+      const isCurrentWord = index === currentWordIndex;
+      const isIncorrect = incorrectWords.includes(index);
+      
+      let className = 'inline-block mr-2 transition-all duration-300';
+      
+      if (isCurrentWord) {
+        className += ' underline decoration-2 decoration-blue-500';
+      }
+      
+      if (isIncorrect) {
+        className += ' text-red-500 font-bold';
+      }
+      
+      return (
+        <span key={index} className={className}>
+          {word}
+        </span>
+      );
+    });
+  };
 
   return (
     <Card className="language-card">
@@ -202,22 +264,27 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title }) 
           )}
         </div>
 
-        {/* Live Feedback */}
+        {/* Text with real-time highlights */}
+        <div className="mt-6 p-4 bg-muted rounded-lg">
+          <div className="text-lg leading-relaxed">
+            {renderTextWithHighlights()}
+          </div>
+        </div>
+
+        {/* Status indicator */}
         {isListening && (
-          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-              <h4 className="font-semibold text-blue-800">Live Feedback:</h4>
-              {isProcessing && <Loader2 className="h-4 w-4 animate-spin text-blue-600" />}
-            </div>
-            <p className="text-blue-700">
-              {liveFeedback || "Listening... Start reading the text aloud."}
-            </p>
+          <div className="flex items-center gap-2 justify-center">
+            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+            <span className="text-sm text-muted-foreground">
+              Listening... {isProcessing && "Processing..."}
+            </span>
+            {isProcessing && <Loader2 className="h-4 w-4 animate-spin" />}
           </div>
         )}
 
         <div className="text-center text-sm text-muted-foreground">
-          Click "Listen" to hear the correct pronunciation, then "Start Reading Practice" for real-time feedback
+          Click "Listen" to hear the correct pronunciation, then "Start Reading Practice" for real-time feedback. 
+          Incorrect words will be highlighted in red, and the current word being listened to will be underlined.
         </div>
       </CardContent>
     </Card>

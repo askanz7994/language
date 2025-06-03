@@ -1,22 +1,13 @@
 import { Link, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Volume2, Mic, Loader2 } from "lucide-react";
-import { useState, useCallback, useRef } from "react";
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { ArrowLeft } from "lucide-react";
+import { useState } from "react";
+import SpeechRecorder from "@/components/SpeechRecorder";
 
 const MalayalamTopicContent = () => {
   const { topicId } = useParams();
-  const [playingAudio, setPlayingAudio] = useState(false);
   const [showTranslation, setShowTranslation] = useState(false);
-  const [isReading, setIsReading] = useState(false);
-  const [isListening, setIsListening] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
-  const feedbackIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const { toast } = useToast();
 
   const topicData: { [key: string]: any } = {
     "kerala-natural-beauty": {
@@ -55,12 +46,12 @@ const MalayalamTopicContent = () => {
     },
     "festivals-of-kerala": {
       title: "Festivals of Kerala",
-      malayalam: "കേരളത്തിലെ ഉത്സവങ്ങൾ വർണ്ണാഭമായതും വൈവിധ്യപൂർണ്ണവുമാണ്. ഓണം, വിഷു, തൃശ്ശൂർ പൂരം എന്നിവ പ്രധാന ആഘോഷങ്ങളാണ്. ഓണം ഒരു വിളവെടുപ്പ് ഉത്സവമാണ്, അത് ഐശ്വര്യത്തിന്റെയും സമൃദ്ധിയുടെയും പ്രതീകമാണ്. വിഷു പുതുവർഷത്തെയും നല്ല ഭാവിയെയും സൂചിപ്പിക്കുന്നു. തൃശ്ശൂർ പൂരം ആനകളും വർണ്ണാഭമായ കുടമാറ്റവും മേളവുമായി നടത്തുന്ന ഒരു മഹോത്സവമാണ്. ഈ ഉത്സവങ്ങൾ കേരളത്തിന്റെ സംസ്കാരത്തെയും പാരമ്പര്യത്തെയും പ്രതിഫലിക്കുന്നു. മതപരമായ അതിരുകളില്ലാതെ എല്ലാവരും ഒരുമിച്ച് ആഘോഷിക്കുന്നു, ഇത് സാമൂഹിക ഐക്യത്തിന്റെയും സമാധാനത്തിന്റെയും പ്രതീകമാണ്.",
+      malayalam: "കേരളത്തിലെ ഉത്സവങ്ങൾ വർണ്ണാഭമായതും വൈവിധ്യപൂർണ്ണവുമാണ്. ഓണം, വിഷു, തൃശ്ശൂർ പൂരം എന്നിവ പ്രധാന ആഘോഷങ്ങളാണ്. ഓണം ഒരു വിളവെടുപ്പ് ഉത്സവമാണ്, അത് ഐശ്വര്യത്തിന്റെയും സമൃദ്ധിയുടെയും പ്രതീകമാണ്. വിഷു പുതുവർഷത്തെയും നല്ല ഭാവിയെയും സൂചിപ്പിക്കുന്നു. തൃശ്ശൂർ പൂരം ആനകളും വർണ്ണാഭമായ കുടമാറ്റവും മേളവുമായി നടത്തുന്ന ഒരു മഹോത്സവമാണ്. ഈ ഉത്സവങ്ങൾ കേരളത്തിന്റെ സംസ്കാരത്തെയും പാരമ്പര്യത്തെയും പ്രതിഫലിക്കുന്നു. മതപരമായ അതിരുകളില്ലാതെ എല്ലാവരും ഒരുമിച്ച് ആഘോഷിക്കുന്നു, ഇത് സാമൂഹിക ���ക്യത്തിന്റെയും സമാധാനത്തിന്റെയും പ്രതീകമാണ്.",
       english: "Festivals in Kerala are colorful and diverse. Onam, Vishu, and Thrissur Pooram are major celebrations. Onam is a harvest festival, symbolizing prosperity and abundance. Vishu signifies the New Year and a hopeful future. Thrissur Pooram is a grand festival celebrated with elephants, colorful parasol displays, and traditional music. These festivals reflect Kerala's culture and tradition. Everyone celebrates together, transcending religious boundaries, symbolizing social harmony and peace.",
       vocabulary: [
         { malayalam: "ഉത്സവങ്ങൾ", transliteration: "utsavangal", english: "festivals" },
         { malayalam: "വർണ്ണാഭമായ", transliteration: "varnabhamaya", english: "colorful" },
-        { malayalam: "വൈവിധ്യപൂർണ്ണം", transliteration: "vaividhyapoornam", english: "diverse" },
+        { malayalam: "വൈവിധ്യപൂർണ്ണവുമാണ്", transliteration: "vaividhyapoornam", english: "diverse" },
         { malayalam: "വിളവെടുപ്പ്", transliteration: "vilaveduppu", english: "harvest" },
         { malayalam: "ഐശ്വര്യം", transliteration: "aishwaryam", english: "prosperity" },
         { malayalam: "സമൃദ്ധി", transliteration: "samruddhi", english: "abundance" },
@@ -72,13 +63,13 @@ const MalayalamTopicContent = () => {
     },
     "ayurveda-healthcare": {
       title: "Ayurveda and Healthcare",
-      malayalam: "കേരളത്തിന്റെ ആരോഗ്യമേഖലയും ആയുർവേദ ചികിത്സയും ലോകമെമ്പാടും പ്രശസ്തമാണ്. പ്രകൃതിദത്തമായ ഔഷധങ്ങളും ചികിത്സാരീതികളും ഇവിടെ ലഭ്യമാണ്. ശരീരത്തിനും മനസ്സിനും ഉന്മേഷം നൽകുന്ന ചികിത്സകളാണ് ആയുർവേദം നൽകുന്നത്. പഞ്ചകർമ്മ ചികിത്സകൾക്കും യുവജനങ്ങളെ ആകർഷിക്കുന്ന ആയുർവേദ റിസോർട്ടുകൾക്കും പേരുകേട്ടതാണ് കേരളം. പലരും ആരോഗ്യപരമായ പ്രശ്നങ്ങൾക്ക് പരിഹാരം തേടിയും മാനസികോല്ലാസത്തിനുവേണ്ടിയും കേരളത്തിൽ എത്തുന്നു. മസാജുകളും തെറാപ്പികളും വിനോദസഞ്ചാരികളെ ആകർഷിക്കുന്നു. ഇത് കേരളത്തിന്റെ ആരോഗ്യ ടൂറിസത്തിന് വലിയ സംഭാവന നൽകുന്നു.",
+      malayalam: "കേരളത്തിന്റെ ആരോഗ്യമേഖലയും ആയുർവേദ ചികിത്സയും ലോകമെമ്പാടും പ്രശസ്തമാണ്. പ്രകൃതിദത്തം ഔഷധങ്ങളും ചികിത്സാരീതികളും ഇവിടെ ലഭ്യമാണ്. ശരീരത്തിനും മനസ്സിനും ഉന്മേഷം നൽകുന്ന ചികിത്സകളാണ് ആയുർവേദം നൽകുന്നത്. പഞ്ചകർമ്മ ചികിത്സകൾക്കും യുവജനങ്ങളെ ആകർഷിക്കുന്ന ആയുർവേദ റിസോർട്ടുകൾക്കും പേരുകേട്ടതാണ് കേരളം. പലരും ആരോഗ്യപരമായ പ്രശ്നങ്ങൾക്ക് പരിഹാരം തേടിയും മാനസികോല്ലാസത്തിനുവേണ്ടിയും കേരളത്തിൽ എത്തുന്നു. മസാജുകളും തെറാപ്പികളും വിനോദസഞ്ചാരികളെ ആകർഷിക്കുന്നു. ഇത് കേരളത്തിന്റെ ആരോഗ്യ ടൂറിസത്തിന് വലിയ സംഭാവന നൽകുന്നു.",
       english: "Kerala's healthcare sector and Ayurvedic treatment are famous worldwide. Natural medicines and treatment methods are available here. Ayurveda provides treatments that rejuvenate the body and mind. Kerala is known for Panchakarma treatments and Ayurvedic resorts that attract young people. Many people come to Kerala seeking solutions for health problems and for mental relaxation. Massages and therapies attract tourists. This contributes significantly to Kerala's health tourism.",
       vocabulary: [
         { malayalam: "ആരോഗ്യമേഖല", transliteration: "arogyamekhala", english: "healthcare sector" },
         { malayalam: "ചികിത്സ", transliteration: "chikitsa", english: "treatment" },
         { malayalam: "പ്രകൃതിദത്തം", transliteration: "prakruthidattam", english: "natural" },
-        { malayalam: "ഔഷധങ്ങൾ", transliteration: "aushadhangal", english: "medicines" },
+        { malayalam: "ഔഷധങ്ങളും", transliteration: "aushadhangal", english: "medicines" },
         { malayalam: "ഉന്മേഷം", transliteration: "unmesham", english: "rejuvenation" },
         { malayalam: "പഞ്ചകർമ്മ", transliteration: "panchakarma", english: "panchakarma" },
         { malayalam: "മാനസികോല്ലാസം", transliteration: "manasikollasam", english: "mental relaxation" },
@@ -94,7 +85,7 @@ const MalayalamTopicContent = () => {
       vocabulary: [
         { malayalam: "രുചികരം", transliteration: "ruchikaram", english: "delicious" },
         { malayalam: "തേങ്ങാപ്പാൽ", transliteration: "thengappal", english: "coconut milk" },
-        { malayalam: "മസാലകൾ", transliteration: "masalakal", english: "spices" },
+        { malayalam: "മസാലകളും", transliteration: "masalakal", english: "spices" },
         { malayalam: "വിഭവങ്ങൾ", transliteration: "vibhavangal", english: "dishes" },
         { malayalam: "പുട്ട്", transliteration: "puttu", english: "puttu" },
         { malayalam: "അപ്പം", transliteration: "appam", english: "appam" },
@@ -148,7 +139,7 @@ const MalayalamTopicContent = () => {
         { malayalam: "ഹൗസ്ബോട്ട്", transliteration: "houseboat", english: "houseboat" },
         { malayalam: "ശാന്തമായ", transliteration: "shanthamaya", english: "calm" },
         { malayalam: "മനോഹരം", transliteration: "manoharam", english: "beautiful" },
-        { malayalam: "മത്സ്യസമ്പത്ത്", transliteration: "matsyasampathu", english: "fish wealth" },
+        { malayalam: "മത്സ്യസമ്പത്തിന്", transliteration: "matsyasampathu", english: "fish wealth" },
         { malayalam: "അവിഭാജ്യം", transliteration: "avibhajyam", english: "integral" },
         { malayalam: "വരുമാനം", transliteration: "varumanam", english: "income" },
         { malayalam: "ഗ്രാമീണം", transliteration: "grameenarn", english: "rural" },
@@ -193,143 +184,6 @@ const MalayalamTopicContent = () => {
 
   const currentTopic = topicData[topicId || ""] || topicData["kerala-natural-beauty"];
 
-  const provideLiveFeedback = useCallback(async (audioChunks: Blob[]) => {
-    if (audioChunks.length === 0) return;
-
-    try {
-      setIsProcessing(true);
-      const tempBlob = new Blob(audioChunks, { type: 'audio/webm' });
-      
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64Audio = (reader.result as string).split(',')[1];
-        
-        const { data, error } = await supabase.functions.invoke('analyze-pronunciation', {
-          body: {
-            audioBase64: base64Audio,
-            originalText: currentTopic.malayalam,
-            language: 'malayalam',
-            isLiveCorrection: true
-          }
-        });
-
-        if (!error && data) {
-          // Convert feedback to speech using browser's speech synthesis
-          const feedback = data.feedback || 'Keep reading...';
-          const utterance = new SpeechSynthesisUtterance(feedback);
-          utterance.lang = 'ml-IN';
-          utterance.rate = 0.8;
-          speechSynthesis.speak(utterance);
-        }
-      };
-      reader.readAsDataURL(tempBlob);
-    } catch (error) {
-      console.error('Live feedback error:', error);
-    } finally {
-      setIsProcessing(false);
-    }
-  }, [currentTopic.malayalam]);
-
-  const startListening = useCallback(async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
-      
-      mediaRecorderRef.current = mediaRecorder;
-      audioChunksRef.current = [];
-
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
-
-      mediaRecorder.onstop = () => {
-        stream.getTracks().forEach(track => track.stop());
-        if (feedbackIntervalRef.current) {
-          clearInterval(feedbackIntervalRef.current);
-          feedbackIntervalRef.current = null;
-        }
-      };
-
-      mediaRecorder.start(1000);
-      setIsListening(true);
-
-      feedbackIntervalRef.current = setInterval(() => {
-        if (audioChunksRef.current.length > 0) {
-          provideLiveFeedback([...audioChunksRef.current]);
-        }
-      }, 3000);
-      
-      toast({
-        title: "Started listening",
-        description: "Begin reading the Malayalam text. You'll receive voice corrections.",
-      });
-    } catch (error) {
-      console.error('Error starting microphone:', error);
-      toast({
-        title: "Microphone access failed",
-        description: "Please check your microphone permissions.",
-        variant: "destructive",
-      });
-    }
-  }, [toast, provideLiveFeedback]);
-
-  const stopListening = useCallback(() => {
-    if (mediaRecorderRef.current && isListening) {
-      mediaRecorderRef.current.stop();
-      setIsListening(false);
-      setIsProcessing(false);
-      
-      if (feedbackIntervalRef.current) {
-        clearInterval(feedbackIntervalRef.current);
-        feedbackIntervalRef.current = null;
-      }
-      
-      toast({
-        title: "Stopped listening",
-        description: "Practice session completed.",
-      });
-    }
-  }, [isListening, toast]);
-
-  const readText = useCallback(async () => {
-    setIsReading(true);
-    try {
-      const utterance = new SpeechSynthesisUtterance(currentTopic.malayalam);
-      utterance.lang = 'ml-IN';
-      utterance.rate = 0.7;
-      
-      utterance.onend = () => {
-        setIsReading(false);
-      };
-
-      utterance.onerror = () => {
-        setIsReading(false);
-        toast({
-          title: "Reading failed",
-          description: "Please try again.",
-          variant: "destructive",
-        });
-      };
-
-      speechSynthesis.speak(utterance);
-
-      toast({
-        title: "Reading text",
-        description: "Listen carefully to the pronunciation.",
-      });
-    } catch (error) {
-      console.error('Error reading text:', error);
-      setIsReading(false);
-      toast({
-        title: "Reading failed",
-        description: "Please try again.",
-        variant: "destructive",
-      });
-    }
-  }, [currentTopic.malayalam, toast]);
-
   const toggleTranslation = () => {
     setShowTranslation(!showTranslation);
   };
@@ -355,49 +209,9 @@ const MalayalamTopicContent = () => {
           <Card className="language-card">
             <CardHeader>
               <CardTitle className="text-2xl mb-4">{currentTopic.title}</CardTitle>
-              <div className="flex gap-4 mb-4">
-                <Button
-                  onClick={readText}
-                  className={`audio-button ${isReading ? 'animate-pulse' : ''}`}
-                  disabled={isReading || isListening}
-                >
-                  {isReading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Reading...
-                    </>
-                  ) : (
-                    <>
-                      <Volume2 className="mr-2 h-4 w-4" />
-                      Listen
-                    </>
-                  )}
-                </Button>
-
-                {!isListening ? (
-                  <Button
-                    onClick={startListening}
-                    className="glow-button flex items-center gap-2"
-                    disabled={isReading}
-                  >
-                    <Mic className="h-4 w-4" />
-                    Start Reading
-                    {isProcessing && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={stopListening}
-                    variant="destructive"
-                    className="flex items-center gap-2"
-                  >
-                    Stop Reading
-                    {isProcessing && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
-                  </Button>
-                )}
-              </div>
             </CardHeader>
             <CardContent>
-              {/* Malayalam Text */}
+              {/* Malayalam Text - removed audio controls from here */}
               <div className="text-lg leading-relaxed mb-4 p-4 bg-muted rounded-lg">
                 {currentTopic.malayalam}
               </div>
@@ -423,6 +237,12 @@ const MalayalamTopicContent = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Speech Recorder Component */}
+          <SpeechRecorder 
+            originalText={currentTopic.malayalam}
+            title={currentTopic.title}
+          />
 
           {/* Vocabulary Section */}
           <Card className="language-card">
