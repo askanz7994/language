@@ -1,8 +1,7 @@
-
 import React, { useState, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Mic, Square, Play, Loader2, Volume2, Stop } from 'lucide-react';
+import { Mic, Square, Play, Loader2, Volume2, stop } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -200,7 +199,7 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title }) 
               variant="destructive"
               className="flex items-center gap-2"
             >
-              <Stop className="h-4 w-4" />
+              <stop className="h-4 w-4" />
               Stop Reading
             </Button>
           )}
