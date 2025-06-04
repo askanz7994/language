@@ -36,26 +36,35 @@ serve(async (req) => {
         contents: [{
           parts: [
             {
-              text: `You are analyzing a Malayalam pronunciation recording. The user was supposed to read this EXACT Malayalam text:
+              text: `You are a strict and accurate Malayalam pronunciation tutor. Your task is to analyze the audio recording and compare it EXACTLY to this original Malayalam text:
 
 "${originalText}"
 
-Please listen to the audio recording and:
+CRITICAL INSTRUCTIONS:
+1. Listen carefully to what the speaker actually says
+2. Compare WORD BY WORD against the original text
+3. Be extremely strict - only give high scores (8-10) if the pronunciation is truly excellent
+4. Give a score of 10 ONLY if the pronunciation is absolutely perfect with no errors
+5. If the speaker adds extra words, skips words, or says different words, reduce the score significantly
+6. If the speaker says something completely different, give score 1-2
+7. Focus on both content accuracy AND pronunciation quality
 
-1. FIRST, determine if the speaker is attempting to read the provided Malayalam text or if they're saying something completely different
-2. If they're reading unrelated content, clearly indicate this in your feedback
-3. If they are attempting to read the correct text, provide detailed pronunciation analysis
+SCORING GUIDELINES:
+- 1-2: Completely wrong content or unintelligible
+- 3-4: Some words correct but many errors or missing parts
+- 5-6: Most content correct but noticeable pronunciation issues
+- 7-8: Good content accuracy with minor pronunciation errors
+- 9: Excellent with very minor imperfections
+- 10: PERFECT - exact content with flawless pronunciation
 
-IMPORTANT: Compare what was spoken against the EXACT original text provided above. If the recording contains different words, different content, or is in a different language, this should be reflected in a low accuracy score (1-3/10) and clear feedback about content mismatch.
-
-Format your response as JSON with these exact fields:
-- transcription: what you heard (in Malayalam script if possible, otherwise phonetic)
-- accuracyScore: number from 1-10 (1-3 if content doesn't match original text, 4-6 if content matches but pronunciation needs work, 7-10 if content and pronunciation are good)
-- feedback: detailed explanation focusing on content match and pronunciation quality
-- improvements: specific areas to improve
-- encouragement: positive encouragement
-
-If the recording is completely unrelated to the original text, make this very clear in your feedback.`
+Provide your analysis in JSON format with these exact fields:
+{
+  "transcription": "what you heard in Malayalam script",
+  "accuracyScore": number from 1-10,
+  "feedback": "detailed analysis comparing what was said vs original text",
+  "improvements": "specific areas needing improvement",
+  "encouragement": "motivating message based on performance level"
+}`
             },
             {
               inline_data: {
@@ -66,7 +75,7 @@ If the recording is completely unrelated to the original text, make this very cl
           ]
         }],
         generationConfig: {
-          temperature: 0.3,
+          temperature: 0.1,
           maxOutputTokens: 1000,
         }
       }),
@@ -93,31 +102,37 @@ If the recording is completely unrelated to the original text, make this very cl
       } else {
         // Fallback if JSON parsing fails
         analysisResult = {
-          transcription: "Unable to transcribe clearly",
-          accuracyScore: 3,
-          feedback: `Content analysis: ${responseText.substring(0, 300)}...`,
-          improvements: "Please ensure you are reading the exact Malayalam text provided and speak clearly into the microphone",
-          encouragement: "Keep practicing! Make sure to read the provided text exactly as written."
+          transcription: "Unable to process audio clearly",
+          accuracyScore: 2,
+          feedback: "Audio quality insufficient for analysis. Please ensure you speak clearly and your microphone is working properly.",
+          improvements: "Please record again with better audio quality. Speak slowly and clearly into the microphone.",
+          encouragement: "Don't worry! Try recording again with clearer audio."
         };
       }
     } catch (parseError) {
       console.error('JSON parsing error:', parseError);
       analysisResult = {
-        transcription: "Unable to transcribe clearly",
-        accuracyScore: 3,
-        feedback: `Content analysis indicates potential mismatch with original text. Response: ${responseText.substring(0, 200)}...`,
-        improvements: "Please ensure you are reading the exact Malayalam text provided. Check that your microphone is working properly.",
-        encouragement: "Don't worry! Make sure to read the provided Malayalam text exactly and try again."
+        transcription: "Unable to process audio",
+        accuracyScore: 1,
+        feedback: "Could not analyze the audio recording. Please ensure you are reading the exact Malayalam text provided and that your microphone is working properly.",
+        improvements: "Check your microphone settings and try recording again. Make sure to read only the provided Malayalam text.",
+        encouragement: "Technical issues happen! Please try again and make sure to read the exact text provided."
       };
     }
 
-    // Additional validation to ensure low scores for content mismatch
+    // Ensure accuracy score is within valid range
+    if (analysisResult.accuracyScore < 1) analysisResult.accuracyScore = 1;
+    if (analysisResult.accuracyScore > 10) analysisResult.accuracyScore = 10;
+
+    // Additional validation for content analysis
     if (analysisResult.feedback && 
-        (analysisResult.feedback.toLowerCase().includes('unrelated') ||
+        (analysisResult.feedback.toLowerCase().includes('wrong') ||
          analysisResult.feedback.toLowerCase().includes('different') ||
-         analysisResult.feedback.toLowerCase().includes('mismatch') ||
-         analysisResult.feedback.toLowerCase().includes('wrong content'))) {
-      analysisResult.accuracyScore = Math.min(analysisResult.accuracyScore, 3);
+         analysisResult.feedback.toLowerCase().includes('incorrect') ||
+         analysisResult.feedback.toLowerCase().includes('missing') ||
+         analysisResult.feedback.toLowerCase().includes('extra'))) {
+      // Cap score at 4 if there are content issues
+      analysisResult.accuracyScore = Math.min(analysisResult.accuracyScore, 4);
     }
 
     return new Response(JSON.stringify(analysisResult), {
@@ -130,7 +145,7 @@ If the recording is completely unrelated to the original text, make this very cl
       error: error.message,
       transcription: "Error occurred during analysis",
       accuracyScore: 1,
-      feedback: "Unable to analyze pronunciation at this time. Please ensure you are reading the exact Malayalam text provided and try recording again.",
+      feedback: "Unable to analyze pronunciation due to technical error. Please ensure you are reading the exact Malayalam text provided and try recording again.",
       improvements: "Check your microphone settings and ensure you're reading the provided Malayalam text exactly as written",
       encouragement: "Technical issues happen! Please try again and make sure to read the exact text provided."
     }), {
