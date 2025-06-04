@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -127,13 +128,8 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title }) 
       speechSynthesis.cancel();
       setIsReading(false);
       utteranceRef.current = null;
-      
-      toast({
-        title: "Reading stopped",
-        description: "Text reading has been stopped.",
-      });
     }
-  }, [toast]);
+  }, []);
 
   const analyzeAudio = useCallback(async (audioToAnalyze?: Blob) => {
     const audioData = audioToAnalyze || audioBlob;
