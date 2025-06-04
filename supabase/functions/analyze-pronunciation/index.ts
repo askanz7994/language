@@ -1,4 +1,5 @@
 
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -35,33 +36,37 @@ serve(async (req) => {
         contents: [{
           parts: [
             {
-              text: `Please analyze this audio recording of someone reading Malayalam text and provide pronunciation feedback. 
+              text: `You are analyzing a Malayalam pronunciation recording. The user was supposed to read this EXACT Malayalam text:
 
-Original Malayalam text: "${originalText}"
+"${originalText}"
 
-Please provide:
-1. A transcription of what was spoken (if possible)
-2. Pronunciation accuracy score (1-10)
-3. Specific areas for improvement
-4. Encouragement and positive feedback
+Please listen to the audio recording and:
 
-Format your response as JSON with these fields:
-- transcription: string
-- accuracyScore: number (1-10)
-- feedback: string
-- improvements: string
-- encouragement: string`
+1. FIRST, determine if the speaker is attempting to read the provided Malayalam text or if they're saying something completely different
+2. If they're reading unrelated content, clearly indicate this in your feedback
+3. If they are attempting to read the correct text, provide detailed pronunciation analysis
+
+IMPORTANT: Compare what was spoken against the EXACT original text provided above. If the recording contains different words, different content, or is in a different language, this should be reflected in a low accuracy score (1-3/10) and clear feedback about content mismatch.
+
+Format your response as JSON with these exact fields:
+- transcription: what you heard (in Malayalam script if possible, otherwise phonetic)
+- accuracyScore: number from 1-10 (1-3 if content doesn't match original text, 4-6 if content matches but pronunciation needs work, 7-10 if content and pronunciation are good)
+- feedback: detailed explanation focusing on content match and pronunciation quality
+- improvements: specific areas to improve
+- encouragement: positive encouragement
+
+If the recording is completely unrelated to the original text, make this very clear in your feedback.`
             },
             {
               inline_data: {
-                mime_type: "audio/wav",
+                mime_type: "audio/webm",
                 data: audioBase64
               }
             }
           ]
         }],
         generationConfig: {
-          temperature: 0.7,
+          temperature: 0.3,
           maxOutputTokens: 1000,
         }
       }),
@@ -88,22 +93,31 @@ Format your response as JSON with these fields:
       } else {
         // Fallback if JSON parsing fails
         analysisResult = {
-          transcription: "Unable to transcribe",
-          accuracyScore: 7,
-          feedback: responseText.substring(0, 200) + "...",
-          improvements: "Keep practicing with the pronunciation",
-          encouragement: "Great effort! Keep practicing to improve your Malayalam pronunciation."
+          transcription: "Unable to transcribe clearly",
+          accuracyScore: 3,
+          feedback: `Content analysis: ${responseText.substring(0, 300)}...`,
+          improvements: "Please ensure you are reading the exact Malayalam text provided and speak clearly into the microphone",
+          encouragement: "Keep practicing! Make sure to read the provided text exactly as written."
         };
       }
     } catch (parseError) {
       console.error('JSON parsing error:', parseError);
       analysisResult = {
-        transcription: "Unable to transcribe",
-        accuracyScore: 7,
-        feedback: responseText.substring(0, 200) + "...",
-        improvements: "Keep practicing with the pronunciation",
-        encouragement: "Great effort! Keep practicing to improve your Malayalam pronunciation."
+        transcription: "Unable to transcribe clearly",
+        accuracyScore: 3,
+        feedback: `Content analysis indicates potential mismatch with original text. Response: ${responseText.substring(0, 200)}...`,
+        improvements: "Please ensure you are reading the exact Malayalam text provided. Check that your microphone is working properly.",
+        encouragement: "Don't worry! Make sure to read the provided Malayalam text exactly and try again."
       };
+    }
+
+    // Additional validation to ensure low scores for content mismatch
+    if (analysisResult.feedback && 
+        (analysisResult.feedback.toLowerCase().includes('unrelated') ||
+         analysisResult.feedback.toLowerCase().includes('different') ||
+         analysisResult.feedback.toLowerCase().includes('mismatch') ||
+         analysisResult.feedback.toLowerCase().includes('wrong content'))) {
+      analysisResult.accuracyScore = Math.min(analysisResult.accuracyScore, 3);
     }
 
     return new Response(JSON.stringify(analysisResult), {
@@ -115,13 +129,14 @@ Format your response as JSON with these fields:
     return new Response(JSON.stringify({ 
       error: error.message,
       transcription: "Error occurred during analysis",
-      accuracyScore: 5,
-      feedback: "Unable to analyze pronunciation at this time. Please try again.",
-      improvements: "Check your microphone and try recording again",
-      encouragement: "Don't worry, keep practicing!"
+      accuracyScore: 1,
+      feedback: "Unable to analyze pronunciation at this time. Please ensure you are reading the exact Malayalam text provided and try recording again.",
+      improvements: "Check your microphone settings and ensure you're reading the provided Malayalam text exactly as written",
+      encouragement: "Technical issues happen! Please try again and make sure to read the exact text provided."
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 });
+
