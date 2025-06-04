@@ -1,12 +1,13 @@
 import { Link, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Play } from "lucide-react";
 import { useState } from "react";
 import SpeechRecorder from "@/components/SpeechRecorder";
 
 const MalayalamTopicContent = () => {
   const { topicId } = useParams();
+  const [playingAudio, setPlayingAudio] = useState(false);
   const [showTranslation, setShowTranslation] = useState(false);
 
   const topicData: { [key: string]: any } = {
@@ -46,7 +47,7 @@ const MalayalamTopicContent = () => {
     },
     "festivals-of-kerala": {
       title: "Festivals of Kerala",
-      malayalam: "കേരളത്തിലെ ഉത്സവങ്ങൾ വർണ്ണാഭമായതും വൈവിധ്യപൂർണ്ണവുമാണ്. ഓണം, വിഷു, തൃശ്ശൂർ പൂരം എന്നിവ പ്രധാന ആഘോഷങ്ങളാണ്. ഓണം ഒരു വിളവെടുപ്പ് ഉത്സവം ആണ്, അത് ഐശ്വര്യത്തിന്റെയും സമൃദ്ധിയുടെയും പ്രതീകമാണ്. വിഷു പുതുവർഷത്തെയും നല്ല ഭാവിയെയും സൂചിപ്പിക്കുന്നു. തൃശ്ശൂർ പൂരം ആനകളും വർണ്ണാഭമായ കുടമാറ്റവും മേളവുമായി നടത്തുന്ന ഒരു മഹോത്സവമാണ്. ഈ ഉത്സവങ്ങൾ കേരളത്തിന്റെ സംസ്കാരത്തെയും പാരമ്പര്യത്തെയും പ്രതിഫലിക്കുന്നു. മതപരമായ അതിരുകളില്ലാതെ എല്ലാവരും ഒരുമിച്ച് ആഘോഷിക്കുന്നു, ഇത് സാമൂഹിക ഐക്യത്തിന്റെയും സമാധാനത്തിന്റെയും പ്രതീകമാണ്.",
+      malayalam: "കേരളത്തിലെ ഉത്സവങ്ങൾ വർണ്ണാഭമായതും വൈവിധ്യപൂർണ്ണവുമാണ്. ഓണം, വിഷു, തൃശ്ശൂർ പൂരം എന്നിവ പ്രധാന ആഘോഷങ്ങളാണ്. ഓണം ഒരു വിളവെടുപ്പ് ഉത്സവമാണ്, അത് ഐശ്വര്യത്തിന്റെയും സമൃദ്ധിയുടെയും പ്രതീകമാണ്. വിഷു പുതുവർഷത്തെയും നല്ല ഭാവിയെയും സൂചിപ്പിക്കുന്നു. തൃശ്ശൂർ പൂരം ആനകളും വർണ്ണാഭമായ കുടമാറ്റവും മേളവുമായി നടത്തുന്ന ഒരു മഹോത്സവമാണ്. ഈ ഉത്സവങ്ങൾ കേരളത്തിന്റെ സംസ്കാരത്തെയും പാരമ്പര്യത്തെയും പ്രതിഫലിക്കുന്നു. മതപരമായ അതിരുകളില്ലാതെ എല്ലാവരും ഒരുമിച്ച് ആഘോഷിക്കുന്നു, ഇത് സാമൂഹിക ഐക്യത്തിന്റെയും സമാധാനത്തിന്റെയും പ്രതീകമാണ്.",
       english: "Festivals in Kerala are colorful and diverse. Onam, Vishu, and Thrissur Pooram are major celebrations. Onam is a harvest festival, symbolizing prosperity and abundance. Vishu signifies the New Year and a hopeful future. Thrissur Pooram is a grand festival celebrated with elephants, colorful parasol displays, and traditional music. These festivals reflect Kerala's culture and tradition. Everyone celebrates together, transcending religious boundaries, symbolizing social harmony and peace.",
       vocabulary: [
         { malayalam: "ഉത്സവങ്ങൾ", transliteration: "utsavangal", english: "festivals" },
@@ -184,6 +185,12 @@ const MalayalamTopicContent = () => {
 
   const currentTopic = topicData[topicId || ""] || topicData["kerala-natural-beauty"];
 
+  const playAudio = () => {
+    setPlayingAudio(true);
+    console.log(`Playing audio for topic: ${currentTopic.title}`);
+    setTimeout(() => setPlayingAudio(false), 3000);
+  };
+
   const toggleTranslation = () => {
     setShowTranslation(!showTranslation);
   };
@@ -206,38 +213,49 @@ const MalayalamTopicContent = () => {
 
         {/* Content Card */}
         <div className="max-w-4xl mx-auto space-y-8">
-          {/* Speech Recorder Component */}
+          <Card className="language-card">
+            <CardHeader>
+              <CardTitle className="text-2xl mb-4">{currentTopic.title}</CardTitle>
+              <div className="flex gap-4 mb-4">
+                <Button
+                  onClick={playAudio}
+                  className={`audio-button ${playingAudio ? 'animate-pulse' : ''}`}
+                >
+                  <Play className="mr-2 h-4 w-4" />
+                  Read
+                </Button>
+                <Button
+                  onClick={toggleTranslation}
+                  variant={showTranslation ? "default" : "outline"}
+                  className="glow-button"
+                >
+                  {showTranslation ? "Hide" : "Show"} Translation
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {/* Malayalam Text */}
+              <div className="text-lg leading-relaxed mb-4 p-4 bg-muted rounded-lg">
+                {currentTopic.malayalam}
+              </div>
+              
+              {/* Translation */}
+              {showTranslation && (
+                <div className="mt-4">
+                  <h4 className="text-lg font-semibold mb-2">English Translation:</h4>
+                  <div className="text-base leading-relaxed p-4 bg-muted/50 rounded-lg">
+                    {currentTopic.english}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Speech Recording Section */}
           <SpeechRecorder 
             originalText={currentTopic.malayalam}
             title={currentTopic.title}
           />
-
-          <Card className="language-card">
-            <CardHeader>
-              <CardTitle className="text-2xl mb-4">{currentTopic.title}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {/* Translation - moved to bottom */}
-              <div className="mt-6 pt-4 border-t">
-                <Button
-                  onClick={toggleTranslation}
-                  variant={showTranslation ? "default" : "outline"}
-                  className="glow-button mb-4"
-                >
-                  {showTranslation ? "Hide" : "Show"} Translation
-                </Button>
-                
-                {showTranslation && (
-                  <div>
-                    <h4 className="text-lg font-semibold mb-2">English Translation:</h4>
-                    <div className="text-base leading-relaxed p-4 bg-muted/50 rounded-lg">
-                      {currentTopic.english}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
 
           {/* Vocabulary Section */}
           <Card className="language-card">
