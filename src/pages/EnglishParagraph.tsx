@@ -2,20 +2,60 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { useState } from "react";
 
 const EnglishParagraph = () => {
-  const [playingAudio, setPlayingAudio] = useState(false);
-
-  const paragraph = {
-    title: "My Daily Routine",
-    text: "My name is Sarah. I wake up at six o'clock in the morning. After waking up, I brush my teeth and take a shower. I eat my breakfast at eight o'clock. Usually, I have cereal or toast with jam. Then I go to school by bus. At school, I attend classes and meet my friends. In the evening, I do my homework and play games. At night, I read books and spend time with my family. We often watch movies together or talk about our day. Before going to bed, I prepare my clothes for the next day and set my alarm clock."
-  };
-
-  const playAudio = () => {
-    setPlayingAudio(true);
-    setTimeout(() => setPlayingAudio(false), 3000);
-  };
+  const topics = [
+    {
+      id: "kerala-landscapes",
+      title: "The Allure of Kerala's Landscapes",
+      description: "Explore the breathtaking beauty of God's Own Country"
+    },
+    {
+      id: "malayalam-literature",
+      title: "A Glimpse into Malayalam Literature",
+      description: "Discover the rich literary heritage and famous authors"
+    },
+    {
+      id: "kerala-festivals",
+      title: "Celebrating Kerala's Diverse Festivals",
+      description: "Learn about colorful traditions and community celebrations"
+    },
+    {
+      id: "healthcare-ayurveda",
+      title: "Kerala's Renowned Healthcare and Ayurveda",
+      description: "Understand the global reputation of natural healing"
+    },
+    {
+      id: "kerala-cuisine",
+      title: "The Rich Flavors of Kerala Cuisine",
+      description: "Taste the diverse and delicious culinary traditions"
+    },
+    {
+      id: "education-kerala",
+      title: "High Standards of Education in Kerala",
+      description: "Learn about the state's educational achievements"
+    },
+    {
+      id: "kerala-climate",
+      title: "Understanding Kerala's Climate Diversity",
+      description: "Explore the varied weather patterns and seasons"
+    },
+    {
+      id: "kerala-backwaters",
+      title: "The Enchanting Kerala Backwaters",
+      description: "Experience the serene beauty of waterways"
+    },
+    {
+      id: "kerala-art-forms",
+      title: "Kerala's Vibrant Traditional Art Forms",
+      description: "Discover classical performances and cultural expressions"
+    },
+    {
+      id: "peace-harmony",
+      title: "Kerala's Reputation for Peace and Harmony",
+      description: "Understand the state's social unity and tolerance"
+    }
+  ];
 
   return (
     <div className="min-h-screen animated-bg">
@@ -26,49 +66,26 @@ const EnglishParagraph = () => {
         </Link>
 
         <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">{paragraph.title}</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-6">
+            English Reading Topics
+          </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Read and understand an English paragraph about daily routine
+            Explore various topics through English paragraphs with pronunciation practice
           </p>
         </div>
 
-        <div className="max-w-4xl mx-auto">
-          <div className="language-card mb-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold">Reading Passage</h2>
-              <Button
-                onClick={playAudio}
-                className={`audio-button ${playingAudio ? 'animate-pulse' : ''}`}
-              >
-                🔊 Play Audio
-              </Button>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          {topics.map((topic) => (
+            <div key={topic.id} className="language-card text-center">
+              <h2 className="text-2xl font-bold mb-4">{topic.title}</h2>
+              <p className="text-muted-foreground mb-6">{topic.description}</p>
+              <Link to={`/english/paragraph/${topic.id}`}>
+                <Button className="glow-button w-full">
+                  Read & Practice
+                </Button>
+              </Link>
             </div>
-            <div className="text-lg leading-relaxed p-6 bg-muted rounded-lg">
-              {paragraph.text}
-            </div>
-          </div>
-
-          <div className="language-card">
-            <h3 className="text-2xl font-bold mb-6">Key Vocabulary</h3>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="flex justify-between items-center p-3 bg-muted rounded">
-                <span className="font-semibold">routine</span>
-                <span className="text-muted-foreground">daily activities</span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-muted rounded">
-                <span className="font-semibold">shower</span>
-                <span className="text-muted-foreground">wash with water</span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-muted rounded">
-                <span className="font-semibold">cereal</span>
-                <span className="text-muted-foreground">breakfast food</span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-muted rounded">
-                <span className="font-semibold">homework</span>
-                <span className="text-muted-foreground">school assignments</span>
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
     </div>
