@@ -91,11 +91,6 @@ const EnglishAudioControls = ({
 
       speechSynthesis.speak(utterance);
 
-      toast({
-        title: "Reading text",
-        description: "Listen carefully to the pronunciation with word highlighting.",
-      });
-
     } catch (error) {
       console.error('Error in readText:', error);
       setIsReading(false);

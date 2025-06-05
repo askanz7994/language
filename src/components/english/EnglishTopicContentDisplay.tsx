@@ -36,7 +36,7 @@ const EnglishTopicContentDisplay = ({
         key={index}
         className={`transition-all duration-200 ${
           highlightedWordIndex === index 
-            ? "bg-yellow-200 text-black font-semibold underline decoration-2" 
+            ? "bg-transparent border-2 border-primary text-primary font-semibold rounded px-1" 
             : ""
         }`}
       >

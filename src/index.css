@@ -66,30 +66,43 @@
     box-shadow: 0 4px 15px rgba(4, 203, 224, 0.3);
   }
 
-  .glow-button:hover {
+  .glow-button:active {
     @apply bg-transparent border-2 border-primary text-primary scale-105;
     box-shadow: 0 6px 20px rgba(4, 203, 224, 0.4);
   }
 
   .language-card {
-    @apply bg-card border border-border rounded-xl p-6 transition-all duration-300 hover:scale-105;
+    @apply bg-card border border-border rounded-xl p-6 transition-all duration-300;
     box-shadow: 0 4px 15px rgba(4, 203, 224, 0.1);
   }
 
-  .language-card:hover {
+  .language-card:active {
+    @apply scale-105;
     box-shadow: 0 8px 25px rgba(4, 203, 224, 0.2);
   }
 
   .number-card {
-    @apply bg-card border border-border rounded-lg p-4 transition-all duration-300 hover:bg-muted;
+    @apply bg-card border border-border rounded-lg p-4 transition-all duration-300;
+  }
+
+  .number-card:active {
+    @apply bg-muted;
   }
 
   .word-card {
-    @apply bg-card border border-border rounded-lg p-4 transition-all duration-300 hover:bg-muted;
+    @apply bg-card border border-border rounded-lg p-4 transition-all duration-300;
+  }
+
+  .word-card:active {
+    @apply bg-muted;
   }
 
   .audio-button {
-    @apply bg-primary text-primary-foreground rounded-full p-2 transition-all duration-300 hover:scale-110;
+    @apply bg-primary text-primary-foreground rounded-full p-2 transition-all duration-300;
+  }
+
+  .audio-button:active {
+    @apply scale-110;
   }
 }
 
