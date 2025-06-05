@@ -42,9 +42,9 @@ const TopicContentDisplay = ({
     return words.map((word, index) => (
       <span
         key={index}
-        className={`${
+        className={`transition-all duration-200 ${
           highlightedWordIndex === index 
-            ? "underline decoration-2 decoration-blue-500" 
+            ? "bg-yellow-200 text-black font-semibold underline decoration-2" 
             : ""
         }`}
       >

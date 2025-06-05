@@ -23,14 +23,12 @@ const AudioControls = ({
 }: AudioControlsProps) => {
   const [isReading, setIsReading] = useState(false);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
-  const timeoutRefs = useRef<NodeJS.Timeout[]>([]);
+  const currentWordIndexRef = useRef<number>(0);
+  const wordsRef = useRef<string[]>([]);
   const { toast } = useToast();
 
   const clearHighlighting = useCallback(() => {
-    // Clear all existing timeouts
-    timeoutRefs.current.forEach(timeout => clearTimeout(timeout));
-    timeoutRefs.current = [];
-    
+    currentWordIndexRef.current = 0;
     if (onWordHighlight) {
       onWordHighlight(-1); // Clear all highlighting
     }
@@ -38,47 +36,40 @@ const AudioControls = ({
 
   const readText = useCallback(async () => {
     setIsReading(true);
-    clearHighlighting();
     
     try {
       // Split text into words
       const words = malayalamText.split(/\s+/);
-      
+      wordsRef.current = words;
+      currentWordIndexRef.current = 0;
+
       // Create and configure speech utterance
       const utterance = new SpeechSynthesisUtterance(malayalamText);
       utterance.lang = 'ml-IN';
-      utterance.rate = 0.7; // Slightly faster for better timing
+      utterance.rate = 0.6; // Slower rate for better word tracking
       utterance.pitch = 1;
       
       utteranceRef.current = utterance;
 
-      // Calculate timing based on speech rate
-      const averageWordDuration = 600; // milliseconds per word for Malayalam
-      const startDelay = 300; // Initial delay before first word
-
-      // Set up word highlighting timeouts
-      words.forEach((word, index) => {
-        const highlightTime = startDelay + (index * averageWordDuration);
-        
-        const timeoutId = setTimeout(() => {
-          if (onWordHighlight && utteranceRef.current) {
-            console.log(`Highlighting word ${index}: ${word}`);
-            onWordHighlight(index);
+      // Use boundary events for more accurate word highlighting
+      utterance.onboundary = (event) => {
+        if (event.name === 'word' && onWordHighlight) {
+          const currentIndex = currentWordIndexRef.current;
+          if (currentIndex < words.length) {
+            console.log('Highlighting word:', currentIndex, words[currentIndex]);
+            onWordHighlight(currentIndex);
+            currentWordIndexRef.current++;
           }
-        }, highlightTime);
-        
-        timeoutRefs.current.push(timeoutId);
-      });
-
-      // Clear highlighting when speech ends
-      const totalDuration = startDelay + (words.length * averageWordDuration) + 1000;
-      const clearTimeoutId = setTimeout(() => {
-        clearHighlighting();
-      }, totalDuration);
-      timeoutRefs.current.push(clearTimeoutId);
+        }
+      };
 
       utterance.onstart = () => {
         console.log('Speech started');
+        if (onWordHighlight && words.length > 0) {
+          // Highlight first word when speech actually starts
+          onWordHighlight(0);
+          currentWordIndexRef.current = 1; // Next word to highlight
+        }
       };
 
       utterance.onend = () => {
