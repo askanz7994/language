@@ -33,23 +33,10 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title, au
         
         // Cancel any ongoing speech
         speechSynthesis.cancel();
-
-        // Get phonetic pronunciation from Gemini for better feedback reading
-        const { data, error } = await supabase.functions.invoke('malayalam-tts', {
-          body: {
-            text: text,
-            language: 'en'
-          }
-        });
-
-        let textToSpeak = text;
-        if (!error && data.phoneticText) {
-          textToSpeak = data.phoneticText;
-        }
         
-        const utterance = new SpeechSynthesisUtterance(textToSpeak);
+        const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'en-US';
-        utterance.rate = 0.85; // Slightly slower for clarity
+        utterance.rate = 0.9;
         utterance.pitch = 1;
         utterance.volume = 1;
         
