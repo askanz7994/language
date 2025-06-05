@@ -290,12 +290,6 @@ const MalayalamTopicContent = () => {
     }
   }, []);
 
-  const playAudio = () => {
-    setPlayingAudio(true);
-    console.log(`Playing audio for topic: ${currentTopic.title}`);
-    setTimeout(() => setPlayingAudio(false), 3000);
-  };
-
   const toggleTranslation = () => {
     setShowTranslation(!showTranslation);
   };
