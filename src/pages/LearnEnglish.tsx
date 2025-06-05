@@ -8,9 +8,9 @@ const LearnEnglish = () => {
     <div className="min-h-screen blur-bg">
       <div className="container mx-auto px-4 py-16">
         {/* Back Button */}
-        <Link to="/languages" className="inline-flex items-center text-primary hover:text-primary/80 mb-8">
+        <Link to="/" className="inline-flex items-center text-primary hover:text-primary/80 mb-8">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Languages
+          Back to Home
         </Link>
 
         {/* Page Title */}

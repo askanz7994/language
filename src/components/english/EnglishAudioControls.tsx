@@ -23,16 +23,36 @@ const EnglishAudioControls = ({
 }: EnglishAudioControlsProps) => {
   const [isReading, setIsReading] = useState(false);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
-  const currentWordIndexRef = useRef<number>(0);
   const wordsRef = useRef<string[]>([]);
+  const highlightTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
 
   const clearHighlighting = useCallback(() => {
-    currentWordIndexRef.current = 0;
     if (onWordHighlight) {
       onWordHighlight(-1);
     }
+    if (highlightTimeoutRef.current) {
+      clearTimeout(highlightTimeoutRef.current);
+      highlightTimeoutRef.current = null;
+    }
   }, [onWordHighlight]);
+
+  const highlightWordsSequentially = useCallback((words: string[], duration: number) => {
+    const wordDuration = duration / words.length;
+    
+    words.forEach((_, index) => {
+      highlightTimeoutRef.current = setTimeout(() => {
+        if (onWordHighlight) {
+          onWordHighlight(index);
+        }
+      }, index * wordDuration);
+    });
+
+    // Clear highlighting after all words are done
+    highlightTimeoutRef.current = setTimeout(() => {
+      clearHighlighting();
+    }, duration + 100);
+  }, [onWordHighlight, clearHighlighting]);
 
   const readText = useCallback(async () => {
     setIsReading(true);
@@ -40,7 +60,6 @@ const EnglishAudioControls = ({
     try {
       const words = englishText.split(/\s+/);
       wordsRef.current = words;
-      currentWordIndexRef.current = 0;
 
       const utterance = new SpeechSynthesisUtterance(englishText);
       utterance.lang = 'en-US';
@@ -49,23 +68,12 @@ const EnglishAudioControls = ({
       
       utteranceRef.current = utterance;
 
-      utterance.onboundary = (event) => {
-        if (event.name === 'word' && onWordHighlight) {
-          const currentIndex = currentWordIndexRef.current;
-          if (currentIndex < words.length) {
-            console.log('Highlighting word:', currentIndex, words[currentIndex]);
-            onWordHighlight(currentIndex);
-            currentWordIndexRef.current++;
-          }
-        }
-      };
+      // Calculate estimated duration based on speech rate and text length
+      const estimatedDuration = (englishText.length / 10) * 1000; // Rough estimation
 
       utterance.onstart = () => {
         console.log('Speech started');
-        if (onWordHighlight && words.length > 0) {
-          onWordHighlight(0);
-          currentWordIndexRef.current = 1;
-        }
+        highlightWordsSequentially(words, estimatedDuration);
       };
 
       utterance.onend = () => {
@@ -102,7 +110,7 @@ const EnglishAudioControls = ({
         variant: "destructive",
       });
     }
-  }, [englishText, toast, onWordHighlight, onReadingStop, clearHighlighting]);
+  }, [englishText, toast, onWordHighlight, onReadingStop, clearHighlighting, highlightWordsSequentially]);
 
   const stopReading = useCallback(() => {
     if (utteranceRef.current) {
