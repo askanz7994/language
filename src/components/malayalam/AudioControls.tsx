@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Volume2, Square, Mic } from "lucide-react";
 import { useState, useRef, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 
 interface AudioControlsProps {
   malayalamText: string;
@@ -19,68 +18,37 @@ const AudioControls = ({
   onStopRecording 
 }: AudioControlsProps) => {
   const [isReading, setIsReading] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const { toast } = useToast();
 
   const readText = useCallback(async () => {
     setIsReading(true);
     try {
-      // Use Gemini for better Malayalam pronunciation
-      const { data, error } = await supabase.functions.invoke('gemini-text-to-speech', {
-        body: {
-          text: malayalamText,
-          language: 'malayalam'
-        }
-      });
+      const utterance = new SpeechSynthesisUtterance(malayalamText);
+      utterance.lang = 'ml-IN';
+      utterance.rate = 0.8;
+      
+      utteranceRef.current = utterance;
+      
+      utterance.onend = () => {
+        setIsReading(false);
+        utteranceRef.current = null;
+      };
 
-      if (error) {
-        console.error('Gemini TTS error:', error);
-        // Fall back to Web Speech API with optimized Malayalam settings
-        const utterance = new SpeechSynthesisUtterance(malayalamText);
-        utterance.lang = 'ml-IN';
-        utterance.rate = 0.7; // Slower for better pronunciation
-        utterance.pitch = 1.0;
-        
-        utterance.onend = () => {
-          setIsReading(false);
-        };
+      utterance.onerror = () => {
+        setIsReading(false);
+        utteranceRef.current = null;
+        toast({
+          title: "Reading failed",
+          description: "Please try again.",
+          variant: "destructive",
+        });
+      };
 
-        utterance.onerror = () => {
-          setIsReading(false);
-          toast({
-            title: "Reading failed",
-            description: "Please try again.",
-            variant: "destructive",
-          });
-        };
-
-        speechSynthesis.speak(utterance);
-      } else {
-        // For now, still use Web Speech API but with better settings
-        // TODO: When Gemini audio generation is available, use the returned audio
-        const utterance = new SpeechSynthesisUtterance(malayalamText);
-        utterance.lang = 'ml-IN';
-        utterance.rate = 0.7; // Slower rate for better Malayalam pronunciation
-        utterance.pitch = 1.0;
-        
-        utterance.onend = () => {
-          setIsReading(false);
-        };
-
-        utterance.onerror = () => {
-          setIsReading(false);
-          toast({
-            title: "Reading failed",
-            description: "Please try again.",
-            variant: "destructive",
-          });
-        };
-
-        speechSynthesis.speak(utterance);
-      }
+      speechSynthesis.speak(utterance);
 
       toast({
-        title: "Reading Malayalam text",
+        title: "Reading text",
         description: "Listen carefully to the pronunciation.",
       });
     } catch (error) {
@@ -95,12 +63,11 @@ const AudioControls = ({
   }, [malayalamText, toast]);
 
   const stopReading = useCallback(() => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
+    if (utteranceRef.current) {
+      speechSynthesis.cancel();
+      setIsReading(false);
+      utteranceRef.current = null;
     }
-    speechSynthesis.cancel();
-    setIsReading(false);
   }, []);
 
   return (
