@@ -46,6 +46,15 @@
     position: relative;
   }
 
+  .animated-bg {
+    background: 
+      radial-gradient(circle at 15% 30%, rgba(4, 203, 224, 0.15) 0%, transparent 60%),
+      radial-gradient(circle at 85% 70%, rgba(4, 203, 224, 0.12) 0%, transparent 70%),
+      radial-gradient(circle at 60% 20%, rgba(4, 203, 224, 0.08) 0%, transparent 80%),
+      radial-gradient(circle at 25% 80%, rgba(4, 203, 224, 0.1) 0%, transparent 65%);
+    position: relative;
+  }
+
   .blur-bg::before {
     content: '';
     position: absolute;
@@ -85,16 +94,8 @@
     @apply bg-card border border-border rounded-lg p-4 transition-all duration-300;
   }
 
-  .number-card:active {
-    @apply bg-muted;
-  }
-
   .word-card {
     @apply bg-card border border-border rounded-lg p-4 transition-all duration-300;
-  }
-
-  .word-card:active {
-    @apply bg-muted;
   }
 
   .audio-button {

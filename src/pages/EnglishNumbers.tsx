@@ -23,8 +23,23 @@ const EnglishNumbers = () => {
 
   const playAudio = (index: number) => {
     setPlayingAudio(index);
-    console.log(`Playing audio for English number: ${numbers[index].digit} - ${numbers[index].word}`);
-    setTimeout(() => setPlayingAudio(null), 1000);
+    const numberText = `${numbers[index].digit}, ${numbers[index].word}`;
+    console.log(`Playing audio for English number: ${numberText}`);
+    
+    // Use Speech Synthesis API to read the number aloud
+    const utterance = new SpeechSynthesisUtterance(numberText);
+    utterance.lang = 'en-US';
+    utterance.rate = 0.8;
+    utterance.pitch = 1;
+    
+    utterance.onend = () => {
+      setPlayingAudio(null);
+    };
+    
+    speechSynthesis.speak(utterance);
+    
+    // Reset playing state after a short delay as fallback
+    setTimeout(() => setPlayingAudio(null), 2000);
   };
 
   return (
@@ -58,6 +73,7 @@ const EnglishNumbers = () => {
                   size="sm"
                 >
                   <Volume2 className="h-4 w-4" />
+                  Listen
                 </Button>
               </div>
             </div>

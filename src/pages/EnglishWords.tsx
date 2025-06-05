@@ -22,8 +22,23 @@ const EnglishWords = () => {
 
   const playAudio = (index: number) => {
     setPlayingAudio(index);
-    console.log(`Playing audio for English word: ${words[index]}`);
-    setTimeout(() => setPlayingAudio(null), 1000);
+    const word = words[index];
+    console.log(`Playing audio for English word: ${word}`);
+    
+    // Use Speech Synthesis API to read the word aloud
+    const utterance = new SpeechSynthesisUtterance(word);
+    utterance.lang = 'en-US';
+    utterance.rate = 0.8;
+    utterance.pitch = 1;
+    
+    utterance.onend = () => {
+      setPlayingAudio(null);
+    };
+    
+    speechSynthesis.speak(utterance);
+    
+    // Reset playing state after a short delay as fallback
+    setTimeout(() => setPlayingAudio(null), 1500);
   };
 
   return (
@@ -54,6 +69,7 @@ const EnglishWords = () => {
                   size="sm"
                 >
                   <Volume2 className="h-4 w-4" />
+                  Listen
                 </Button>
               </div>
             </div>
