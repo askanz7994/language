@@ -9,13 +9,17 @@ interface AudioControlsProps {
   isRecording: boolean;
   onStartRecording: () => void;
   onStopRecording: () => void;
+  onWordHighlight?: (wordIndex: number) => void;
+  onReadingStop?: () => void;
 }
 
 const AudioControls = ({ 
   malayalamText, 
   isRecording, 
   onStartRecording, 
-  onStopRecording 
+  onStopRecording,
+  onWordHighlight,
+  onReadingStop
 }: AudioControlsProps) => {
   const [isReading, setIsReading] = useState(false);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
@@ -24,20 +28,40 @@ const AudioControls = ({
   const readText = useCallback(async () => {
     setIsReading(true);
     try {
+      const words = malayalamText.split(' ');
+      let currentWordIndex = 0;
+
       const utterance = new SpeechSynthesisUtterance(malayalamText);
       utterance.lang = 'ml-IN';
-      utterance.rate = 0.8;
+      utterance.rate = 0.6; // Slower for better pronunciation
       
       utteranceRef.current = utterance;
       
+      // Estimate word timing based on speech rate
+      const wordsPerMinute = 80; // Slower for Malayalam
+      const millisecondsPerWord = (60 / wordsPerMinute) * 1000;
+      
+      const wordTimer = setInterval(() => {
+        if (currentWordIndex < words.length && onWordHighlight) {
+          onWordHighlight(currentWordIndex);
+          currentWordIndex++;
+        } else {
+          clearInterval(wordTimer);
+        }
+      }, millisecondsPerWord);
+
       utterance.onend = () => {
         setIsReading(false);
         utteranceRef.current = null;
+        clearInterval(wordTimer);
+        if (onReadingStop) onReadingStop();
       };
 
       utterance.onerror = () => {
         setIsReading(false);
         utteranceRef.current = null;
+        clearInterval(wordTimer);
+        if (onReadingStop) onReadingStop();
         toast({
           title: "Reading failed",
           description: "Please try again.",
@@ -54,21 +78,23 @@ const AudioControls = ({
     } catch (error) {
       console.error('Error reading text:', error);
       setIsReading(false);
+      if (onReadingStop) onReadingStop();
       toast({
         title: "Reading failed",
         description: "Please try again.",
         variant: "destructive",
       });
     }
-  }, [malayalamText, toast]);
+  }, [malayalamText, toast, onWordHighlight, onReadingStop]);
 
   const stopReading = useCallback(() => {
     if (utteranceRef.current) {
       speechSynthesis.cancel();
       setIsReading(false);
       utteranceRef.current = null;
+      if (onReadingStop) onReadingStop();
     }
-  }, []);
+  }, [onReadingStop]);
 
   return (
     <div className="flex gap-4 justify-center mb-6">

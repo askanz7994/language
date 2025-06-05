@@ -20,8 +20,19 @@ const MalayalamTopicContent = () => {
 
   const startRecording = useCallback(async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+          sampleRate: 44100
+        } 
+      });
+      
+      const mediaRecorder = new MediaRecorder(stream, { 
+        mimeType: 'audio/webm;codecs=opus',
+        audioBitsPerSecond: 128000
+      });
       
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
@@ -38,18 +49,18 @@ const MalayalamTopicContent = () => {
         stream.getTracks().forEach(track => track.stop());
       };
 
-      mediaRecorder.start();
+      mediaRecorder.start(1000); // Record in 1-second chunks for better quality
       setIsRecording(true);
       
       toast({
         title: "Recording started",
-        description: "Start reading the Malayalam text aloud.",
+        description: "Read the Malayalam text clearly and slowly.",
       });
     } catch (error) {
       console.error('Error starting recording:', error);
       toast({
         title: "Recording failed",
-        description: "Please check your microphone permissions.",
+        description: "Please check your microphone permissions and ensure it's working properly.",
         variant: "destructive",
       });
     }
@@ -62,7 +73,7 @@ const MalayalamTopicContent = () => {
       
       toast({
         title: "Recording stopped",
-        description: "Processing your pronunciation...",
+        description: "Processing your pronunciation for analysis...",
       });
     }
   }, [isRecording, toast]);

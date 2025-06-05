@@ -22,29 +22,53 @@ const TopicContentDisplay = ({
   onStopRecording 
 }: TopicContentDisplayProps) => {
   const [showTranslation, setShowTranslation] = useState(false);
+  const [highlightedWordIndex, setHighlightedWordIndex] = useState<number | null>(null);
 
   const toggleTranslation = () => {
     setShowTranslation(!showTranslation);
+  };
+
+  const handleWordHighlight = (wordIndex: number) => {
+    setHighlightedWordIndex(wordIndex);
+  };
+
+  const handleReadingStop = () => {
+    setHighlightedWordIndex(null);
+  };
+
+  const renderMalayalamWithHighlight = () => {
+    const words = malayalam.split(' ');
+    return words.map((word, index) => (
+      <span
+        key={index}
+        className={highlightedWordIndex === index ? "underline decoration-black decoration-2" : ""}
+      >
+        {word}
+        {index < words.length - 1 ? ' ' : ''}
+      </span>
+    ));
   };
 
   return (
     <Card className="language-card">
       <CardHeader>
         <CardTitle className="text-2xl mb-4">{title}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {/* Malayalam Text */}
-        <div className="text-lg leading-relaxed mb-4 p-4 bg-muted rounded-lg">
-          {malayalam}
-        </div>
         
-        {/* Audio Controls positioned at the top of main content */}
+        {/* Audio Controls moved to top */}
         <AudioControls
           malayalamText={malayalam}
           isRecording={isRecording}
           onStartRecording={onStartRecording}
           onStopRecording={onStopRecording}
+          onWordHighlight={handleWordHighlight}
+          onReadingStop={handleReadingStop}
         />
+      </CardHeader>
+      <CardContent>
+        {/* Malayalam Text with word highlighting */}
+        <div className="text-lg leading-relaxed mb-4 p-4 bg-muted rounded-lg">
+          {renderMalayalamWithHighlight()}
+        </div>
         
         {/* Translation */}
         <div className="mt-6">
