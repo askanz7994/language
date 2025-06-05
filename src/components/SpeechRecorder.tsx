@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import AudioFeedback from './malayalam/AudioFeedback';
 
 interface SpeechRecorderProps {
   originalText: string;
@@ -97,25 +98,50 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title, au
             
             {analysisResult.transcription && (
               <div className="word-card">
-                <h4 className="font-semibold mb-2">What we heard:</h4>
+                <div className="flex justify-between items-start mb-2">
+                  <h4 className="font-semibold">What we heard:</h4>
+                  <AudioFeedback 
+                    text={analysisResult.transcription} 
+                    title="transcription"
+                    language="malayalam"
+                  />
+                </div>
                 <p className="text-muted-foreground">{analysisResult.transcription}</p>
               </div>
             )}
             
             <div className="word-card">
-              <h4 className="font-semibold mb-2">Feedback:</h4>
+              <div className="flex justify-between items-start mb-2">
+                <h4 className="font-semibold">Feedback:</h4>
+                <AudioFeedback 
+                  text={analysisResult.feedback} 
+                  title="feedback"
+                />
+              </div>
               <p className="text-muted-foreground">{analysisResult.feedback}</p>
             </div>
             
             {analysisResult.improvements && (
               <div className="word-card">
-                <h4 className="font-semibold mb-2">Areas for improvement:</h4>
+                <div className="flex justify-between items-start mb-2">
+                  <h4 className="font-semibold">Areas for improvement:</h4>
+                  <AudioFeedback 
+                    text={analysisResult.improvements} 
+                    title="improvements"
+                  />
+                </div>
                 <p className="text-muted-foreground">{analysisResult.improvements}</p>
               </div>
             )}
             
             <div className="word-card bg-primary/10">
-              <h4 className="font-semibold mb-2">Encouragement:</h4>
+              <div className="flex justify-between items-start mb-2">
+                <h4 className="font-semibold">Encouragement:</h4>
+                <AudioFeedback 
+                  text={analysisResult.encouragement} 
+                  title="encouragement"
+                />
+              </div>
               <p className="text-primary">{analysisResult.encouragement}</p>
             </div>
           </div>
