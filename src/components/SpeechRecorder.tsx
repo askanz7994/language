@@ -34,17 +34,7 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title, au
         // Cancel any ongoing speech
         speechSynthesis.cancel();
         
-        // Use Gemini to convert feedback text to phonetic pronunciation
-        const { data, error } = await supabase.functions.invoke('gemini-phonetic-converter', {
-          body: { text: text }
-        });
-
-        let textToSpeak = text;
-        if (!error && data?.phoneticText) {
-          textToSpeak = data.phoneticText;
-        }
-        
-        const utterance = new SpeechSynthesisUtterance(textToSpeak);
+        const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'en-US';
         utterance.rate = 0.9;
         utterance.pitch = 1;
@@ -121,7 +111,7 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title, au
           description: `Pronunciation score: ${data.accuracyScore}/10`,
         });
 
-        // Automatically read the feedback aloud using Gemini-powered phonetic conversion
+        // Automatically read the feedback aloud
         setTimeout(() => {
           const feedbackText = `Your pronunciation score is ${data.accuracyScore} out of 10. ${data.feedback}`;
           speakFeedback(feedbackText);

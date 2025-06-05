@@ -2,25 +2,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import AudioControls from "./AudioControls";
 
 interface TopicContentDisplayProps {
   title: string;
   malayalam: string;
   english: string;
-  isRecording: boolean;
-  onStartRecording: () => void;
-  onStopRecording: () => void;
 }
 
-const TopicContentDisplay = ({ 
-  title, 
-  malayalam, 
-  english, 
-  isRecording, 
-  onStartRecording, 
-  onStopRecording 
-}: TopicContentDisplayProps) => {
+const TopicContentDisplay = ({ title, malayalam, english }: TopicContentDisplayProps) => {
   const [showTranslation, setShowTranslation] = useState(false);
 
   const toggleTranslation = () => {
@@ -37,14 +26,6 @@ const TopicContentDisplay = ({
         <div className="text-lg leading-relaxed mb-4 p-4 bg-muted rounded-lg">
           {malayalam}
         </div>
-        
-        {/* Audio Controls positioned at the top of main content */}
-        <AudioControls
-          malayalamText={malayalam}
-          isRecording={isRecording}
-          onStartRecording={onStartRecording}
-          onStopRecording={onStopRecording}
-        />
         
         {/* Translation */}
         <div className="mt-6">
