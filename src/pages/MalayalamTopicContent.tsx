@@ -6,7 +6,6 @@ import SpeechRecorder from "@/components/SpeechRecorder";
 import { useToast } from "@/hooks/use-toast";
 import VocabularySection from "@/components/malayalam/VocabularySection";
 import TopicContentDisplay from "@/components/malayalam/TopicContentDisplay";
-import AudioControls from "@/components/malayalam/AudioControls";
 import { topicData } from "@/data/malayalamTopicData";
 
 const MalayalamTopicContent = () => {
@@ -90,17 +89,10 @@ const MalayalamTopicContent = () => {
             title={currentTopic.title}
             malayalam={currentTopic.malayalam}
             english={currentTopic.english}
+            isRecording={isRecording}
+            onStartRecording={startRecording}
+            onStopRecording={stopRecording}
           />
-
-          {/* Audio Controls positioned within the content card */}
-          <div className="flex justify-center">
-            <AudioControls
-              malayalamText={currentTopic.malayalam}
-              isRecording={isRecording}
-              onStartRecording={startRecording}
-              onStopRecording={stopRecording}
-            />
-          </div>
 
           {/* Speech Recording Section */}
           <SpeechRecorder 

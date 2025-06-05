@@ -1,8 +1,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Volume2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -23,66 +22,7 @@ interface AnalysisResult {
 const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title, audioBlob }) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
-  const [isSpeaking, setIsSpeaking] = useState(false);
   const { toast } = useToast();
-
-  const speakFeedback = useCallback(async (text: string) => {
-    if ('speechSynthesis' in window) {
-      try {
-        setIsSpeaking(true);
-        
-        // Cancel any ongoing speech
-        speechSynthesis.cancel();
-        
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'en-US';
-        utterance.rate = 0.9;
-        utterance.pitch = 1;
-        utterance.volume = 1;
-        
-        utterance.onend = () => {
-          setIsSpeaking(false);
-        };
-        
-        utterance.onerror = () => {
-          setIsSpeaking(false);
-          toast({
-            title: "Speech failed",
-            description: "Unable to read feedback aloud.",
-            variant: "destructive",
-          });
-        };
-        
-        speechSynthesis.speak(utterance);
-        
-        toast({
-          title: "Reading feedback",
-          description: "Listening to pronunciation analysis...",
-        });
-      } catch (error) {
-        console.error('Speech synthesis error:', error);
-        setIsSpeaking(false);
-        toast({
-          title: "Speech failed",
-          description: "Text-to-speech is not available.",
-          variant: "destructive",
-        });
-      }
-    } else {
-      toast({
-        title: "Not supported",
-        description: "Text-to-speech is not supported in this browser.",
-        variant: "destructive",
-      });
-    }
-  }, [toast]);
-
-  const stopSpeaking = useCallback(() => {
-    if ('speechSynthesis' in window) {
-      speechSynthesis.cancel();
-      setIsSpeaking(false);
-    }
-  }, []);
 
   const analyzeAudio = useCallback(async () => {
     if (!audioBlob) return;
@@ -110,12 +50,6 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title, au
           title: "Analysis complete",
           description: `Pronunciation score: ${data.accuracyScore}/10`,
         });
-
-        // Automatically read the feedback aloud
-        setTimeout(() => {
-          const feedbackText = `Your pronunciation score is ${data.accuracyScore} out of 10. ${data.feedback}`;
-          speakFeedback(feedbackText);
-        }, 1000);
       };
       reader.readAsDataURL(audioBlob);
     } catch (error) {
@@ -128,7 +62,7 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title, au
     } finally {
       setIsAnalyzing(false);
     }
-  }, [audioBlob, originalText, toast, speakFeedback]);
+  }, [audioBlob, originalText, toast]);
 
   // Automatically analyze when audioBlob changes
   React.useEffect(() => {
@@ -169,32 +103,7 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title, au
             )}
             
             <div className="word-card">
-              <div className="flex justify-between items-start mb-2">
-                <h4 className="font-semibold">Feedback:</h4>
-                <div className="flex gap-2">
-                  {!isSpeaking ? (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => speakFeedback(`Your pronunciation score is ${analysisResult.accuracyScore} out of 10. ${analysisResult.feedback}`)}
-                      className="flex items-center gap-1"
-                    >
-                      <Volume2 className="h-3 w-3" />
-                      Listen
-                    </Button>
-                  ) : (
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={stopSpeaking}
-                      className="flex items-center gap-1"
-                    >
-                      <Loader2 className="h-3 w-3 animate-spin" />
-                      Stop
-                    </Button>
-                  )}
-                </div>
-              </div>
+              <h4 className="font-semibold mb-2">Feedback:</h4>
               <p className="text-muted-foreground">{analysisResult.feedback}</p>
             </div>
             

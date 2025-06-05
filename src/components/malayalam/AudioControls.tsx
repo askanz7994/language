@@ -79,7 +79,7 @@ const AudioControls = ({
           disabled={isRecording}
         >
           <Volume2 className="h-4 w-4" />
-          Read Text
+          Listen Text
         </Button>
       ) : (
         <Button
@@ -88,7 +88,7 @@ const AudioControls = ({
           className="flex items-center gap-2"
         >
           <Square className="h-4 w-4" />
-          Stop Reading
+          Stop Listening
         </Button>
       )}
 
@@ -99,7 +99,7 @@ const AudioControls = ({
           disabled={isReading}
         >
           <Mic className="h-4 w-4" />
-          Start Recording
+          Start Reading
         </Button>
       ) : (
         <Button
@@ -108,7 +108,7 @@ const AudioControls = ({
           className="flex items-center gap-2"
         >
           <Square className="h-4 w-4" />
-          Stop Recording
+          Stop Reading
         </Button>
       )}
     </div>
