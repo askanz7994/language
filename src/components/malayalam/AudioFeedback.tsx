@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Volume2, Square } from "lucide-react";
 import { useState, useRef, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AudioFeedbackProps {
   text: string;
@@ -12,7 +13,7 @@ interface AudioFeedbackProps {
 
 const AudioFeedback = ({ text, title, language = 'en' }: AudioFeedbackProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const { toast } = useToast();
 
   const playFeedback = useCallback(async () => {
@@ -20,29 +21,61 @@ const AudioFeedback = ({ text, title, language = 'en' }: AudioFeedbackProps) => 
 
     setIsPlaying(true);
     try {
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = language === 'malayalam' ? 'ml-IN' : 'en-US';
-      utterance.rate = 0.9;
-      utterance.pitch = 1.0;
-      
-      utteranceRef.current = utterance;
-      
-      utterance.onend = () => {
-        setIsPlaying(false);
-        utteranceRef.current = null;
-      };
-
-      utterance.onerror = () => {
-        setIsPlaying(false);
-        utteranceRef.current = null;
-        toast({
-          title: "Playback failed",
-          description: "Please try again.",
-          variant: "destructive",
+      // Use Gemini for Malayalam text, Web Speech API for English
+      if (language === 'malayalam') {
+        const { data, error } = await supabase.functions.invoke('gemini-text-to-speech', {
+          body: {
+            text: text,
+            language: 'malayalam'
+          }
         });
-      };
 
-      speechSynthesis.speak(utterance);
+        if (error) {
+          throw error;
+        }
+
+        // For now, fall back to Web Speech API but with Malayalam settings
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'ml-IN';
+        utterance.rate = 0.7; // Slower for better Malayalam pronunciation
+        utterance.pitch = 1.0;
+        
+        utterance.onend = () => {
+          setIsPlaying(false);
+        };
+
+        utterance.onerror = () => {
+          setIsPlaying(false);
+          toast({
+            title: "Playback failed",
+            description: "Please try again.",
+            variant: "destructive",
+          });
+        };
+
+        speechSynthesis.speak(utterance);
+      } else {
+        // Use Web Speech API for English text
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.9;
+        utterance.pitch = 1.0;
+        
+        utterance.onend = () => {
+          setIsPlaying(false);
+        };
+
+        utterance.onerror = () => {
+          setIsPlaying(false);
+          toast({
+            title: "Playback failed",
+            description: "Please try again.",
+            variant: "destructive",
+          });
+        };
+
+        speechSynthesis.speak(utterance);
+      }
 
       toast({
         title: `Playing ${title}`,
@@ -60,11 +93,12 @@ const AudioFeedback = ({ text, title, language = 'en' }: AudioFeedbackProps) => 
   }, [text, title, language, toast]);
 
   const stopFeedback = useCallback(() => {
-    if (utteranceRef.current) {
-      speechSynthesis.cancel();
-      setIsPlaying(false);
-      utteranceRef.current = null;
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
     }
+    speechSynthesis.cancel();
+    setIsPlaying(false);
   }, []);
 
   return (

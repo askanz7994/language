@@ -25,7 +25,11 @@ serve(async (req) => {
       throw new Error('Gemini API key not configured');
     }
 
-    // Use Gemini to generate high-quality text-to-speech
+    // Use Gemini to provide better pronunciation guidance for Malayalam
+    const prompt = language === 'malayalam' 
+      ? `Provide phonetic pronunciation guidance for this Malayalam text to help with text-to-speech accuracy. Break down complex words syllable by syllable: "${text}"`
+      : `Provide natural pronunciation guidance for this text: "${text}"`;
+
     const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${geminiApiKey}`, {
       method: 'POST',
       headers: {
@@ -34,12 +38,12 @@ serve(async (req) => {
       body: JSON.stringify({
         contents: [{
           parts: [{
-            text: `Convert this text to speech with natural pronunciation and proper intonation. Focus on clear articulation: "${text}"`
+            text: prompt
           }]
         }],
         generationConfig: {
           temperature: 0.1,
-          maxOutputTokens: 100,
+          maxOutputTokens: 500,
         }
       }),
     });
@@ -48,13 +52,20 @@ serve(async (req) => {
       throw new Error(`Gemini API error: ${geminiResponse.status}`);
     }
 
-    // For now, return the text for client-side TTS since Gemini doesn't directly support audio generation
-    // But we can use the processed text with Web Speech API for better pronunciation
+    const geminiData = await geminiResponse.json();
+    const pronunciationGuidance = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    console.log('Gemini pronunciation guidance:', pronunciationGuidance);
+
+    // Return the original text with pronunciation guidance
+    // Note: Gemini doesn't directly support audio generation yet, 
+    // but we can use the guidance to improve client-side TTS
     return new Response(JSON.stringify({ 
       success: true,
       text: text,
-      processedText: text,
-      message: 'Text ready for speech synthesis'
+      pronunciationGuidance: pronunciationGuidance,
+      language: language,
+      message: 'Text processed with pronunciation guidance'
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
