@@ -8,7 +8,6 @@ import { useToast } from "@/hooks/use-toast";
 
 const MalayalamTopicContent = () => {
   const { topicId } = useParams();
-  const [playingAudio, setPlayingAudio] = useState(false);
   const [showTranslation, setShowTranslation] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isReading, setIsReading] = useState(false);
@@ -148,7 +147,7 @@ const MalayalamTopicContent = () => {
         { malayalam: "ഹൗസ്ബോട്ട്", transliteration: "houseboat", english: "houseboat" },
         { malayalam: "ശാന്തമായ", transliteration: "shanthamaya", english: "calm" },
         { malayalam: "മനോഹരം", transliteration: "manoharam", english: "beautiful" },
-        { malayalam: "മത്സ്യസമ്പത്ത്", transliteration: "matsyasampathu", english: "fish wealth" },
+        { malayalam: "മത്സ്യസമ്പത്തിന്", transliteration: "matsyasampathu", english: "fish wealth" },
         { malayalam: "അവിഭാജ്യം", transliteration: "avibhajyam", english: "integral" },
         { malayalam: "വരുമാനം", transliteration: "varumanam", english: "income" },
         { malayalam: "ഗ്രാമീണം", transliteration: "grameenarn", english: "rural" },
@@ -322,22 +321,6 @@ const MalayalamTopicContent = () => {
           <Card className="language-card">
             <CardHeader>
               <CardTitle className="text-2xl mb-4">{currentTopic.title}</CardTitle>
-              <div className="flex gap-4 mb-4">
-                <Button
-                  onClick={playAudio}
-                  className={`audio-button ${playingAudio ? 'animate-pulse' : ''}`}
-                >
-                  <Play className="mr-2 h-4 w-4" />
-                  Read
-                </Button>
-                <Button
-                  onClick={toggleTranslation}
-                  variant={showTranslation ? "default" : "outline"}
-                  className="glow-button"
-                >
-                  {showTranslation ? "Hide" : "Show"} Translation
-                </Button>
-              </div>
             </CardHeader>
             <CardContent>
               {/* Reading and Recording Controls */}
@@ -389,14 +372,26 @@ const MalayalamTopicContent = () => {
               </div>
               
               {/* Translation */}
-              {showTranslation && (
-                <div className="mt-4">
-                  <h4 className="text-lg font-semibold mb-2">English Translation:</h4>
-                  <div className="text-base leading-relaxed p-4 bg-muted/50 rounded-lg">
-                    {currentTopic.english}
-                  </div>
+              <div className="mt-6">
+                <div className="flex justify-center mb-4">
+                  <Button
+                    onClick={toggleTranslation}
+                    variant={showTranslation ? "default" : "outline"}
+                    className="glow-button"
+                  >
+                    {showTranslation ? "Hide" : "Show"} Translation
+                  </Button>
                 </div>
-              )}
+                
+                {showTranslation && (
+                  <div>
+                    <h4 className="text-lg font-semibold mb-2">English Translation:</h4>
+                    <div className="text-base leading-relaxed p-4 bg-muted/50 rounded-lg">
+                      {currentTopic.english}
+                    </div>
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
 

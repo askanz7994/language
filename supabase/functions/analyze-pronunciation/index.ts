@@ -1,5 +1,4 @@
 
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -36,34 +35,36 @@ serve(async (req) => {
         contents: [{
           parts: [
             {
-              text: `You are a strict and accurate Malayalam pronunciation tutor. Your task is to analyze the audio recording and compare it EXACTLY to this original Malayalam text:
+              text: `You are an EXTREMELY STRICT Malayalam pronunciation tutor. Your job is to be very harsh and accurate in scoring. 
 
+ORIGINAL TEXT TO COMPARE AGAINST:
 "${originalText}"
 
-CRITICAL INSTRUCTIONS:
-1. Listen carefully to what the speaker actually says
-2. Compare WORD BY WORD against the original text
-3. Be extremely strict - only give high scores (8-10) if the pronunciation is truly excellent
-4. Give a score of 10 ONLY if the pronunciation is absolutely perfect with no errors
-5. If the speaker adds extra words, skips words, or says different words, reduce the score significantly
-6. If the speaker says something completely different, give score 1-2
-7. Focus on both content accuracy AND pronunciation quality
+CRITICAL SCORING RULES:
+- Score 10 ONLY if pronunciation is ABSOLUTELY PERFECT with ZERO errors
+- Score 9 for near-perfect with 1-2 very minor errors
+- Score 7-8 for good pronunciation with some noticeable errors
+- Score 5-6 for average pronunciation with multiple errors
+- Score 3-4 for poor pronunciation with many errors
+- Score 1-2 for very poor or mostly unintelligible speech
 
-SCORING GUIDELINES:
-- 1-2: Completely wrong content or unintelligible
-- 3-4: Some words correct but many errors or missing parts
-- 5-6: Most content correct but noticeable pronunciation issues
-- 7-8: Good content accuracy with minor pronunciation errors
-- 9: Excellent with very minor imperfections
-- 10: PERFECT - exact content with flawless pronunciation
+STRICT REQUIREMENTS:
+1. The speaker MUST say the EXACT words from the original text
+2. If they say different words, wrong words, or skip words, score drops to 4 or below
+3. If they add extra words not in the original, score drops significantly
+4. If audio is unclear, short (under 3 seconds), or seems like testing, give score 1-3
+5. Empty audio, silence, or non-speech sounds = score 1
+6. If speaker says something completely unrelated = score 1-2
 
-Provide your analysis in JSON format with these exact fields:
+Be extremely critical. Most attempts should score between 3-7. Only give 8+ for truly excellent pronunciation.
+
+Return ONLY valid JSON:
 {
-  "transcription": "what you heard in Malayalam script",
-  "accuracyScore": number from 1-10,
-  "feedback": "detailed analysis comparing what was said vs original text",
-  "improvements": "specific areas needing improvement",
-  "encouragement": "motivating message based on performance level"
+  "transcription": "what you actually heard in Malayalam",
+  "accuracyScore": number_1_to_10,
+  "feedback": "detailed strict analysis of errors",
+  "improvements": "specific pronunciation corrections needed",
+  "encouragement": "motivating but honest message"
 }`
             },
             {
@@ -100,38 +101,41 @@ Provide your analysis in JSON format with these exact fields:
       if (jsonMatch) {
         analysisResult = JSON.parse(jsonMatch[0]);
       } else {
-        // Fallback if JSON parsing fails
+        // Fallback for poor quality audio
         analysisResult = {
-          transcription: "Unable to process audio clearly",
-          accuracyScore: 2,
-          feedback: "Audio quality insufficient for analysis. Please ensure you speak clearly and your microphone is working properly.",
-          improvements: "Please record again with better audio quality. Speak slowly and clearly into the microphone.",
-          encouragement: "Don't worry! Try recording again with clearer audio."
+          transcription: "Audio quality too poor to analyze",
+          accuracyScore: 1,
+          feedback: "Audio is unclear, too short, or contains no recognizable Malayalam speech. Please ensure you speak clearly into the microphone and read the complete text provided.",
+          improvements: "Record again with better audio quality. Speak slowly and clearly, ensuring you read the entire provided Malayalam text.",
+          encouragement: "Don't give up! Make sure your microphone is working and try reading the text more slowly and clearly."
         };
       }
     } catch (parseError) {
       console.error('JSON parsing error:', parseError);
       analysisResult = {
-        transcription: "Unable to process audio",
+        transcription: "Failed to process audio",
         accuracyScore: 1,
-        feedback: "Could not analyze the audio recording. Please ensure you are reading the exact Malayalam text provided and that your microphone is working properly.",
-        improvements: "Check your microphone settings and try recording again. Make sure to read only the provided Malayalam text.",
-        encouragement: "Technical issues happen! Please try again and make sure to read the exact text provided."
+        feedback: "Unable to analyze the audio recording. This could be due to poor audio quality, background noise, or technical issues.",
+        improvements: "Check your microphone settings, ensure there's no background noise, and try recording again while reading the provided Malayalam text clearly.",
+        encouragement: "Technical issues happen! Please check your setup and try again."
       };
     }
 
-    // Ensure accuracy score is within valid range
+    // Enforce strict scoring limits
     if (analysisResult.accuracyScore < 1) analysisResult.accuracyScore = 1;
     if (analysisResult.accuracyScore > 10) analysisResult.accuracyScore = 10;
 
-    // Additional validation for content analysis
-    if (analysisResult.feedback && 
-        (analysisResult.feedback.toLowerCase().includes('wrong') ||
-         analysisResult.feedback.toLowerCase().includes('different') ||
-         analysisResult.feedback.toLowerCase().includes('incorrect') ||
-         analysisResult.feedback.toLowerCase().includes('missing') ||
-         analysisResult.feedback.toLowerCase().includes('extra'))) {
-      // Cap score at 4 if there are content issues
+    // Additional validation - if transcription is very short or empty, cap score at 3
+    if (!analysisResult.transcription || analysisResult.transcription.length < 10) {
+      analysisResult.accuracyScore = Math.min(analysisResult.accuracyScore, 3);
+      analysisResult.feedback = "Recording appears to be too short or unclear. " + analysisResult.feedback;
+    }
+
+    // If feedback indicates major content issues, cap score at 4
+    const feedbackLower = analysisResult.feedback.toLowerCase();
+    if (feedbackLower.includes('wrong') || feedbackLower.includes('different') || 
+        feedbackLower.includes('incorrect') || feedbackLower.includes('missing') || 
+        feedbackLower.includes('unrelated') || feedbackLower.includes('extra')) {
       analysisResult.accuracyScore = Math.min(analysisResult.accuracyScore, 4);
     }
 
@@ -143,15 +147,14 @@ Provide your analysis in JSON format with these exact fields:
     console.error('Error in analyze-pronunciation function:', error);
     return new Response(JSON.stringify({ 
       error: error.message,
-      transcription: "Error occurred during analysis",
+      transcription: "Error during analysis",
       accuracyScore: 1,
-      feedback: "Unable to analyze pronunciation due to technical error. Please ensure you are reading the exact Malayalam text provided and try recording again.",
-      improvements: "Check your microphone settings and ensure you're reading the provided Malayalam text exactly as written",
-      encouragement: "Technical issues happen! Please try again and make sure to read the exact text provided."
+      feedback: "Technical error occurred during pronunciation analysis. Please check your internet connection and try again.",
+      improvements: "Ensure your microphone is working and you have a stable internet connection. Try recording again.",
+      encouragement: "Technical issues happen! Please try again."
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 });
-
