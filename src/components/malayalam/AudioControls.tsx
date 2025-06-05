@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Volume2, Square, Mic } from "lucide-react";
 import { useState, useRef, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AudioControlsProps {
   malayalamText: string;
@@ -24,28 +25,20 @@ const AudioControls = ({
   const readText = useCallback(async () => {
     setIsReading(true);
     try {
-      const utterance = new SpeechSynthesisUtterance(malayalamText);
-      utterance.lang = 'ml-IN';
-      utterance.rate = 0.8;
-      
-      utteranceRef.current = utterance;
-      
-      utterance.onend = () => {
-        setIsReading(false);
-        utteranceRef.current = null;
-      };
+      // Use Gemini to convert Malayalam text to phonetic pronunciation
+      const { data, error } = await supabase.functions.invoke('gemini-phonetic-converter', {
+        body: { text: malayalamText }
+      });
 
-      utterance.onerror = () => {
-        setIsReading(false);
-        utteranceRef.current = null;
-        toast({
-          title: "Reading failed",
-          description: "Please try again.",
-          variant: "destructive",
-        });
-      };
+      if (error) {
+        console.error('Error getting phonetic conversion:', error);
+        // Fallback to original text if conversion fails
+        speakText(malayalamText);
+        return;
+      }
 
-      speechSynthesis.speak(utterance);
+      const phoneticText = data?.phoneticText || malayalamText;
+      speakText(phoneticText);
 
       toast({
         title: "Reading text",
@@ -61,6 +54,31 @@ const AudioControls = ({
       });
     }
   }, [malayalamText, toast]);
+
+  const speakText = (text: string) => {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'ml-IN';
+    utterance.rate = 0.8;
+    
+    utteranceRef.current = utterance;
+    
+    utterance.onend = () => {
+      setIsReading(false);
+      utteranceRef.current = null;
+    };
+
+    utterance.onerror = () => {
+      setIsReading(false);
+      utteranceRef.current = null;
+      toast({
+        title: "Reading failed",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+    };
+
+    speechSynthesis.speak(utterance);
+  };
 
   const stopReading = useCallback(() => {
     if (utteranceRef.current) {
@@ -79,7 +97,7 @@ const AudioControls = ({
           disabled={isRecording}
         >
           <Volume2 className="h-4 w-4" />
-          Read Text
+          Listen Text
         </Button>
       ) : (
         <Button
@@ -99,7 +117,7 @@ const AudioControls = ({
           disabled={isReading}
         >
           <Mic className="h-4 w-4" />
-          Start Recording
+          Start Reading
         </Button>
       ) : (
         <Button
