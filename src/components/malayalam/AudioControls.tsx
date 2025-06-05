@@ -23,6 +23,7 @@ const AudioControls = ({
 }: AudioControlsProps) => {
   const [isReading, setIsReading] = useState(false);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const wordTimerRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
 
   const readText = useCallback(async () => {
@@ -33,34 +34,51 @@ const AudioControls = ({
 
       const utterance = new SpeechSynthesisUtterance(malayalamText);
       utterance.lang = 'ml-IN';
-      utterance.rate = 0.6; // Slower for better pronunciation
+      utterance.rate = 0.7; // Increased from 0.6 to 0.7 (added 0.1)
       
       utteranceRef.current = utterance;
       
-      // Estimate word timing based on speech rate
-      const wordsPerMinute = 80; // Slower for Malayalam
+      // Better word timing calculation for Malayalam
+      const wordsPerMinute = 95; // Increased from 80 to match the faster rate
       const millisecondsPerWord = (60 / wordsPerMinute) * 1000;
       
-      const wordTimer = setInterval(() => {
-        if (currentWordIndex < words.length && onWordHighlight) {
-          onWordHighlight(currentWordIndex);
-          currentWordIndex++;
-        } else {
-          clearInterval(wordTimer);
+      // Start word highlighting immediately when speech starts
+      utterance.onstart = () => {
+        currentWordIndex = 0;
+        if (onWordHighlight && words.length > 0) {
+          onWordHighlight(0);
+          currentWordIndex = 1;
         }
-      }, millisecondsPerWord);
+        
+        // Set up word highlighting timer
+        wordTimerRef.current = setInterval(() => {
+          if (currentWordIndex < words.length && onWordHighlight) {
+            onWordHighlight(currentWordIndex);
+            currentWordIndex++;
+          } else if (wordTimerRef.current) {
+            clearInterval(wordTimerRef.current);
+            wordTimerRef.current = null;
+          }
+        }, millisecondsPerWord);
+      };
 
       utterance.onend = () => {
         setIsReading(false);
         utteranceRef.current = null;
-        clearInterval(wordTimer);
+        if (wordTimerRef.current) {
+          clearInterval(wordTimerRef.current);
+          wordTimerRef.current = null;
+        }
         if (onReadingStop) onReadingStop();
       };
 
       utterance.onerror = () => {
         setIsReading(false);
         utteranceRef.current = null;
-        clearInterval(wordTimer);
+        if (wordTimerRef.current) {
+          clearInterval(wordTimerRef.current);
+          wordTimerRef.current = null;
+        }
         if (onReadingStop) onReadingStop();
         toast({
           title: "Reading failed",
@@ -92,6 +110,10 @@ const AudioControls = ({
       speechSynthesis.cancel();
       setIsReading(false);
       utteranceRef.current = null;
+      if (wordTimerRef.current) {
+        clearInterval(wordTimerRef.current);
+        wordTimerRef.current = null;
+      }
       if (onReadingStop) onReadingStop();
     }
   }, [onReadingStop]);
