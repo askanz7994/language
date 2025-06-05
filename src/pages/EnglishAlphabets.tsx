@@ -1,7 +1,7 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Play } from "lucide-react";
+import { ArrowLeft, Volume2 } from "lucide-react";
 
 const EnglishAlphabets = () => {
   const alphabets = [
@@ -40,7 +40,7 @@ const EnglishAlphabets = () => {
                     className="audio-button"
                     size="sm"
                   >
-                    <Play className="h-4 w-4" />
+                    <Volume2 className="h-4 w-4" />
                   </Button>
                 </div>
               ))}

@@ -1,28 +1,29 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Volume2 } from "lucide-react";
 import { useState } from "react";
 
 const EnglishNumbers = () => {
   const [playingAudio, setPlayingAudio] = useState<number | null>(null);
 
   const numbers = [
-    { digit: "0", word: "Zero", pronunciation: "/ˈzɪəroʊ/", example: "0 books - Zero books" },
-    { digit: "1", word: "One", pronunciation: "/wʌn/", example: "1 apple - One apple" },
-    { digit: "2", word: "Two", pronunciation: "/tuː/", example: "2 cats - Two cats" },
-    { digit: "3", word: "Three", pronunciation: "/θriː/", example: "3 birds - Three birds" },
-    { digit: "4", word: "Four", pronunciation: "/fɔːr/", example: "4 flowers - Four flowers" },
-    { digit: "5", word: "Five", pronunciation: "/faɪv/", example: "5 trees - Five trees" },
-    { digit: "6", word: "Six", pronunciation: "/sɪks/", example: "6 stars - Six stars" },
-    { digit: "7", word: "Seven", pronunciation: "/ˈsevən/", example: "7 days - Seven days" },
-    { digit: "8", word: "Eight", pronunciation: "/eɪt/", example: "8 hours - Eight hours" },
-    { digit: "9", word: "Nine", pronunciation: "/naɪn/", example: "9 months - Nine months" },
-    { digit: "10", word: "Ten", pronunciation: "/ten/", example: "10 fingers - Ten fingers" },
+    { digit: "0", word: "Zero" },
+    { digit: "1", word: "One" },
+    { digit: "2", word: "Two" },
+    { digit: "3", word: "Three" },
+    { digit: "4", word: "Four" },
+    { digit: "5", word: "Five" },
+    { digit: "6", word: "Six" },
+    { digit: "7", word: "Seven" },
+    { digit: "8", word: "Eight" },
+    { digit: "9", word: "Nine" },
+    { digit: "10", word: "Ten" },
   ];
 
   const playAudio = (index: number) => {
     setPlayingAudio(index);
+    console.log(`Playing audio for English number: ${numbers[index].digit} - ${numbers[index].word}`);
     setTimeout(() => setPlayingAudio(null), 1000);
   };
 
@@ -35,29 +36,29 @@ const EnglishNumbers = () => {
         </Link>
 
         <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">Numbers in English</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-6">
+            Numbers in English
+          </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Learn to count and pronounce numbers in English
+            Listen and learn English numbers
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-8xl mx-auto">
           {numbers.map((number, index) => (
-            <div key={index} className="number-card">
-              <div className="flex items-center justify-between mb-4">
-                <div className="text-4xl font-bold text-primary">{number.digit}</div>
+            <div key={index} className="word-card">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="text-2xl font-bold text-primary">{number.digit}</div>
+                  <div className="text-2xl font-semibold">{number.word}</div>
+                </div>
                 <Button
                   onClick={() => playAudio(index)}
                   className={`audio-button ${playingAudio === index ? 'animate-pulse' : ''}`}
                   size="sm"
                 >
-                  🔊
+                  <Volume2 className="h-4 w-4" />
                 </Button>
-              </div>
-              <div className="text-3xl mb-2 font-semibold">{number.word}</div>
-              <div className="text-muted-foreground mb-3 italic">{number.pronunciation}</div>
-              <div className="text-sm border-t border-border pt-3">
-                <strong>Example:</strong> {number.example}
               </div>
             </div>
           ))}
