@@ -20,6 +20,24 @@ serve(async (req) => {
       throw new Error('Audio data and original text are required');
     }
 
+    // Validate audio data - check if it's actually audio content
+    const audioSize = (audioBase64.length * 3) / 4; // Approximate size in bytes
+    console.log('Audio size:', audioSize, 'bytes');
+
+    // If audio is too small (less than 1KB), it's likely silent or empty
+    if (audioSize < 1024) {
+      console.log('Audio too small, likely silent');
+      return new Response(JSON.stringify({
+        transcription: "No speech detected",
+        accuracyScore: 1,
+        feedback: "No speech was detected in the recording. Please ensure your microphone is working and speak clearly into it while reading the Malayalam text.",
+        improvements: "Check your microphone permissions and settings. Make sure to actually read the provided text aloud during recording.",
+        encouragement: "Don't worry! Make sure your microphone is unmuted and try speaking the Malayalam text clearly."
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
     if (!geminiApiKey) {
       throw new Error('Gemini API key not configured');
@@ -47,22 +65,28 @@ CRITICAL SCORING RULES:
 - Score 5-6 for average pronunciation with multiple errors
 - Score 3-4 for poor pronunciation with many errors
 - Score 1-2 for very poor or mostly unintelligible speech
+- Score 1 for silence, empty audio, background noise only, or non-speech sounds
 
 STRICT REQUIREMENTS:
 1. The speaker MUST say the EXACT words from the original text
 2. If they say different words, wrong words, or skip words, score drops to 4 or below
 3. If they add extra words not in the original, score drops significantly
-4. If audio is unclear, short (under 3 seconds), or seems like testing, give score 1-3
-5. Empty audio, silence, or non-speech sounds = score 1
+4. If audio contains only silence, background noise, or non-speech sounds, give score 1
+5. If audio is unclear, very short, or seems like testing sounds, give score 1-3
 6. If speaker says something completely unrelated = score 1-2
+
+AUDIO QUALITY CHECKS:
+- If you detect only silence, background noise, or no clear speech, immediately give score 1
+- If the audio seems to be just testing sounds or random noise, give score 1
+- If you cannot make out any clear Malayalam words, give score 1-2
 
 Be extremely critical. Most attempts should score between 3-7. Only give 8+ for truly excellent pronunciation.
 
 Return ONLY valid JSON:
 {
-  "transcription": "what you actually heard in Malayalam",
+  "transcription": "what you actually heard in Malayalam (write 'Silent' if no speech detected)",
   "accuracyScore": number_1_to_10,
-  "feedback": "detailed strict analysis of errors",
+  "feedback": "detailed strict analysis of errors or silence detection",
   "improvements": "specific pronunciation corrections needed",
   "encouragement": "motivating but honest message"
 }`
@@ -125,9 +149,19 @@ Return ONLY valid JSON:
     if (analysisResult.accuracyScore < 1) analysisResult.accuracyScore = 1;
     if (analysisResult.accuracyScore > 10) analysisResult.accuracyScore = 10;
 
-    // Additional validation - if transcription is very short or empty, cap score at 3
+    // Additional validation - check for silence indicators
+    const transcriptionLower = analysisResult.transcription.toLowerCase();
+    if (transcriptionLower.includes('silent') || transcriptionLower.includes('silence') || 
+        transcriptionLower.includes('no speech') || transcriptionLower.includes('quiet') ||
+        transcriptionLower.includes('background noise') || analysisResult.transcription.length < 5) {
+      analysisResult.accuracyScore = 1;
+      analysisResult.feedback = "No clear speech detected in the recording. Please ensure your microphone is working and speak the Malayalam text aloud.";
+      analysisResult.transcription = "Silent or no speech detected";
+    }
+
+    // If transcription is very short or empty, cap score at 2
     if (!analysisResult.transcription || analysisResult.transcription.length < 10) {
-      analysisResult.accuracyScore = Math.min(analysisResult.accuracyScore, 3);
+      analysisResult.accuracyScore = Math.min(analysisResult.accuracyScore, 2);
       analysisResult.feedback = "Recording appears to be too short or unclear. " + analysisResult.feedback;
     }
 

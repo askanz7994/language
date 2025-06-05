@@ -29,7 +29,8 @@ const TopicContentDisplay = ({
   };
 
   const handleWordHighlight = (wordIndex: number) => {
-    setHighlightedWordIndex(wordIndex);
+    // If wordIndex is -1, clear all highlighting
+    setHighlightedWordIndex(wordIndex === -1 ? null : wordIndex);
   };
 
   const handleReadingStop = () => {
@@ -41,7 +42,11 @@ const TopicContentDisplay = ({
     return words.map((word, index) => (
       <span
         key={index}
-        className={highlightedWordIndex === index ? "underline decoration-black decoration-2" : ""}
+        className={`transition-all duration-200 ${
+          highlightedWordIndex === index 
+            ? "bg-yellow-200 text-black font-semibold underline decoration-2" 
+            : ""
+        }`}
       >
         {word}
         {index < words.length - 1 ? ' ' : ''}
