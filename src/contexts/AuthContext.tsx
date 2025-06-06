@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,6 +7,7 @@ interface UserProfile {
   id: string;
   first_name?: string;
   last_name?: string;
+  preferred_language?: string;
   created_at: string;
   updated_at: string;
 }
