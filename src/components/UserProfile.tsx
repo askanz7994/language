@@ -19,7 +19,7 @@ const UserProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [firstName, setFirstName] = useState(profile?.first_name || '');
   const [lastName, setLastName] = useState(profile?.last_name || '');
-  const [selectedLanguage, setSelectedLanguage] = useState(profile?.preferred_language || 'Malayalam');
+  const [selectedLanguage, setSelectedLanguage] = useState(profile?.preferred_language || '');
   const [isLoading, setIsLoading] = useState(false);
 
   const languages = [
@@ -84,8 +84,22 @@ const UserProfile = () => {
   const handleCancel = () => {
     setFirstName(profile?.first_name || '');
     setLastName(profile?.last_name || '');
-    setSelectedLanguage(profile?.preferred_language || 'Malayalam');
+    setSelectedLanguage(profile?.preferred_language || '');
     setIsEditing(false);
+  };
+
+  const handleLanguageChange = async (newLanguage: string) => {
+    setIsLoading(true);
+    try {
+      await updateProfile({
+        preferred_language: newLanguage
+      });
+      setSelectedLanguage(newLanguage);
+    } catch (error) {
+      console.error('Error updating language:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const getInitials = () => {
@@ -117,6 +131,30 @@ const UserProfile = () => {
       </CardHeader>
 
       <CardContent className="space-y-4">
+        {/* Preferred Language Selection - Always Visible */}
+        <div className="space-y-2">
+          <Label htmlFor="preferredLanguage" className="flex items-center space-x-2">
+            <Globe className="h-4 w-4" />
+            <span>Preferred Language for Translations</span>
+          </Label>
+          <Select 
+            value={selectedLanguage} 
+            onValueChange={handleLanguageChange}
+            disabled={isLoading}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select your preferred language" />
+            </SelectTrigger>
+            <SelectContent>
+              {languages.map((language) => (
+                <SelectItem key={language} value={language}>
+                  {language}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
         {isEditing ? (
           <>
             <div className="grid grid-cols-2 gap-4">
@@ -140,25 +178,6 @@ const UserProfile = () => {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="preferredLanguage" className="flex items-center space-x-2">
-                <Globe className="h-4 w-4" />
-                <span>Preferred Language for Translations</span>
-              </Label>
-              <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select your preferred language" />
-                </SelectTrigger>
-                <SelectContent>
-                  {languages.map((language) => (
-                    <SelectItem key={language} value={language}>
-                      {language}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
             <div className="flex space-x-2 pt-4">
               <Button onClick={handleSave} disabled={isLoading} className="glow-button">
                 {isLoading ? 'Saving...' : 'Save Changes'}
@@ -179,14 +198,6 @@ const UserProfile = () => {
                 <Label className="text-sm text-muted-foreground">Last Name</Label>
                 <p className="font-medium">{profile.last_name || 'Not set'}</p>
               </div>
-            </div>
-
-            <div>
-              <Label className="text-sm text-muted-foreground flex items-center space-x-2">
-                <Globe className="h-4 w-4" />
-                <span>Preferred Language</span>
-              </Label>
-              <p className="font-medium">{profile.preferred_language || 'Malayalam'}</p>
             </div>
 
             <Button onClick={() => setIsEditing(true)} className="glow-button">

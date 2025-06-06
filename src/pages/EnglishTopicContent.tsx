@@ -1,3 +1,4 @@
+
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { useState, useRef, useCallback } from "react";
@@ -93,21 +94,23 @@ const EnglishTopicContent = () => {
         </div>
 
         <div className="max-w-4xl mx-auto space-y-8">
-          <EnglishTopicContentDisplay
-            title={currentTopic.title}
-            english={currentTopic.english}
-            isRecording={isRecording}
-            onStartRecording={startRecording}
-            onStopRecording={stopRecording}
-          />
+          <div className="language-card">
+            <EnglishTopicContentDisplay
+              title={currentTopic.title}
+              english={currentTopic.english}
+              isRecording={isRecording}
+              onStartRecording={startRecording}
+              onStopRecording={stopRecording}
+            />
+            
+            <EnglishTranslationSection topicId={topicId || "kerala-landscapes"} />
+          </div>
 
           <SpeechRecorder 
             originalText={currentTopic.english}
             title={currentTopic.title}
             audioBlob={audioBlob}
           />
-
-          <EnglishTranslationSection topicId={topicId || "kerala-landscapes"} />
 
           <EnglishVocabularySection vocabulary={currentTopic.vocabulary} />
         </div>
