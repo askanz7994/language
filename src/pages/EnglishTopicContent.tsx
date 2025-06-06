@@ -5,6 +5,7 @@ import SpeechRecorder from "@/components/SpeechRecorder";
 import { useToast } from "@/hooks/use-toast";
 import EnglishVocabularySection from "@/components/english/EnglishVocabularySection";
 import EnglishTopicContentDisplay from "@/components/english/EnglishTopicContentDisplay";
+import EnglishTranslationSection from "@/components/english/EnglishTranslationSection";
 import { englishTopicData } from "@/data/englishTopicData";
 
 const EnglishTopicContent = () => {
@@ -105,6 +106,8 @@ const EnglishTopicContent = () => {
             title={currentTopic.title}
             audioBlob={audioBlob}
           />
+
+          <EnglishTranslationSection topicId={topicId || "kerala-landscapes"} />
 
           <EnglishVocabularySection vocabulary={currentTopic.vocabulary} />
         </div>
