@@ -23,11 +23,11 @@ const EnglishNumbers = () => {
 
   const playAudio = (index: number) => {
     setPlayingAudio(index);
-    const numberText = `${numbers[index].digit}, ${numbers[index].word}`;
-    console.log(`Playing audio for English number: ${numberText}`);
+    const numberWord = numbers[index].word;
+    console.log(`Playing audio for English number: ${numberWord}`);
     
-    // Use Speech Synthesis API to read the number aloud
-    const utterance = new SpeechSynthesisUtterance(numberText);
+    // Use Speech Synthesis API to read only the word aloud
+    const utterance = new SpeechSynthesisUtterance(numberWord);
     utterance.lang = 'en-US';
     utterance.rate = 0.8;
     utterance.pitch = 1;
@@ -44,36 +44,36 @@ const EnglishNumbers = () => {
 
   return (
     <div className="min-h-screen animated-bg">
-      <div className="container mx-auto px-4 py-16">
-        <Link to="/learn-english" className="inline-flex items-center text-primary hover:text-primary/80 mb-8">
+      <div className="container mx-auto px-4 py-8 md:py-16">
+        <Link to="/learn-english" className="inline-flex items-center text-primary hover:text-primary/80 mb-6 md:mb-8 text-sm md:text-base">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to English
         </Link>
 
-        <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">
+        <div className="text-center mb-12 md:mb-16">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6">
             Numbers in English
           </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto px-4">
             Listen and learn English numbers
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-8xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 max-w-8xl mx-auto">
           {numbers.map((number, index) => (
             <div key={index} className="word-card">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="text-2xl font-bold text-primary">{number.digit}</div>
-                  <div className="text-2xl font-semibold">{number.word}</div>
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
+                  <div className="text-xl md:text-2xl font-bold text-primary flex-shrink-0">{number.digit}</div>
+                  <div className="text-lg md:text-2xl font-semibold truncate">{number.word}</div>
                 </div>
                 <Button
                   onClick={() => playAudio(index)}
-                  className={`audio-button ${playingAudio === index ? 'animate-pulse' : ''}`}
+                  className={`audio-button ${playingAudio === index ? 'animate-pulse' : ''} flex-shrink-0`}
                   size="sm"
                 >
-                  <Volume2 className="h-4 w-4" />
-                  Listen
+                  <Volume2 className="h-3 w-3 md:h-4 md:w-4" />
+                  <span className="hidden sm:inline ml-1">Listen</span>
                 </Button>
               </div>
             </div>

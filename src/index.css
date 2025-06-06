@@ -71,7 +71,7 @@
   }
 
   .glow-button {
-    @apply bg-primary text-primary-foreground px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform;
+    @apply bg-primary text-primary-foreground px-4 py-2 md:px-6 md:py-3 rounded-lg font-semibold transition-all duration-300 transform text-sm md:text-base;
     box-shadow: 0 4px 15px rgba(4, 203, 224, 0.3);
   }
 
@@ -81,7 +81,7 @@
   }
 
   .language-card {
-    @apply bg-card border border-border rounded-xl p-6 transition-all duration-300;
+    @apply bg-card border border-border rounded-xl p-4 md:p-6 transition-all duration-300;
     box-shadow: 0 4px 15px rgba(4, 203, 224, 0.1);
   }
 
@@ -91,19 +91,30 @@
   }
 
   .number-card {
-    @apply bg-card border border-border rounded-lg p-4 transition-all duration-300;
+    @apply bg-card border border-border rounded-lg p-3 md:p-4 transition-all duration-300;
   }
 
   .word-card {
-    @apply bg-card border border-border rounded-lg p-4 transition-all duration-300;
+    @apply bg-card border border-border rounded-lg p-3 md:p-4 transition-all duration-300;
   }
 
   .audio-button {
-    @apply bg-primary text-primary-foreground rounded-full p-2 transition-all duration-300;
+    @apply bg-primary text-primary-foreground rounded-full p-1.5 md:p-2 transition-all duration-300 text-xs md:text-sm;
   }
 
   .audio-button:active {
     @apply scale-110;
+  }
+
+  /* Responsive text adjustments */
+  @media (max-width: 640px) {
+    .word-card {
+      @apply p-2.5;
+    }
+    
+    .language-card {
+      @apply p-4;
+    }
   }
 }
 

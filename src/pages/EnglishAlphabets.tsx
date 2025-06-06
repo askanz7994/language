@@ -34,31 +34,31 @@ const EnglishAlphabets = () => {
 
   return (
     <div className="min-h-screen blur-bg">
-      <div className="container mx-auto px-4 py-16">
-        <Link to="/learn-english" className="inline-flex items-center text-primary hover:text-primary/80 mb-8">
+      <div className="container mx-auto px-4 py-8 md:py-16">
+        <Link to="/learn-english" className="inline-flex items-center text-primary hover:text-primary/80 mb-6 md:mb-8 text-sm md:text-base">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to English
         </Link>
 
-        <div className="text-center mb-16">
-          <h1 className="text-5xl md:text-6xl font-bold mb-6">English Alphabets</h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+        <div className="text-center mb-12 md:mb-16">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6">English Alphabets</h1>
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto px-4">
             Listen and learn the letters.
           </p>
         </div>
 
         <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-6">
             {alphabets.map((letter, index) => (
               <div key={index} className="word-card text-center">
-                <div className="text-5xl font-bold mb-4">{letter}</div>
+                <div className="text-3xl md:text-4xl lg:text-5xl font-bold mb-3 md:mb-4">{letter}</div>
                 <Button
                   onClick={() => playAudio(letter, index)}
-                  className={`audio-button ${playingAudio === index ? 'animate-pulse' : ''}`}
+                  className={`audio-button ${playingAudio === index ? 'animate-pulse' : ''} w-full`}
                   size="sm"
                 >
-                  <Volume2 className="h-4 w-4" />
-                  Listen
+                  <Volume2 className="h-3 w-3 md:h-4 md:w-4" />
+                  <span className="ml-1 text-xs md:text-sm">Listen</span>
                 </Button>
               </div>
             ))}

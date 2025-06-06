@@ -59,28 +59,28 @@ const EnglishParagraph = () => {
 
   return (
     <div className="min-h-screen animated-bg">
-      <div className="container mx-auto px-4 py-16">
-        <Link to="/learn-english" className="inline-flex items-center text-primary hover:text-primary/80 mb-8">
+      <div className="container mx-auto px-4 py-8 md:py-16">
+        <Link to="/learn-english" className="inline-flex items-center text-primary hover:text-primary/80 mb-6 md:mb-8 text-sm md:text-base">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to English
         </Link>
 
-        <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">
+        <div className="text-center mb-12 md:mb-16">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6">
             English Reading Topics
           </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto px-4">
             Explore various topics through English paragraphs with pronunciation practice
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto">
           {topics.map((topic) => (
             <div key={topic.id} className="language-card text-center">
-              <h2 className="text-2xl font-bold mb-4">{topic.title}</h2>
-              <p className="text-muted-foreground mb-6">{topic.description}</p>
+              <h2 className="text-xl md:text-2xl font-bold mb-3 md:mb-4">{topic.title}</h2>
+              <p className="text-sm md:text-base text-muted-foreground mb-4 md:mb-6 px-2">{topic.description}</p>
               <Link to={`/english/paragraph/${topic.id}`}>
-                <Button className="glow-button w-full">
+                <Button className="glow-button w-full text-sm md:text-base">
                   Read & Practice
                 </Button>
               </Link>
