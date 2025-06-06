@@ -34,7 +34,7 @@ const EnglishTopicContentDisplay = ({
     return words.map((word, index) => (
       <span
         key={index}
-        className={`transition-all duration-200 ${
+        className={`transition-all duration-200 text-xs md:text-lg ${
           highlightedWordIndex === index 
             ? "bg-transparent border-2 border-primary text-primary font-semibold rounded px-1" 
             : ""
@@ -49,7 +49,7 @@ const EnglishTopicContentDisplay = ({
   return (
     <Card className="language-card">
       <CardHeader>
-        <CardTitle className="text-2xl mb-4">{title}</CardTitle>
+        <CardTitle className="text-xl md:text-2xl mb-4">{title}</CardTitle>
         
         <EnglishAudioControls
           englishText={english}
@@ -61,7 +61,7 @@ const EnglishTopicContentDisplay = ({
         />
       </CardHeader>
       <CardContent>
-        <div className="text-lg leading-relaxed mb-4 p-4 bg-muted rounded-lg">
+        <div className="text-xs md:text-lg leading-relaxed mb-4 p-4 bg-muted rounded-lg">
           {renderEnglishWithHighlight()}
         </div>
       </CardContent>

@@ -21,8 +21,8 @@ const EnglishVocabularySection = ({ vocabulary }: EnglishVocabularySectionProps)
           {vocabulary.map((item, index) => (
             <div key={index} className="word-card">
               <div className="flex justify-between items-center">
-                <span className="font-semibold text-primary">{item.word}</span>
-                <span className="text-muted-foreground">{item.meaning}</span>
+                <span className="font-semibold text-primary text-xs md:text-base">{item.word}</span>
+                <span className="text-muted-foreground text-xs md:text-base">{item.meaning}</span>
               </div>
             </div>
           ))}

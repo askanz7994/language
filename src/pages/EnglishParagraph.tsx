@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -66,7 +65,7 @@ const EnglishParagraph = () => {
         </Link>
 
         <div className="text-center mb-12 md:mb-16">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6">
+          <h1 className="text-4xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6">
             English Reading Topics
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto px-4">
@@ -80,7 +79,7 @@ const EnglishParagraph = () => {
               <h2 className="text-xl md:text-2xl font-bold mb-3 md:mb-4">{topic.title}</h2>
               <p className="text-sm md:text-base text-muted-foreground mb-4 md:mb-6 px-2">{topic.description}</p>
               <Link to={`/english/paragraph/${topic.id}`}>
-                <Button className="glow-button w-full text-sm md:text-base">
+                <Button className="glow-button w-full text-xs md:text-base">
                   Read & Practice
                 </Button>
               </Link>

@@ -1,11 +1,18 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 const LearnEnglish = () => {
   return (
     <div className="min-h-screen blur-bg">
       <div className="container mx-auto px-4 py-8 md:py-16">
+        {/* Back Button */}
+        <Link to="/" className="inline-flex items-center text-primary hover:text-primary/80 mb-6 md:mb-8 text-sm md:text-base">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back
+        </Link>
+
         {/* Page Title */}
         <div className="text-center mb-12 md:mb-16">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6">
