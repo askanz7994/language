@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
@@ -40,7 +39,8 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title, au
           body: {
             audioBase64: base64Audio,
             originalText: originalText,
-            language: 'malayalam'
+            language: 'malayalam',
+            preferredLanguage: profile?.preferred_language || 'English'
           }
         });
 
@@ -65,7 +65,7 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title, au
     } finally {
       setIsAnalyzing(false);
     }
-  }, [audioBlob, originalText, toast]);
+  }, [audioBlob, originalText, toast, profile?.preferred_language]);
 
   // Automatically analyze when audioBlob changes
   React.useEffect(() => {
