@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { getFeedbackLabels } from '@/utils/speechFeedbackTranslations';
 
 interface SpeechRecorderProps {
   originalText: string;
@@ -23,6 +25,7 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title, au
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const { toast } = useToast();
+  const { profile } = useAuth();
 
   const analyzeAudio = useCallback(async () => {
     if (!audioBlob) return;
@@ -71,6 +74,10 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title, au
     }
   }, [audioBlob, analyzeAudio]);
 
+  // Get translated labels based on user's preferred language
+  const preferredLanguage = profile?.preferred_language || 'English';
+  const labels = getFeedbackLabels(preferredLanguage);
+
   return (
     <Card className="language-card">
       <CardHeader>
@@ -103,19 +110,19 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title, au
             )}
             
             <div className="word-card">
-              <h4 className="font-semibold mb-2">Feedback:</h4>
+              <h4 className="font-semibold mb-2">{labels.feedback}</h4>
               <p className="text-muted-foreground">{analysisResult.feedback}</p>
             </div>
             
             {analysisResult.improvements && (
               <div className="word-card">
-                <h4 className="font-semibold mb-2">Areas for improvement:</h4>
+                <h4 className="font-semibold mb-2">{labels.areasForImprovement}</h4>
                 <p className="text-muted-foreground">{analysisResult.improvements}</p>
               </div>
             )}
             
             <div className="word-card bg-primary/10">
-              <h4 className="font-semibold mb-2">Encouragement:</h4>
+              <h4 className="font-semibold mb-2">{labels.encouragement}</h4>
               <p className="text-primary">{analysisResult.encouragement}</p>
             </div>
           </div>

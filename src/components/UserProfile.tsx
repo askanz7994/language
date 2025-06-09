@@ -5,9 +5,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { LogOut, Globe } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { LogOut, Globe, ChevronDown } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const UserProfile = () => {
   const {
@@ -19,7 +24,6 @@ const UserProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [firstName, setFirstName] = useState(profile?.first_name || '');
   const [lastName, setLastName] = useState(profile?.last_name || '');
-  const [selectedLanguage, setSelectedLanguage] = useState(profile?.preferred_language || '');
   const [isLoading, setIsLoading] = useState(false);
   
   const languages = ['Malayalam', 'Spanish', 'French', 'German', 'Japanese', 'Korean', 'Portuguese (Brazil)', 'Portuguese (Portugal)', 'Chinese (Simplified)', 'Chinese (Traditional)', 'Italian', 'Dutch', 'Russian', 'Arabic', 'Swedish', 'Danish', 'Finnish', 'Polish', 'Turkish', 'Vietnamese', 'Thai', 'Greek', 'Hebrew', 'Indonesian', 'Malay', 'Ukrainian', 'Romanian', 'Czech', 'Hungarian', 'Catalan', 'Slovak', 'Croatian', 'Bengali', 'Urdu', 'Persian (Farsi)', 'Filipino (Tagalog)', 'Swahili', 'Serbian', 'Lithuanian', 'Latvian'];
@@ -51,7 +55,6 @@ const UserProfile = () => {
       await updateProfile({
         preferred_language: newLanguage
       });
-      setSelectedLanguage(newLanguage);
     } catch (error) {
       console.error('Error updating language:', error);
     } finally {
@@ -139,24 +142,40 @@ const UserProfile = () => {
           </>
         )}
 
-        {/* Preferred Language Section - Now at the bottom */}
-        <div className="space-y-2 pt-4 border-t">
-          <Label htmlFor="preferredLanguage" className="flex items-center space-x-2">
-            <Globe className="h-4 w-4" />
+        {/* Preferred Language Section - Improved UI */}
+        <div className="space-y-4 pt-4 border-t">
+          <Label className="flex items-center space-x-2 text-base font-semibold">
+            <Globe className="h-5 w-5" />
             <span>Preferred Language</span>
           </Label>
-          <Select value={selectedLanguage} onValueChange={handleLanguageChange} disabled={isLoading}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select your preferred language" />
-            </SelectTrigger>
-            <SelectContent>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="outline" 
+                className="w-full justify-between h-12 text-base"
+                disabled={isLoading}
+              >
+                <span>{profile.preferred_language || 'Select your preferred language'}</span>
+                <ChevronDown className="h-4 w-4 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent 
+              className="w-full min-w-[var(--radix-dropdown-menu-trigger-width)] max-h-80 overflow-y-auto bg-popover"
+              align="start"
+              side="bottom"
+            >
               {languages.map(language => (
-                <SelectItem key={language} value={language}>
+                <DropdownMenuItem 
+                  key={language} 
+                  onClick={() => handleLanguageChange(language)}
+                  className="cursor-pointer"
+                >
                   {language}
-                </SelectItem>
+                </DropdownMenuItem>
               ))}
-            </SelectContent>
-          </Select>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </CardContent>
     </Card>
