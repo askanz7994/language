@@ -36,11 +36,15 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title, au
       reader.onloadend = async () => {
         const base64Audio = (reader.result as string).split(',')[1];
         
+        // Get the user's preferred language, defaulting to English
+        const preferredLanguage = profile?.preferred_language || 'English';
+        
         const { data, error } = await supabase.functions.invoke('analyze-pronunciation', {
           body: {
             audioBase64: base64Audio,
             originalText: originalText,
-            language: 'malayalam'
+            language: 'malayalam',
+            feedbackLanguage: preferredLanguage
           }
         });
 
@@ -65,7 +69,7 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title, au
     } finally {
       setIsAnalyzing(false);
     }
-  }, [audioBlob, originalText, toast]);
+  }, [audioBlob, originalText, toast, profile?.preferred_language]);
 
   // Automatically analyze when audioBlob changes
   React.useEffect(() => {
