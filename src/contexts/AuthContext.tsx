@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -70,6 +71,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setTimeout(() => {
             fetchProfile(session.user.id);
           }, 0);
+
+          // Redirect to learn-english page after successful auth
+          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+            if (window.location.pathname === '/auth') {
+              window.location.href = '/learn-english';
+            }
+          }
         } else {
           setProfile(null);
         }
@@ -99,7 +107,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     firstName?: string, 
     lastName?: string
   ) => {
-    const redirectUrl = `${window.location.origin}/`;
+    const redirectUrl = `${window.location.origin}/learn-english`;
     
     const { error } = await supabase.auth.signUp({
       email,
