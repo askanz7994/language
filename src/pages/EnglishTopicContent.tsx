@@ -1,4 +1,3 @@
-
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { useState, useRef, useCallback } from "react";
@@ -30,7 +29,6 @@ const EnglishTopicContent = () => {
           autoGainControl: true,
           sampleRate: 48000,
           channelCount: 1,
-          latency: 0.01,
           volume: 1.0
         } 
       });
