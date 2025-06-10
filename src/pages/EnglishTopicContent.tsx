@@ -28,8 +28,7 @@ const EnglishTopicContent = () => {
           noiseSuppression: true,
           autoGainControl: true,
           sampleRate: 48000,
-          channelCount: 1,
-          volume: 1.0
+          channelCount: 1
         } 
       });
       
