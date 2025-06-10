@@ -24,7 +24,7 @@ const LearnEnglish = () => {
         </div>
 
         {/* Learning Modules */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 max-w-6xl mx-auto px-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 md:gap-8 max-w-7xl mx-auto px-4">
           {/* Alphabets Module */}
           <div className="language-card text-center">
             <div className="text-4xl md:text-6xl mb-4 md:mb-6">A</div>
@@ -63,6 +63,20 @@ const LearnEnglish = () => {
             <Link to="/english/words">
               <Button className="glow-button w-full text-sm md:text-base">
                 Learn Words
+              </Button>
+            </Link>
+          </div>
+
+          {/* Grammar Module */}
+          <div className="language-card text-center">
+            <div className="text-4xl md:text-6xl mb-4 md:mb-6">G</div>
+            <h2 className="text-2xl md:text-3xl font-bold mb-3 md:mb-4">Grammar</h2>
+            <p className="text-sm md:text-base text-muted-foreground mb-4 md:mb-6 px-2">
+              Master English grammar rules and structures
+            </p>
+            <Link to="/english/grammar">
+              <Button className="glow-button w-full text-sm md:text-base">
+                Learn Grammar
               </Button>
             </Link>
           </div>
