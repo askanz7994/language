@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -73,9 +74,10 @@ const EnglishParagraph = () => {
           </p>
         </div>
 
+        {/* Topic Cards - Removed hover effects */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto">
           {topics.map((topic) => (
-            <div key={topic.id} className="language-card text-center">
+            <div key={topic.id} className="bg-card border rounded-lg p-6 text-center">
               <h2 className="text-xl md:text-2xl font-bold mb-3 md:mb-4">{topic.title}</h2>
               <p className="text-sm md:text-base text-muted-foreground mb-4 md:mb-6 px-2">{topic.description}</p>
               <Link to={`/english/paragraph/${topic.id}`}>
