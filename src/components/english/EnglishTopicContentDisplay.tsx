@@ -46,12 +46,11 @@ const EnglishTopicContentDisplay = ({
       return (
         <span
           key={`${currentWordIndex}-${index}`}
-          className={`text-xs md:text-lg ${
+          className={`transition-all duration-200 text-xs md:text-lg ${
             isHighlighted 
               ? "border-2 border-primary text-primary font-semibold rounded px-1" 
               : ""
           }`}
-          style={{ transition: 'none', animation: 'none' }}
         >
           {segment}
         </span>
@@ -60,8 +59,8 @@ const EnglishTopicContentDisplay = ({
   };
 
   return (
-    <Card className="language-card" style={{ transition: 'none', animation: 'none' }}>
-      <CardHeader style={{ transition: 'none', animation: 'none' }}>
+    <Card className="language-card">
+      <CardHeader>
         <CardTitle className="text-xl md:text-2xl mb-4">{title}</CardTitle>
         
         <EnglishAudioControls
@@ -73,11 +72,8 @@ const EnglishTopicContentDisplay = ({
           onReadingStop={handleReadingStop}
         />
       </CardHeader>
-      <CardContent style={{ transition: 'none', animation: 'none' }}>
-        <div 
-          className="text-xs md:text-lg leading-relaxed mb-4 p-4 bg-muted rounded-lg"
-          style={{ transition: 'none', animation: 'none' }}
-        >
+      <CardContent>
+        <div className="text-xs md:text-lg leading-relaxed mb-4 p-4 bg-muted rounded-lg">
           {renderEnglishWithHighlight()}
         </div>
       </CardContent>
