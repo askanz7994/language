@@ -76,10 +76,10 @@ const MalayalamParagraph = () => {
           </p>
         </div>
 
-        {/* Topic Cards - Removed hover effects */}
+        {/* Topic Cards */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {topics.map((topic) => (
-            <div key={topic.id} className="bg-card border rounded-lg p-6 text-center">
+            <div key={topic.id} className="language-card text-center">
               <h2 className="text-2xl font-bold mb-4">{topic.title}</h2>
               <div className="text-2xl mb-6 text-primary">{topic.malayalam}</div>
               <Link to={`/malayalam/paragraph/${topic.id}`}>

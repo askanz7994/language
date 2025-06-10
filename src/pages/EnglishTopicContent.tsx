@@ -54,7 +54,7 @@ const EnglishTopicContent = () => {
       setIsRecording(true);
       
       toast({
-        title: "Recording started! 🎤",
+        title: "Recording started",
         description: "Read the English text clearly and at a natural pace.",
       });
     } catch (error) {
@@ -73,7 +73,7 @@ const EnglishTopicContent = () => {
       setIsRecording(false);
       
       toast({
-        title: "Recording stopped! ⏹️",
+        title: "Recording stopped",
         description: "Processing your pronunciation for analysis...",
       });
     }
