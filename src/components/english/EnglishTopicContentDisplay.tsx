@@ -30,20 +30,32 @@ const EnglishTopicContentDisplay = ({
   };
 
   const renderEnglishWithHighlight = () => {
-    const words = english.split(' ');
-    return words.map((word, index) => (
-      <span
-        key={index}
-        className={`transition-all duration-200 text-xs md:text-lg ${
-          highlightedWordIndex === index 
-            ? "bg-transparent border-2 border-primary text-primary font-semibold rounded px-1" 
-            : ""
-        }`}
-      >
-        {word}
-        {index < words.length - 1 ? ' ' : ''}
-      </span>
-    ));
+    const words = english.split(/(\s+)/); // Keep spaces in the split
+    let wordIndex = 0;
+    
+    return words.map((segment, index) => {
+      if (segment.trim() === '') {
+        // This is whitespace, return as is
+        return segment;
+      }
+      
+      const isHighlighted = highlightedWordIndex === wordIndex;
+      const currentWordIndex = wordIndex;
+      wordIndex++;
+      
+      return (
+        <span
+          key={`${currentWordIndex}-${index}`}
+          className={`transition-all duration-200 text-xs md:text-lg ${
+            isHighlighted 
+              ? "border-2 border-primary text-primary font-semibold rounded px-1" 
+              : ""
+          }`}
+        >
+          {segment}
+        </span>
+      );
+    });
   };
 
   return (

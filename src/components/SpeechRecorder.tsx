@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
@@ -103,25 +104,25 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title, au
             </div>
             
             {analysisResult.transcription && (
-              <div className="word-card">
+              <div className="p-4 bg-muted rounded-lg">
                 <h4 className="font-semibold mb-2">What we heard:</h4>
                 <p className="text-muted-foreground">{analysisResult.transcription}</p>
               </div>
             )}
             
-            <div className="word-card">
+            <div className="p-4 bg-muted rounded-lg">
               <h4 className="font-semibold mb-2">{translations.feedback}:</h4>
               <p className="text-muted-foreground">{analysisResult.feedback}</p>
             </div>
             
             {analysisResult.improvements && (
-              <div className="word-card">
+              <div className="p-4 bg-muted rounded-lg">
                 <h4 className="font-semibold mb-2">{translations.improvements}:</h4>
                 <p className="text-muted-foreground">{analysisResult.improvements}</p>
               </div>
             )}
             
-            <div className="word-card bg-primary/10">
+            <div className="p-4 bg-primary/10 rounded-lg">
               <h4 className="font-semibold mb-2">{translations.encouragement}:</h4>
               <p className="text-primary">{analysisResult.encouragement}</p>
             </div>

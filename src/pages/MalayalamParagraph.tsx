@@ -83,7 +83,7 @@ const MalayalamParagraph = () => {
               <h2 className="text-2xl font-bold mb-4">{topic.title}</h2>
               <div className="text-2xl mb-6 text-primary">{topic.malayalam}</div>
               <Link to={`/malayalam/paragraph/${topic.id}`}>
-                <Button className="glow-button w-full">
+                <Button className="w-full">
                   Read
                 </Button>
               </Link>

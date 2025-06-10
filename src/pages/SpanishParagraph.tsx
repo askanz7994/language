@@ -7,17 +7,11 @@ import { useState } from "react";
 const SpanishParagraph = () => {
   const [showTranslation, setShowTranslation] = useState(false);
   const [showTransliteration, setShowTransliteration] = useState(false);
-  const [playingAudio, setPlayingAudio] = useState(false);
 
   const paragraph = {
     spanish: "Me llamo Carlos. Me despierto a las seis de la mañana. Después de despertarme, me lavo los dientes y me ducho. Desayuno a las ocho en punto. Normalmente como cereales o tostadas con mermelada. Luego voy a la escuela en autobús. En la escuela, asisto a clases y me encuentro con mis amigos. Por la tarde, hago mis deberes y juego. Por la noche, leo libros y paso tiempo con mi familia. A menudo vemos películas juntos o hablamos sobre nuestro día. Antes de ir a dormir, preparo mi ropa para el día siguiente y pongo el despertador.",
     pronunciation: "Me YA-mo KAR-los. Me des-PYER-to a las seys de la ma-NYA-na. Des-PWES de des-per-TAR-me, me LA-vo los DYEN-tes y me DU-cho. De-sa-YU-no a las O-cho en PUN-to. Nor-mal-MEN-te KO-mo se-re-A-les o tos-TA-das kon mer-me-LA-da. LWE-go voy a la es-KWE-la en au-to-BUS. En la es-KWE-la, a-SIS-to a KLA-ses y me en-KWEN-tro kon mis a-MI-gos. Por la TAR-de, A-go mis de-BE-res y JWE-go. Por la NO-che, LE-o LI-bros y PA-so TYEM-po kon mi fa-MI-lya. A me-NU-do VE-mos pe-LI-ku-las JUN-tos o a-BLA-mos SO-bre NWES-tro DI-a. AN-tes de ir a dor-MIR, pre-PA-ro mi RO-pa PA-ra el DI-a si-GYEN-te y PON-go el des-per-ta-DOR.",
     english: "My name is Carlos. I wake up at six in the morning. After waking up, I brush my teeth and take a shower. I have breakfast at eight o'clock. Usually, I eat cereal or toast with jam. Then I go to school by bus. At school, I attend classes and meet my friends. In the afternoon, I do my homework and play. At night, I read books and spend time with my family. We often watch movies together or talk about our day. Before going to sleep, I prepare my clothes for the next day and set my alarm clock."
-  };
-
-  const playAudio = () => {
-    setPlayingAudio(true);
-    setTimeout(() => setPlayingAudio(false), 3000);
   };
 
   return (
@@ -39,12 +33,6 @@ const SpanishParagraph = () => {
           <div className="language-card mb-8">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold">Spanish Text</h2>
-              <Button
-                onClick={playAudio}
-                className={`audio-button ${playingAudio ? 'animate-pulse' : ''}`}
-              >
-                🔊 Play Audio
-              </Button>
             </div>
             <div className="text-2xl leading-relaxed mb-6 p-6 bg-muted rounded-lg">
               {paragraph.spanish}

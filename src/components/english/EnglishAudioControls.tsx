@@ -25,6 +25,7 @@ const EnglishAudioControls = ({
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const currentWordIndexRef = useRef<number>(0);
   const wordsRef = useRef<string[]>([]);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
 
   const clearHighlighting = useCallback(() => {
@@ -32,7 +33,26 @@ const EnglishAudioControls = ({
     if (onWordHighlight) {
       onWordHighlight(-1);
     }
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
   }, [onWordHighlight]);
+
+  const highlightWordsSequentially = useCallback((words: string[]) => {
+    let wordIndex = 0;
+    const highlightNextWord = () => {
+      if (wordIndex < words.length && onWordHighlight) {
+        onWordHighlight(wordIndex);
+        wordIndex++;
+        timeoutRef.current = setTimeout(highlightNextWord, 300); // Adjust timing as needed
+      } else {
+        clearHighlighting();
+        if (onReadingStop) onReadingStop();
+      }
+    };
+    highlightNextWord();
+  }, [onWordHighlight, onReadingStop, clearHighlighting]);
 
   const readText = useCallback(async () => {
     setIsReading(true);
@@ -49,23 +69,9 @@ const EnglishAudioControls = ({
       
       utteranceRef.current = utterance;
 
-      utterance.onboundary = (event) => {
-        if (event.name === 'word' && onWordHighlight) {
-          const currentIndex = currentWordIndexRef.current;
-          if (currentIndex < words.length) {
-            console.log('Highlighting word:', currentIndex, words[currentIndex]);
-            onWordHighlight(currentIndex);
-            currentWordIndexRef.current++;
-          }
-        }
-      };
-
       utterance.onstart = () => {
         console.log('Speech started');
-        if (onWordHighlight && words.length > 0) {
-          onWordHighlight(0);
-          currentWordIndexRef.current = 1;
-        }
+        highlightWordsSequentially(words);
       };
 
       utterance.onend = () => {
@@ -102,7 +108,7 @@ const EnglishAudioControls = ({
         variant: "destructive",
       });
     }
-  }, [englishText, toast, onWordHighlight, onReadingStop, clearHighlighting]);
+  }, [englishText, toast, onWordHighlight, onReadingStop, clearHighlighting, highlightWordsSequentially]);
 
   const stopReading = useCallback(() => {
     if (utteranceRef.current) {
