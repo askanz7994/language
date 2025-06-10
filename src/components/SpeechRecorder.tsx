@@ -31,36 +31,71 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title, au
     if (!audioBlob) return;
 
     setIsAnalyzing(true);
+    setAnalysisResult(null); // Clear previous results
+    
     try {
+      console.log('Starting audio analysis, blob size:', audioBlob.size);
+      
+      // Enhanced blob validation
+      if (audioBlob.size < 1024) {
+        throw new Error('Audio recording is too short or empty');
+      }
+
       const reader = new FileReader();
       reader.onloadend = async () => {
-        const base64Audio = (reader.result as string).split(',')[1];
-        
-        const { data, error } = await supabase.functions.invoke('analyze-pronunciation', {
-          body: {
-            audioBase64: base64Audio,
-            originalText: originalText,
-            language: 'malayalam',
-            preferredLanguage: profile?.preferred_language || 'English'
+        try {
+          const base64Audio = (reader.result as string).split(',')[1];
+          
+          console.log('Base64 audio length:', base64Audio.length);
+          
+          const { data, error } = await supabase.functions.invoke('analyze-pronunciation', {
+            body: {
+              audioBase64: base64Audio,
+              originalText: originalText,
+              language: 'english',
+              preferredLanguage: profile?.preferred_language || 'English'
+            }
+          });
+
+          if (error) {
+            console.error('Supabase function error:', error);
+            throw error;
           }
-        });
 
-        if (error) {
-          throw error;
+          console.log('Analysis result received:', data);
+
+          // Enhanced result validation
+          if (!data || typeof data.accuracyScore !== 'number') {
+            throw new Error('Invalid analysis result received');
+          }
+
+          setAnalysisResult(data);
+          
+          // Enhanced toast with more context
+          const scoreMessage = data.accuracyScore >= 8 ? "Excellent!" : 
+                              data.accuracyScore >= 6 ? "Good job!" : 
+                              data.accuracyScore >= 4 ? "Keep practicing!" : "Try again!";
+          
+          toast({
+            title: "Analysis complete",
+            description: `${scoreMessage} Score: ${data.accuracyScore}/10`,
+          });
+        } catch (analysisError) {
+          console.error('Error during analysis:', analysisError);
+          throw analysisError;
         }
-
-        setAnalysisResult(data);
-        toast({
-          title: "Analysis complete",
-          description: `Pronunciation score: ${data.accuracyScore}/10`,
-        });
       };
+
+      reader.onerror = () => {
+        throw new Error('Failed to read audio file');
+      };
+
       reader.readAsDataURL(audioBlob);
     } catch (error) {
       console.error('Error analyzing audio:', error);
       toast({
         title: "Analysis failed",
-        description: "Please try recording again.",
+        description: error instanceof Error ? error.message : "Please try recording again with clear speech.",
         variant: "destructive",
       });
     } finally {
@@ -89,7 +124,7 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title, au
         {isAnalyzing && (
           <div className="flex items-center justify-center gap-2 p-4">
             <Loader2 className="h-4 w-4 animate-spin" />
-            <span>Analyzing your pronunciation...</span>
+            <span>Analyzing your pronunciation with advanced AI...</span>
           </div>
         )}
 
@@ -103,7 +138,7 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title, au
               <div className="text-lg font-semibold">Pronunciation Score</div>
             </div>
             
-            {analysisResult.transcription && (
+            {analysisResult.transcription && analysisResult.transcription !== "SILENT_AUDIO" && (
               <div className="p-4 bg-muted rounded-lg">
                 <h4 className="font-semibold mb-2">What we heard:</h4>
                 <p className="text-muted-foreground">{analysisResult.transcription}</p>

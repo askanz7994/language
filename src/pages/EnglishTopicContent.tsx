@@ -15,24 +15,47 @@ const EnglishTopicContent = () => {
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const streamRef = useRef<MediaStream | null>(null);
   const { toast } = useToast();
 
   const currentTopic = englishTopicData[topicId || ""] || englishTopicData["kerala-landscapes"];
 
   const startRecording = useCallback(async () => {
     try {
+      // Enhanced audio constraints for better quality
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
           autoGainControl: true,
-          sampleRate: 44100
+          sampleRate: 48000,
+          channelCount: 1,
+          latency: 0.01,
+          volume: 1.0
         } 
       });
       
+      streamRef.current = stream;
+      
+      // Use better codec configuration
+      const mimeTypes = [
+        'audio/webm;codecs=opus',
+        'audio/mp4;codecs=mp4a.40.2',
+        'audio/ogg;codecs=opus',
+        'audio/webm'
+      ];
+      
+      let selectedMimeType = 'audio/webm';
+      for (const mimeType of mimeTypes) {
+        if (MediaRecorder.isTypeSupported(mimeType)) {
+          selectedMimeType = mimeType;
+          break;
+        }
+      }
+      
       const mediaRecorder = new MediaRecorder(stream, { 
-        mimeType: 'audio/webm;codecs=opus',
-        audioBitsPerSecond: 128000
+        mimeType: selectedMimeType,
+        audioBitsPerSecond: 256000
       });
       
       mediaRecorderRef.current = mediaRecorder;
@@ -45,23 +68,51 @@ const EnglishTopicContent = () => {
       };
 
       mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const audioBlob = new Blob(audioChunksRef.current, { type: selectedMimeType });
+        console.log('Audio blob created:', audioBlob.size, 'bytes, type:', audioBlob.type);
+        
+        // Validate audio size
+        if (audioBlob.size < 1024) {
+          console.warn('Audio blob too small, likely empty recording');
+          toast({
+            title: "Recording too short",
+            description: "Please speak longer and more clearly into the microphone.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
         setAudioBlob(audioBlob);
-        stream.getTracks().forEach(track => track.stop());
+        
+        // Clean up stream
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(track => track.stop());
+          streamRef.current = null;
+        }
       };
 
-      mediaRecorder.start(1000);
+      mediaRecorder.onerror = (event) => {
+        console.error('MediaRecorder error:', event);
+        toast({
+          title: "Recording error",
+          description: "There was an error with the recording. Please try again.",
+          variant: "destructive",
+        });
+      };
+
+      // Start recording with smaller time slices for better quality
+      mediaRecorder.start(250);
       setIsRecording(true);
       
       toast({
         title: "Recording started",
-        description: "Read the English text clearly and at a natural pace.",
+        description: "Read the English text clearly and at a natural pace. Speak close to your microphone.",
       });
     } catch (error) {
       console.error('Error starting recording:', error);
       toast({
         title: "Recording failed",
-        description: "Please check your microphone permissions and ensure it's working properly.",
+        description: "Please check your microphone permissions and ensure it's working properly. Refresh the page if needed.",
         variant: "destructive",
       });
     }
@@ -74,7 +125,7 @@ const EnglishTopicContent = () => {
       
       toast({
         title: "Recording stopped",
-        description: "Processing your pronunciation for analysis...",
+        description: "Processing your pronunciation for detailed analysis...",
       });
     }
   }, [isRecording, toast]);
