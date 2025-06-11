@@ -146,6 +146,8 @@ const EnglishTopicContent = () => {
             <EnglishTopicContentDisplay
               title={currentTopic.title}
               english={currentTopic.english}
+              audioFile={currentTopic.audioFile}
+              wordTimings={currentTopic.wordTimings}
               isRecording={isRecording}
               onStartRecording={startRecording}
               onStopRecording={stopRecording}

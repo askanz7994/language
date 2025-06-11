@@ -1,12 +1,14 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import EnglishAudioControls from "./EnglishAudioControls";
+import EnglishAudioPlayer from "./EnglishAudioPlayer";
+import { WordTiming } from "@/data/englishTopicData";
 
 interface EnglishTopicContentDisplayProps {
   title: string;
   english: string;
+  audioFile?: string;
+  wordTimings?: WordTiming[];
   isRecording: boolean;
   onStartRecording: () => void;
   onStopRecording: () => void;
@@ -15,6 +17,8 @@ interface EnglishTopicContentDisplayProps {
 const EnglishTopicContentDisplay = ({ 
   title, 
   english, 
+  audioFile,
+  wordTimings,
   isRecording, 
   onStartRecording, 
   onStopRecording 
@@ -63,8 +67,10 @@ const EnglishTopicContentDisplay = ({
       <CardHeader>
         <CardTitle className="text-xl md:text-2xl mb-4">{title}</CardTitle>
         
-        <EnglishAudioControls
+        <EnglishAudioPlayer
           englishText={english}
+          audioFile={audioFile}
+          wordTimings={wordTimings}
           isRecording={isRecording}
           onStartRecording={onStartRecording}
           onStopRecording={onStopRecording}

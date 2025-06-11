@@ -1,7 +1,14 @@
+export interface WordTiming {
+  word: string;
+  startTime: number; // in seconds
+  endTime: number;   // in seconds
+}
 
 export interface EnglishTopicData {
   title: string;
   english: string;
+  audioFile?: string; // Path to audio file
+  wordTimings?: WordTiming[]; // Word timing data for highlighting
   vocabulary: Array<{
     word: string;
     meaning: string;
@@ -12,6 +19,23 @@ export const englishTopicData: Record<string, EnglishTopicData> = {
   "kerala-landscapes": {
     title: "The Allure of Kerala's Landscapes",
     english: "Kerala, often dubbed \"God's Own Country,\" is a breathtakingly beautiful state in India. Its landscapes are a vibrant tapestry of emerald green paddy fields, swaying coconut groves, and tranquil backwaters that stretch for miles. Nestled along the Arabian Sea coast, this tropical paradise captivates visitors with its moderate climate and abundant rainfall, especially during the monsoon season when the greenery flourishes. Beyond its scenic charm, Kerala is also a renowned hub for Ayurveda and yoga, making it a perfect destination for health and wellness tourism. Its natural splendor and rich cultural heritage truly set it apart.",
+    audioFile: "/audio/kerala-landscapes.mp3",
+    wordTimings: [
+      { word: "Kerala,", startTime: 0.0, endTime: 0.5 },
+      { word: "often", startTime: 0.6, endTime: 0.9 },
+      { word: "dubbed", startTime: 1.0, endTime: 1.4 },
+      { word: "\"God's", startTime: 1.5, endTime: 1.9 },
+      { word: "Own", startTime: 2.0, endTime: 2.3 },
+      { word: "Country,\"", startTime: 2.4, endTime: 2.9 },
+      { word: "is", startTime: 3.0, endTime: 3.2 },
+      { word: "a", startTime: 3.3, endTime: 3.4 },
+      { word: "breathtakingly", startTime: 3.5, endTime: 4.2 },
+      { word: "beautiful", startTime: 4.3, endTime: 4.8 },
+      { word: "state", startTime: 4.9, endTime: 5.2 },
+      { word: "in", startTime: 5.3, endTime: 5.4 },
+      { word: "India.", startTime: 5.5, endTime: 6.0 }
+      // Note: In production, you would have complete timing data for all words
+    ],
     vocabulary: [
       { word: "dubbed", meaning: "called or named" },
       { word: "breathtakingly", meaning: "extremely impressive" },
