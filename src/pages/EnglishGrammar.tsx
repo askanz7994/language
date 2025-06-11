@@ -14,116 +14,188 @@ const EnglishGrammar = () => {
     { 
       topic: "Present Simple", 
       example: "I <u>eat</u> breakfast every morning.", 
-      explanation: "Used for habits and facts" 
+      explanation: "Used for habits and facts",
+      audioText: "I eat breakfast every morning"
     },
     { 
       topic: "Present Continuous", 
       example: "I <u>am eating</u> breakfast now.", 
-      explanation: "Used for actions happening now" 
+      explanation: "Used for actions happening now",
+      audioText: "I am eating breakfast now"
     },
     { 
       topic: "Past Simple", 
       example: "I <u>ate</u> breakfast yesterday.", 
-      explanation: "Used for completed past actions" 
+      explanation: "Used for completed past actions",
+      audioText: "I ate breakfast yesterday"
     },
     { 
       topic: "Past Continuous", 
       example: "I <u>was eating</u> when you called.", 
-      explanation: "Used for ongoing past actions" 
+      explanation: "Used for ongoing past actions",
+      audioText: "I was eating when you called"
     },
     { 
       topic: "Present Perfect", 
       example: "I <u>have eaten</u> breakfast.", 
-      explanation: "Used for past actions with present relevance" 
+      explanation: "Used for past actions with present relevance",
+      audioText: "I have eaten breakfast"
     },
     { 
       topic: "Future Simple", 
       example: "I <u>will eat</u> breakfast tomorrow.", 
-      explanation: "Used for future plans and predictions" 
+      explanation: "Used for future plans and predictions",
+      audioText: "I will eat breakfast tomorrow"
     },
     { 
       topic: "Articles (a, an, the)", 
       example: "I saw <u>a</u> cat. <u>The</u> cat was black.", 
-      explanation: "Used before nouns" 
+      explanation: "Used before nouns",
+      audioText: "I saw a cat. The cat was black"
     },
     { 
       topic: "Plural Nouns", 
       example: "One <u>book</u>, two <u>books</u>, three <u>children</u>.", 
-      explanation: "Regular and irregular plurals" 
+      explanation: "Regular and irregular plurals",
+      audioText: "One book, two books, three children"
     },
     { 
       topic: "Possessive Forms", 
       example: "<u>John's</u> car, the <u>students'</u> books.", 
-      explanation: "Shows ownership" 
+      explanation: "Shows ownership",
+      audioText: "John's car, the students' books"
     },
     { 
       topic: "Comparative Adjectives", 
       example: "<u>Bigger</u>, <u>better</u>, <u>more beautiful</u>.", 
-      explanation: "Comparing two things" 
+      explanation: "Comparing two things",
+      audioText: "Bigger, better, more beautiful"
     },
     { 
       topic: "Superlative Adjectives", 
       example: "The <u>biggest</u>, the <u>best</u>, the <u>most beautiful</u>.", 
-      explanation: "Comparing three or more things" 
+      explanation: "Comparing three or more things",
+      audioText: "The biggest, the best, the most beautiful"
     },
     { 
       topic: "Question Formation", 
       example: "<u>Do</u> you like coffee? <u>What time</u> is it?", 
-      explanation: "Making questions with do/does/did and wh-words" 
+      explanation: "Making questions with do/does/did and wh-words",
+      audioText: "Do you like coffee? What time is it?"
     },
     { 
       topic: "Prepositions of Time", 
       example: "<u>At</u> 3 o'clock, <u>on</u> Monday, <u>in</u> January.", 
-      explanation: "At, on, in for time expressions" 
+      explanation: "At, on, in for time expressions",
+      audioText: "At 3 o'clock, on Monday, in January"
     },
     { 
       topic: "Prepositions of Place", 
       example: "<u>At</u> home, <u>on</u> the table, <u>in</u> the box.", 
-      explanation: "At, on, in for location" 
+      explanation: "At, on, in for location",
+      audioText: "At home, on the table, in the box"
     },
     { 
       topic: "Modal Verbs", 
       example: "I <u>can</u> swim. You <u>should</u> study.", 
-      explanation: "Can, could, should, would, must" 
+      explanation: "Can, could, should, would, must",
+      audioText: "I can swim. You should study"
     },
     { 
       topic: "Conditional Sentences", 
       example: "<u>If</u> it rains, I <u>will</u> stay home.", 
-      explanation: "First, second, and third conditionals" 
+      explanation: "First, second, and third conditionals",
+      audioText: "If it rains, I will stay home"
     },
     { 
       topic: "Passive Voice", 
       example: "The book <u>was written</u> by Shakespeare.", 
-      explanation: "Focus on the action, not the doer" 
+      explanation: "Focus on the action, not the doer",
+      audioText: "The book was written by Shakespeare"
     },
     { 
       topic: "Reported Speech", 
       example: "He <u>said that</u> he was tired.", 
-      explanation: "Reporting what someone said" 
+      explanation: "Reporting what someone said",
+      audioText: "He said that he was tired"
     },
     { 
       topic: "Gerunds and Infinitives", 
       example: "I enjoy <u>reading</u>. I want <u>to read</u>.", 
-      explanation: "Verb forms used as nouns" 
+      explanation: "Verb forms used as nouns",
+      audioText: "I enjoy reading. I want to read"
     },
     { 
       topic: "Phrasal Verbs", 
       example: "<u>Turn on</u> the light. <u>Look after</u> the baby.", 
-      explanation: "Verbs with particles that change meaning" 
+      explanation: "Verbs with particles that change meaning",
+      audioText: "Turn on the light. Look after the baby"
     }
   ];
 
-  const playAudio = (index: number) => {
+  const playAudio = async (index: number) => {
     setPlayingAudio(index);
-    console.log(`Playing audio for grammar topic: ${grammarTopics[index].topic}`);
-    setTimeout(() => setPlayingAudio(null), 1000);
+    
+    try {
+      // Stop any currently playing audio
+      speechSynthesis.cancel();
+      
+      const text = grammarTopics[index].audioText;
+      console.log(`Playing audio for: "${text}"`);
+      
+      const utterance = new SpeechSynthesisUtterance(text);
+      
+      // Enhanced settings for better accuracy and Android compatibility
+      utterance.rate = 0.8; // Slower rate for better clarity
+      utterance.pitch = 1.0;
+      utterance.volume = 1.0;
+      utterance.lang = 'en-US'; // Explicit language setting
+      
+      // Get available voices and prefer a high-quality English voice
+      const voices = speechSynthesis.getVoices();
+      const englishVoices = voices.filter(voice => 
+        voice.lang.startsWith('en') && 
+        (voice.name.includes('Google') || voice.name.includes('Microsoft') || voice.default)
+      );
+      
+      if (englishVoices.length > 0) {
+        // Prefer Google or Microsoft voices for better quality on Android
+        const preferredVoice = englishVoices.find(voice => 
+          voice.name.includes('Google') || voice.name.includes('Microsoft')
+        ) || englishVoices[0];
+        
+        utterance.voice = preferredVoice;
+        console.log(`Using voice: ${preferredVoice.name}`);
+      }
+      
+      utterance.onend = () => {
+        setPlayingAudio(null);
+        console.log('Audio playback completed');
+      };
+      
+      utterance.onerror = (event) => {
+        console.error('Audio playback error:', event.error);
+        setPlayingAudio(null);
+      };
+      
+      // Small delay to ensure Android compatibility
+      setTimeout(() => {
+        speechSynthesis.speak(utterance);
+      }, 100);
+      
+    } catch (error) {
+      console.error('Error playing audio:', error);
+      setPlayingAudio(null);
+    }
   };
 
   const preferredLanguage = profile?.preferred_language || 'English';
   const translations = getGrammarTranslations(preferredLanguage);
 
   const getTranslatedExplanation = (explanation: string) => {
-    return translations[explanation] || explanation;
+    const translation = translations[explanation];
+    console.log(`Translating "${explanation}" to ${preferredLanguage}: ${translation || explanation}`);
+    return translation || explanation;
   };
 
   return (
@@ -161,6 +233,7 @@ const EnglishGrammar = () => {
                   onClick={() => playAudio(index)}
                   className={`audio-button ml-4 ${playingAudio === index ? 'animate-pulse' : ''}`}
                   size="sm"
+                  disabled={playingAudio === index}
                 >
                   <Play className="h-4 w-4" />
                 </Button>
