@@ -24,11 +24,42 @@ const EnglishAudioControls = ({
   const [isReading, setIsReading] = useState(false);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const wordsRef = useRef<string[]>([]);
+  const fallbackTimerRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
 
   const clearHighlighting = useCallback(() => {
     if (onWordHighlight) {
       onWordHighlight(-1);
+    }
+    if (fallbackTimerRef.current) {
+      clearTimeout(fallbackTimerRef.current);
+      fallbackTimerRef.current = null;
+    }
+  }, [onWordHighlight]);
+
+  // Fallback highlighting for Android devices
+  const startFallbackHighlighting = useCallback((words: string[], duration: number) => {
+    if (!onWordHighlight || words.length === 0) return;
+    
+    const timePerWord = duration / words.length;
+    let currentWordIndex = 0;
+    
+    const highlightNextWord = () => {
+      if (currentWordIndex < words.length) {
+        console.log(`Fallback highlighting word ${currentWordIndex}: "${words[currentWordIndex]}"`);
+        onWordHighlight(currentWordIndex);
+        currentWordIndex++;
+        
+        if (currentWordIndex < words.length) {
+          fallbackTimerRef.current = setTimeout(highlightNextWord, timePerWord);
+        }
+      }
+    };
+    
+    // Start with first word
+    onWordHighlight(0);
+    if (words.length > 1) {
+      fallbackTimerRef.current = setTimeout(highlightNextWord, timePerWord);
     }
   }, [onWordHighlight]);
 
@@ -51,10 +82,15 @@ const EnglishAudioControls = ({
 
       // Track current word index
       let currentWordIndex = 0;
+      let boundaryEventWorking = false;
+      
+      // Estimate duration for fallback (rough calculation)
+      const estimatedDuration = (words.length / utterance.rate) * 1000 * 0.6; // Conservative estimate
 
       utterance.onboundary = (event) => {
         // Only process word boundaries
         if (event.name === 'word') {
+          boundaryEventWorking = true;
           const charIndex = event.charIndex;
           
           // Find which word we're currently on based on character position
@@ -83,6 +119,14 @@ const EnglishAudioControls = ({
         if (onWordHighlight && words.length > 0) {
           onWordHighlight(0);
         }
+        
+        // Start fallback timer for Android compatibility
+        setTimeout(() => {
+          if (!boundaryEventWorking) {
+            console.log('Boundary events not working, using fallback highlighting');
+            startFallbackHighlighting(words, estimatedDuration);
+          }
+        }, 500); // Give boundary events time to start working
       };
 
       utterance.onend = () => {
@@ -119,7 +163,7 @@ const EnglishAudioControls = ({
         variant: "destructive",
       });
     }
-  }, [englishText, toast, onWordHighlight, onReadingStop, clearHighlighting]);
+  }, [englishText, toast, onWordHighlight, onReadingStop, clearHighlighting, startFallbackHighlighting]);
 
   const stopReading = useCallback(() => {
     if (utteranceRef.current) {
