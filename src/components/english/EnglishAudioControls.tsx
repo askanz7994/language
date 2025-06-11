@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Volume2, Square, Mic } from "lucide-react";
 import { useState, useRef, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface EnglishAudioControlsProps {
   englishText: string;
@@ -23,6 +24,7 @@ const EnglishAudioControls = ({
 }: EnglishAudioControlsProps) => {
   const [isReading, setIsReading] = useState(false);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const wordsRef = useRef<string[]>([]);
   const currentWordIndexRef = useRef(-1);
   const { toast } = useToast();
@@ -34,17 +36,113 @@ const EnglishAudioControls = ({
     currentWordIndexRef.current = -1;
   }, [onWordHighlight]);
 
-  const readText = useCallback(async () => {
-    setIsReading(true);
-    clearHighlighting();
-    
+  const playWithGeminiTTS = useCallback(async () => {
+    try {
+      console.log('Attempting Gemini TTS...');
+      
+      const { data, error } = await supabase.functions.invoke('gemini-paragraph-tts', {
+        body: { text: englishText }
+      });
+
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw new Error('Failed to call TTS function');
+      }
+
+      if (data?.success && data?.audioData) {
+        console.log('Got audio data from Gemini, playing...');
+        
+        // Convert base64 audio data to blob and play
+        const audioBytes = atob(data.audioData);
+        const audioArray = new Uint8Array(audioBytes.length);
+        for (let i = 0; i < audioBytes.length; i++) {
+          audioArray[i] = audioBytes.charCodeAt(i);
+        }
+        
+        const audioBlob = new Blob([audioArray], { type: data.mimeType || 'audio/wav' });
+        const audioUrl = URL.createObjectURL(audioBlob);
+        
+        const audio = new Audio(audioUrl);
+        audioRef.current = audio;
+        
+        // Simulate word highlighting during playback
+        const words = englishText.split(/\s+/).filter(word => word.trim() !== '');
+        wordsRef.current = words;
+        
+        audio.onplay = () => {
+          console.log('Gemini audio started playing');
+          if (onWordHighlight && words.length > 0) {
+            currentWordIndexRef.current = 0;
+            onWordHighlight(0);
+          }
+        };
+
+        audio.onended = () => {
+          console.log('Gemini audio ended');
+          setIsReading(false);
+          clearHighlighting();
+          if (onReadingStop) onReadingStop();
+          URL.revokeObjectURL(audioUrl);
+        };
+
+        audio.onerror = () => {
+          console.error('Audio playback error');
+          setIsReading(false);
+          clearHighlighting();
+          if (onReadingStop) onReadingStop();
+          URL.revokeObjectURL(audioUrl);
+          throw new Error('Audio playback failed');
+        };
+
+        // Start word highlighting simulation
+        if (onWordHighlight && words.length > 0) {
+          const wordsPerSecond = 2.5; // Estimated speaking rate
+          const intervalMs = 1000 / wordsPerSecond;
+          
+          let wordIndex = 0;
+          const highlightInterval = setInterval(() => {
+            if (wordIndex < words.length && !audio.paused && !audio.ended) {
+              currentWordIndexRef.current = wordIndex;
+              onWordHighlight(wordIndex);
+              wordIndex++;
+            } else {
+              clearInterval(highlightInterval);
+            }
+          }, intervalMs);
+          
+          audio.onended = () => {
+            clearInterval(highlightInterval);
+            setIsReading(false);
+            clearHighlighting();
+            if (onReadingStop) onReadingStop();
+            URL.revokeObjectURL(audioUrl);
+          };
+        }
+        
+        await audio.play();
+        return true; // Success
+        
+      } else if (data?.fallbackToWebSpeech) {
+        console.log('Gemini TTS not available, falling back to Web Speech API');
+        return false; // Fallback needed
+      } else {
+        throw new Error('Invalid response from TTS service');
+      }
+      
+    } catch (error) {
+      console.error('Gemini TTS error:', error);
+      return false; // Fallback needed
+    }
+  }, [englishText, onWordHighlight, onReadingStop, clearHighlighting]);
+
+  const playWithWebSpeechAPI = useCallback(async () => {
     try {
       // Split text into words, filtering out empty strings and cleaning punctuation
       const words = englishText.split(/\s+/).filter(word => word.trim() !== '');
       wordsRef.current = words;
       currentWordIndexRef.current = -1;
       
-      console.log('Starting speech with words:', words);
+      console.log('Starting Web Speech API with words:', words);
 
       const utterance = new SpeechSynthesisUtterance(englishText);
       utterance.lang = 'en-US';
@@ -91,7 +189,7 @@ const EnglishAudioControls = ({
       };
 
       utterance.onstart = () => {
-        console.log('Speech started');
+        console.log('Web Speech started');
         // Highlight first word when speech starts
         if (onWordHighlight && words.length > 0) {
           currentWordIndexRef.current = 0;
@@ -100,7 +198,7 @@ const EnglishAudioControls = ({
       };
 
       utterance.onend = () => {
-        console.log('Speech ended');
+        console.log('Web Speech ended');
         setIsReading(false);
         utteranceRef.current = null;
         clearHighlighting();
@@ -108,7 +206,7 @@ const EnglishAudioControls = ({
       };
 
       utterance.onerror = (event) => {
-        console.error('Speech error:', event);
+        console.error('Web Speech error:', event);
         setIsReading(false);
         utteranceRef.current = null;
         clearHighlighting();
@@ -126,7 +224,7 @@ const EnglishAudioControls = ({
       }, 100);
 
     } catch (error) {
-      console.error('Error in readText:', error);
+      console.error('Error in Web Speech API:', error);
       setIsReading(false);
       clearHighlighting();
       if (onReadingStop) onReadingStop();
@@ -138,14 +236,49 @@ const EnglishAudioControls = ({
     }
   }, [englishText, toast, onWordHighlight, onReadingStop, clearHighlighting]);
 
-  const stopReading = useCallback(() => {
-    if (utteranceRef.current) {
-      speechSynthesis.cancel();
+  const readText = useCallback(async () => {
+    setIsReading(true);
+    clearHighlighting();
+    
+    try {
+      // Try Gemini TTS first, fallback to Web Speech API if needed
+      const geminiSuccess = await playWithGeminiTTS();
+      
+      if (!geminiSuccess) {
+        console.log('Falling back to Web Speech API');
+        await playWithWebSpeechAPI();
+      }
+      
+    } catch (error) {
+      console.error('Error in readText:', error);
       setIsReading(false);
-      utteranceRef.current = null;
       clearHighlighting();
       if (onReadingStop) onReadingStop();
+      toast({
+        title: "Reading failed",
+        description: "Please try again.",
+        variant: "destructive",
+      });
     }
+  }, [playWithGeminiTTS, playWithWebSpeechAPI, clearHighlighting, onReadingStop, toast]);
+
+  const stopReading = useCallback(() => {
+    // Stop Gemini audio if playing
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
+    }
+    
+    // Stop Web Speech API if active
+    if (utteranceRef.current) {
+      speechSynthesis.cancel();
+      utteranceRef.current = null;
+    }
+    
+    setIsReading(false);
+    clearHighlighting();
+    if (onReadingStop) onReadingStop();
   }, [onReadingStop, clearHighlighting]);
 
   return (
