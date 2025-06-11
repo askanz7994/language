@@ -21,8 +21,8 @@ export const GrammarTopicsList = () => {
       
       const utterance = new SpeechSynthesisUtterance(text);
       
-      // Ultra-optimized settings for maximum clarity and word detection
-      utterance.rate = 0.6; // Even slower for better word recognition
+      // Optimized settings for maximum clarity and word detection
+      utterance.rate = 0.6; // Slower for better word recognition
       utterance.pitch = 1.0;
       utterance.volume = 1.0;
       utterance.lang = 'en-US'; // Explicit language setting

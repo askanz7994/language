@@ -23,55 +23,66 @@ const EnglishAudioControls = ({
 }: EnglishAudioControlsProps) => {
   const [isReading, setIsReading] = useState(false);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
-  const currentWordIndexRef = useRef<number>(0);
   const wordsRef = useRef<string[]>([]);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
 
   const clearHighlighting = useCallback(() => {
-    currentWordIndexRef.current = 0;
     if (onWordHighlight) {
       onWordHighlight(-1);
     }
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
   }, [onWordHighlight]);
-
-  const highlightWordsSequentially = useCallback((words: string[]) => {
-    let wordIndex = 0;
-    const highlightNextWord = () => {
-      if (wordIndex < words.length && onWordHighlight) {
-        onWordHighlight(wordIndex);
-        wordIndex++;
-        timeoutRef.current = setTimeout(highlightNextWord, 300); // Adjust timing as needed
-      } else {
-        clearHighlighting();
-        if (onReadingStop) onReadingStop();
-      }
-    };
-    highlightNextWord();
-  }, [onWordHighlight, onReadingStop, clearHighlighting]);
 
   const readText = useCallback(async () => {
     setIsReading(true);
     
     try {
-      const words = englishText.split(/\s+/);
+      // Split text into words, filtering out empty strings
+      const words = englishText.split(/\s+/).filter(word => word.trim() !== '');
       wordsRef.current = words;
-      currentWordIndexRef.current = 0;
+      
+      console.log('Starting speech with words:', words);
 
       const utterance = new SpeechSynthesisUtterance(englishText);
       utterance.lang = 'en-US';
-      utterance.rate = 0.7;
+      utterance.rate = 0.6; // Slower rate for better word tracking
       utterance.pitch = 1;
       
       utteranceRef.current = utterance;
 
+      // Track current word index
+      let currentWordIndex = 0;
+
+      utterance.onboundary = (event) => {
+        // Only process word boundaries
+        if (event.name === 'word') {
+          const charIndex = event.charIndex;
+          
+          // Find which word we're currently on based on character position
+          let charCount = 0;
+          let wordIndex = 0;
+          
+          for (let i = 0; i < words.length; i++) {
+            if (charCount <= charIndex && charIndex < charCount + words[i].length) {
+              wordIndex = i;
+              break;
+            }
+            charCount += words[i].length + 1; // +1 for space
+          }
+          
+          if (wordIndex !== currentWordIndex && onWordHighlight) {
+            currentWordIndex = wordIndex;
+            console.log(`Highlighting word ${currentWordIndex}: "${words[currentWordIndex]}"`);
+            onWordHighlight(currentWordIndex);
+          }
+        }
+      };
+
       utterance.onstart = () => {
         console.log('Speech started');
-        highlightWordsSequentially(words);
+        // Highlight first word when speech starts
+        if (onWordHighlight && words.length > 0) {
+          onWordHighlight(0);
+        }
       };
 
       utterance.onend = () => {
@@ -108,7 +119,7 @@ const EnglishAudioControls = ({
         variant: "destructive",
       });
     }
-  }, [englishText, toast, onWordHighlight, onReadingStop, clearHighlighting, highlightWordsSequentially]);
+  }, [englishText, toast, onWordHighlight, onReadingStop, clearHighlighting]);
 
   const stopReading = useCallback(() => {
     if (utteranceRef.current) {
