@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Volume2 } from "lucide-react";
+import { Play } from "lucide-react";
 import { GrammarTopic } from "@/data/grammarTopicsData";
 
 interface GrammarTopicCardProps {
@@ -37,8 +37,7 @@ export const GrammarTopicCard = ({
           size="sm"
           disabled={isPlaying}
         >
-          <Volume2 className="h-4 w-4 mr-1" />
-          Listen
+          <Play className="h-4 w-4" />
         </Button>
       </div>
     </div>
