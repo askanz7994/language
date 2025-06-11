@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Volume2, Square, Mic } from "lucide-react";
 import { useState, useRef, useCallback } from "react";
@@ -210,8 +211,8 @@ const EnglishAudioControls = ({
         utteranceRef.current = null;
         clearHighlighting();
         if (onReadingStop) onReadingStop();
-        // Don't show error toast when manually stopped - check the error property correctly
-        if (event.error !== 'aborted' && event.error !== 'interrupted') {
+        // Don't show error toast when manually stopped - properly check error codes
+        if (event.error !== 'aborted' as any && event.error !== 'interrupted' as any) {
           toast({
             title: "Reading failed",
             description: "Please try again.",
