@@ -24,55 +24,68 @@ const EnglishAudioControls = ({
   const [isReading, setIsReading] = useState(false);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const wordsRef = useRef<string[]>([]);
+  const currentWordIndexRef = useRef(-1);
   const { toast } = useToast();
 
   const clearHighlighting = useCallback(() => {
     if (onWordHighlight) {
       onWordHighlight(-1);
     }
+    currentWordIndexRef.current = -1;
   }, [onWordHighlight]);
 
   const readText = useCallback(async () => {
     setIsReading(true);
+    clearHighlighting();
     
     try {
-      // Split text into words, filtering out empty strings
+      // Split text into words, filtering out empty strings and cleaning punctuation
       const words = englishText.split(/\s+/).filter(word => word.trim() !== '');
       wordsRef.current = words;
+      currentWordIndexRef.current = -1;
       
       console.log('Starting speech with words:', words);
 
       const utterance = new SpeechSynthesisUtterance(englishText);
       utterance.lang = 'en-US';
-      utterance.rate = 0.6; // Slower rate for better word tracking
+      utterance.rate = 0.7; // Slightly faster for better Android compatibility
       utterance.pitch = 1;
+      utterance.volume = 1;
       
       utteranceRef.current = utterance;
 
-      // Track current word index
-      let currentWordIndex = 0;
-
+      // Enhanced boundary event handling for Android compatibility
       utterance.onboundary = (event) => {
-        // Only process word boundaries
+        console.log('Boundary event:', event.name, 'at char:', event.charIndex, 'elapsed:', event.elapsedTime);
+        
         if (event.name === 'word') {
           const charIndex = event.charIndex;
           
-          // Find which word we're currently on based on character position
-          let charCount = 0;
-          let wordIndex = 0;
+          // More robust word index calculation
+          let currentChar = 0;
+          let wordIndex = -1;
           
           for (let i = 0; i < words.length; i++) {
-            if (charCount <= charIndex && charIndex < charCount + words[i].length) {
+            // Find the start of the current word in the original text
+            const wordStart = englishText.indexOf(words[i], currentChar);
+            const wordEnd = wordStart + words[i].length;
+            
+            if (charIndex >= wordStart && charIndex < wordEnd) {
               wordIndex = i;
               break;
             }
-            charCount += words[i].length + 1; // +1 for space
+            
+            currentChar = wordEnd;
           }
           
-          if (wordIndex !== currentWordIndex && onWordHighlight) {
-            currentWordIndex = wordIndex;
-            console.log(`Highlighting word ${currentWordIndex}: "${words[currentWordIndex]}"`);
-            onWordHighlight(currentWordIndex);
+          // Only update if we found a valid word and it's different from current
+          if (wordIndex >= 0 && wordIndex !== currentWordIndexRef.current && wordIndex < words.length) {
+            currentWordIndexRef.current = wordIndex;
+            console.log(`Highlighting word ${wordIndex}: "${words[wordIndex]}"`);
+            
+            if (onWordHighlight) {
+              onWordHighlight(wordIndex);
+            }
           }
         }
       };
@@ -81,6 +94,7 @@ const EnglishAudioControls = ({
         console.log('Speech started');
         // Highlight first word when speech starts
         if (onWordHighlight && words.length > 0) {
+          currentWordIndexRef.current = 0;
           onWordHighlight(0);
         }
       };
@@ -106,7 +120,10 @@ const EnglishAudioControls = ({
         });
       };
 
-      speechSynthesis.speak(utterance);
+      // Wait a bit before starting speech for better Android compatibility
+      setTimeout(() => {
+        speechSynthesis.speak(utterance);
+      }, 100);
 
     } catch (error) {
       console.error('Error in readText:', error);
