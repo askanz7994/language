@@ -145,27 +145,60 @@ const EnglishGrammar = () => {
       
       const utterance = new SpeechSynthesisUtterance(text);
       
-      // Enhanced settings for better accuracy and Android compatibility
-      utterance.rate = 0.8; // Slower rate for better clarity
+      // Ultra-optimized settings for maximum clarity and word detection
+      utterance.rate = 0.6; // Even slower for better word recognition
       utterance.pitch = 1.0;
       utterance.volume = 1.0;
       utterance.lang = 'en-US'; // Explicit language setting
       
-      // Get available voices and prefer a high-quality English voice
-      const voices = speechSynthesis.getVoices();
-      const englishVoices = voices.filter(voice => 
-        voice.lang.startsWith('en') && 
-        (voice.name.includes('Google') || voice.name.includes('Microsoft') || voice.default)
-      );
+      // Wait for voices to be loaded
+      const loadVoices = () => {
+        return new Promise<SpeechSynthesisVoice[]>((resolve) => {
+          const voices = speechSynthesis.getVoices();
+          if (voices.length > 0) {
+            resolve(voices);
+          } else {
+            speechSynthesis.addEventListener('voiceschanged', () => {
+              resolve(speechSynthesis.getVoices());
+            }, { once: true });
+          }
+        });
+      };
+
+      const voices = await loadVoices();
       
-      if (englishVoices.length > 0) {
-        // Prefer Google or Microsoft voices for better quality on Android
-        const preferredVoice = englishVoices.find(voice => 
-          voice.name.includes('Google') || voice.name.includes('Microsoft')
-        ) || englishVoices[0];
-        
-        utterance.voice = preferredVoice;
-        console.log(`Using voice: ${preferredVoice.name}`);
+      // Priority order for voice selection for best clarity
+      const voicePriority = [
+        'Google US English',
+        'Microsoft Zira',
+        'Microsoft David',
+        'Alex',
+        'Samantha',
+        'Daniel'
+      ];
+      
+      let selectedVoice = null;
+      
+      // First try to find exact matches from priority list
+      for (const priorityVoice of voicePriority) {
+        selectedVoice = voices.find(voice => 
+          voice.name.includes(priorityVoice) && voice.lang.startsWith('en')
+        );
+        if (selectedVoice) break;
+      }
+      
+      // If no priority voice found, get the best available English voice
+      if (!selectedVoice) {
+        const englishVoices = voices.filter(voice => 
+          voice.lang.startsWith('en') && 
+          (voice.localService || voice.name.includes('Google') || voice.name.includes('Microsoft'))
+        );
+        selectedVoice = englishVoices[0] || voices.find(voice => voice.lang.startsWith('en'));
+      }
+      
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+        console.log(`Using optimized voice: ${selectedVoice.name} (${selectedVoice.lang})`);
       }
       
       utterance.onend = () => {
@@ -178,10 +211,10 @@ const EnglishGrammar = () => {
         setPlayingAudio(null);
       };
       
-      // Small delay to ensure Android compatibility
+      // Enhanced delay for better Android/mobile compatibility
       setTimeout(() => {
         speechSynthesis.speak(utterance);
-      }, 100);
+      }, 150);
       
     } catch (error) {
       console.error('Error playing audio:', error);

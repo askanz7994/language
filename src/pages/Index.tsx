@@ -44,7 +44,7 @@ const Index = () => {
           </p>
           <Link to={user ? "/learn-english" : "/auth"}>
             <Button className="glow-button text-lg px-8 py-[32px] text-[#03022e] bg-[#04cbe0]">
-              Start Learning English Now! <ArrowRight className="ml-2 h-5 w-5" />
+              Start Now <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </Link>
         </div>
