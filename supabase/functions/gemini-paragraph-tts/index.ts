@@ -26,8 +26,8 @@ serve(async (req) => {
 
     console.log('Generating TTS for text:', text.substring(0, 50) + '...');
 
-    // Use Gemini 2.5 Flash for TTS generation
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`, {
+    // Use Gemini 2.0 Flash Thinking Experimental which supports audio
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-thinking-exp:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -39,12 +39,12 @@ serve(async (req) => {
           }]
         }],
         generationConfig: {
-          temperature: 1.0,
+          temperature: 0.9,
           responseModalities: ["AUDIO"],
           speechConfig: {
             voiceConfig: {
               prebuiltVoiceConfig: {
-                voiceName: "Iapetus"
+                voiceName: "Aoede"
               }
             }
           }
@@ -55,7 +55,35 @@ serve(async (req) => {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Gemini API error:', errorText);
-      throw new Error(`Gemini API error: ${response.status}`);
+      
+      // If this model also fails, try without speech config
+      const fallbackResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: `Please read this text aloud: ${text}`
+            }]
+          }],
+          generationConfig: {
+            temperature: 0.7
+          }
+        }),
+      });
+
+      if (!fallbackResponse.ok) {
+        console.error('Fallback also failed, using Web Speech API');
+        return new Response(JSON.stringify({ 
+          success: false,
+          message: 'Gemini TTS not available',
+          fallbackToWebSpeech: true
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
     }
 
     const data = await response.json();
@@ -66,6 +94,8 @@ serve(async (req) => {
       const audioData = data.candidates[0].content.parts[0].inlineData.data;
       const mimeType = data.candidates[0].content.parts[0].inlineData.mimeType;
       
+      console.log('Audio data found, mime type:', mimeType);
+      
       return new Response(JSON.stringify({ 
         success: true,
         audioData,
@@ -75,7 +105,7 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     } else {
-      // Fallback response if no audio data
+      console.log('No audio data in response, falling back to Web Speech API');
       return new Response(JSON.stringify({ 
         success: false,
         message: 'No audio data generated',
