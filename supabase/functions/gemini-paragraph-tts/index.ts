@@ -26,8 +26,8 @@ serve(async (req) => {
 
     console.log('Generating TTS for text:', text.substring(0, 50) + '...');
 
-    // Use Gemini 2.0 Flash Thinking Experimental which supports audio
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-thinking-exp:generateContent?key=${apiKey}`, {
+    // Use Gemini 2.5 Flash Preview TTS model
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -211,11 +211,14 @@ const EnglishAudioControls = ({
         utteranceRef.current = null;
         clearHighlighting();
         if (onReadingStop) onReadingStop();
-        toast({
-          title: "Reading failed",
-          description: "Please try again.",
-          variant: "destructive",
-        });
+        // Don't show error toast when manually stopped
+        if (event.error !== 'aborted' && event.error !== 'interrupted') {
+          toast({
+            title: "Reading failed",
+            description: "Please try again.",
+            variant: "destructive",
+          });
+        }
       };
 
       // Wait a bit before starting speech for better Android compatibility
@@ -279,6 +282,7 @@ const EnglishAudioControls = ({
     setIsReading(false);
     clearHighlighting();
     if (onReadingStop) onReadingStop();
+    // No toast message when user manually stops listening
   }, [onReadingStop, clearHighlighting]);
 
   return (
