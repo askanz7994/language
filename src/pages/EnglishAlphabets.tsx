@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Volume2, Square } from "lucide-react";
@@ -16,35 +15,35 @@ const EnglishAlphabets = () => {
     "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"
   ];
 
-  // Timing data for each letter in the alphabet.mp3 file (in seconds)
-  // You may need to adjust these timings based on your actual audio file
+  // Updated timing data for the 30-second alphabet.mp3 file
+  // Each letter gets approximately 1.15 seconds (30 seconds / 26 letters)
   const letterTimings = [
-    { letter: "A", startTime: 0.0, endTime: 1.0 },
-    { letter: "B", startTime: 1.0, endTime: 2.0 },
-    { letter: "C", startTime: 2.0, endTime: 3.0 },
-    { letter: "D", startTime: 2.9, endTime: 4.0 },
-    { letter: "E", startTime: 4.0, endTime: 5.0 },
-    { letter: "F", startTime: 5.0, endTime: 6.0 },
-    { letter: "G", startTime: 6.0, endTime: 7.0 },
-    { letter: "H", startTime: 7.0, endTime: 8.0 },
-    { letter: "I", startTime: 8.0, endTime: 9.0 },
-    { letter: "J", startTime: 9.0, endTime: 10.0 },
-    { letter: "K", startTime: 10.0, endTime: 11.0 },
-    { letter: "L", startTime: 11.0, endTime: 12.0 },
-    { letter: "M", startTime: 12.0, endTime: 13.0 },
-    { letter: "N", startTime: 13.0, endTime: 14.0 },
-    { letter: "O", startTime: 14.0, endTime: 15.0 },
-    { letter: "P", startTime: 15.0, endTime: 16.0 },
-    { letter: "Q", startTime: 16.0, endTime: 17.0 },
-    { letter: "R", startTime: 17.0, endTime: 18.0 },
-    { letter: "S", startTime: 18.0, endTime: 19.0 },
-    { letter: "T", startTime: 19.0, endTime: 20.0 },
-    { letter: "U", startTime: 20.0, endTime: 21.0 },
-    { letter: "V", startTime: 21.0, endTime: 22.0 },
-    { letter: "W", startTime: 22.0, endTime: 23.0 },
-    { letter: "X", startTime: 23.0, endTime: 24.0 },
-    { letter: "Y", startTime: 24.0, endTime: 25.0 },
-    { letter: "Z", startTime: 25.0, endTime: 26.0 }
+    { letter: "A", startTime: 0.0, endTime: 1.15 },
+    { letter: "B", startTime: 1.15, endTime: 2.30 },
+    { letter: "C", startTime: 2.30, endTime: 3.45 },
+    { letter: "D", startTime: 3.45, endTime: 4.60 },
+    { letter: "E", startTime: 4.60, endTime: 5.75 },
+    { letter: "F", startTime: 5.75, endTime: 6.90 },
+    { letter: "G", startTime: 6.90, endTime: 8.05 },
+    { letter: "H", startTime: 8.05, endTime: 9.20 },
+    { letter: "I", startTime: 9.20, endTime: 10.35 },
+    { letter: "J", startTime: 10.35, endTime: 11.50 },
+    { letter: "K", startTime: 11.50, endTime: 12.65 },
+    { letter: "L", startTime: 12.65, endTime: 13.80 },
+    { letter: "M", startTime: 13.80, endTime: 14.95 },
+    { letter: "N", startTime: 14.95, endTime: 16.10 },
+    { letter: "O", startTime: 16.10, endTime: 17.25 },
+    { letter: "P", startTime: 17.25, endTime: 18.40 },
+    { letter: "Q", startTime: 18.40, endTime: 19.55 },
+    { letter: "R", startTime: 19.55, endTime: 20.70 },
+    { letter: "S", startTime: 20.70, endTime: 21.85 },
+    { letter: "T", startTime: 21.85, endTime: 23.00 },
+    { letter: "U", startTime: 23.00, endTime: 24.15 },
+    { letter: "V", startTime: 24.15, endTime: 25.30 },
+    { letter: "W", startTime: 25.30, endTime: 26.45 },
+    { letter: "X", startTime: 26.45, endTime: 27.60 },
+    { letter: "Y", startTime: 27.60, endTime: 28.75 },
+    { letter: "Z", startTime: 28.75, endTime: 30.00 }
   ];
 
   // Update highlighting based on current time
