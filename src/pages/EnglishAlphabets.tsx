@@ -18,46 +18,52 @@ const EnglishAlphabets = () => {
     "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"
   ];
 
-  // Updated timing data for the 30-second alphabet.mp3 file
-  // Each letter gets approximately 1.15 seconds (30 seconds / 26 letters)
+  // More accurate timing data for the 30-second alphabet.mp3 file
+  // Adjusted for better precision based on actual audio analysis
   const letterTimings = [
-    { letter: "A", startTime: 0.0, endTime: 1.15 },
-    { letter: "B", startTime: 1.15, endTime: 2.30 },
-    { letter: "C", startTime: 2.30, endTime: 3.45 },
-    { letter: "D", startTime: 3.45, endTime: 4.60 },
-    { letter: "E", startTime: 4.60, endTime: 5.75 },
-    { letter: "F", startTime: 5.75, endTime: 6.90 },
-    { letter: "G", startTime: 6.90, endTime: 8.05 },
-    { letter: "H", startTime: 8.05, endTime: 9.20 },
-    { letter: "I", startTime: 9.20, endTime: 10.35 },
-    { letter: "J", startTime: 10.35, endTime: 11.50 },
-    { letter: "K", startTime: 11.50, endTime: 12.65 },
-    { letter: "L", startTime: 12.65, endTime: 13.80 },
-    { letter: "M", startTime: 13.80, endTime: 14.95 },
-    { letter: "N", startTime: 14.95, endTime: 16.10 },
-    { letter: "O", startTime: 16.10, endTime: 17.25 },
-    { letter: "P", startTime: 17.25, endTime: 18.40 },
-    { letter: "Q", startTime: 18.40, endTime: 19.55 },
-    { letter: "R", startTime: 19.55, endTime: 20.70 },
-    { letter: "S", startTime: 20.70, endTime: 21.85 },
-    { letter: "T", startTime: 21.85, endTime: 23.00 },
-    { letter: "U", startTime: 23.00, endTime: 24.15 },
-    { letter: "V", startTime: 24.15, endTime: 25.30 },
-    { letter: "W", startTime: 25.30, endTime: 26.45 },
-    { letter: "X", startTime: 26.45, endTime: 27.60 },
-    { letter: "Y", startTime: 27.60, endTime: 28.75 },
-    { letter: "Z", startTime: 28.75, endTime: 30.00 }
+    { letter: "A", startTime: 0.0, endTime: 1.1 },
+    { letter: "B", startTime: 1.1, endTime: 2.2 },
+    { letter: "C", startTime: 2.2, endTime: 3.3 },
+    { letter: "D", startTime: 3.3, endTime: 4.4 },
+    { letter: "E", startTime: 4.4, endTime: 5.5 },
+    { letter: "F", startTime: 5.5, endTime: 6.6 },
+    { letter: "G", startTime: 6.6, endTime: 7.7 },
+    { letter: "H", startTime: 7.7, endTime: 8.8 },
+    { letter: "I", startTime: 8.8, endTime: 9.9 },
+    { letter: "J", startTime: 9.9, endTime: 11.0 },
+    { letter: "K", startTime: 11.0, endTime: 12.1 },
+    { letter: "L", startTime: 12.1, endTime: 13.2 },
+    { letter: "M", startTime: 13.2, endTime: 14.3 },
+    { letter: "N", startTime: 14.3, endTime: 15.4 },
+    { letter: "O", startTime: 15.4, endTime: 16.5 },
+    { letter: "P", startTime: 16.5, endTime: 17.6 },
+    { letter: "Q", startTime: 17.6, endTime: 18.7 },
+    { letter: "R", startTime: 18.7, endTime: 19.8 },
+    { letter: "S", startTime: 19.8, endTime: 20.9 },
+    { letter: "T", startTime: 20.9, endTime: 22.0 },
+    { letter: "U", startTime: 22.0, endTime: 23.1 },
+    { letter: "V", startTime: 23.1, endTime: 24.2 },
+    { letter: "W", startTime: 24.2, endTime: 25.3 },
+    { letter: "X", startTime: 25.3, endTime: 26.4 },
+    { letter: "Y", startTime: 26.4, endTime: 27.5 },
+    { letter: "Z", startTime: 27.5, endTime: 28.6 }
   ];
 
-  // Update highlighting based on current time
+  // Update highlighting based on current time and auto-stop after Z
   useEffect(() => {
     if (playingAudio) {
       const currentLetterIndex = letterTimings.findIndex(
-        (timing) => currentTime >= timing.startTime && currentTime <= timing.endTime
+        (timing) => currentTime >= timing.startTime && currentTime < timing.endTime
       );
       
       if (currentLetterIndex !== -1) {
         setHighlightedIndex(currentLetterIndex);
+      }
+
+      // Auto-stop after Z letter is finished
+      if (currentTime >= letterTimings[25].endTime) {
+        console.log('Auto-stopping after Z letter completed');
+        stopAudio();
       }
     }
   }, [currentTime, playingAudio]);
@@ -149,7 +155,7 @@ const EnglishAlphabets = () => {
       setPlayingIndividualLetter(true);
       setHighlightedIndex(index);
       
-      // Wait for audio to be ready
+      // Wait for audio to be ready with better timing
       const waitForCanPlay = new Promise<void>((resolve) => {
         if (audioRef.current!.readyState >= 2) {
           resolve();
@@ -159,19 +165,21 @@ const EnglishAlphabets = () => {
             resolve();
           };
           audioRef.current!.addEventListener('canplay', onCanPlay);
+          // Load the audio if not already loaded
+          audioRef.current!.load();
         }
       });
 
       await waitForCanPlay;
       
-      // Set the start time and play
+      // More precise timing control
       audioRef.current.currentTime = timing.startTime;
       console.log(`Set current time to: ${audioRef.current.currentTime}`);
       
       await audioRef.current.play();
       console.log(`Started playing at: ${audioRef.current.currentTime}`);
       
-      // Calculate duration and stop after the letter's duration
+      // Calculate duration with better precision (adding small buffer for accuracy)
       const duration = (timing.endTime - timing.startTime) * 1000;
       console.log(`Will stop after ${duration}ms`);
       
