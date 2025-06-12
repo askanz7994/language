@@ -1,23 +1,18 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Volume2, Square } from "lucide-icon";
+import { ArrowLeft, Volume2, Square } from "lucide-react";
 import { useState, useRef, useCallback, useEffect } from "react";
 
 const EnglishAlphabets = () => {
-  // State variables
-  const [playingAudio, setPlayingAudio] = useState(false); // Controls playback of the full alphabet audio
-  const [currentTime, setCurrentTime] = useState(0); // Tracks current playback time of the full audio
-  const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null); // Index of the currently highlighted letter
-  const [playingIndividualLetter, setPlayingIndividualLetter] = useState(false); // Controls playback of individual letter audio
+  const [playingAudio, setPlayingAudio] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null);
+  const [playingIndividualLetter, setPlayingIndividualLetter] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const animationRef = useRef<number>();
+  const individualTimeoutRef = useRef<NodeJS.Timeout>();
 
-  // Refs
-  const audioRef = useRef<HTMLHTMLAudioElement | null>(null); // Ref for the main audio element
-  const individualAudioRef = useRef<HTMLHTMLAudioElement | null>(null); // Ref for individual letter audio (if you implement it)
-  const animationRef = useRef<number | null>(null); // Ref for the requestAnimationFrame
-  const individualTimeoutRef = useRef<NodeJS.Timeout | null>(null); // Ref for timeout when playing individual letters
-
-  // Alphabet data
   const alphabets = [
     "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
     "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"
@@ -54,43 +49,20 @@ const EnglishAlphabets = () => {
     { letter: "Z", startTime: 28.75, endTime: 30.00 }
   ];
 
-  // Function to toggle playing the full alphabet audio
-  const togglePlayPause = () => {
-    if (audioRef.current) {
-      if (playingAudio) {
-        audioRef.current.pause();
-      } else {
-        audioRef.current.play();
+  // Update highlighting based on current time
+  useEffect(() => {
+    if (playingAudio) {
+      const currentLetterIndex = letterTimings.findIndex(
+        (timing) => currentTime >= timing.startTime && currentTime <= timing.endTime
+      );
+      
+      if (currentLetterIndex !== -1) {
+        setHighlightedIndex(currentLetterIndex);
       }
-      setPlayingAudio(!playingAudio);
     }
-  };
+  }, [currentTime, playingAudio]);
 
-  // Function to stop the audio and reset state
-  const stopAudio = () => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      setPlayingAudio(false);
-      setCurrentTime(0);
-      setHighlightedIndex(null);
-    }
-  };
-
-  // Function to play individual letter audio (placeholder - you'd need separate audio files or a more complex solution)
-  const playIndividualLetter = (index: number) => {
-    // Implement logic to play individual letter audio here
-    // For example, if you have separate audio files like "A.mp3", "B.mp3", etc.
-    // This is just a placeholder to demonstrate the concept.
-    console.log(`Playing individual letter: ${alphabets[index]}`);
-    setPlayingIndividualLetter(true);
-    // Simulate playing for a short duration
-    individualTimeoutRef.current = setTimeout(() => {
-      setPlayingIndividualLetter(false);
-    }, 1000); // Simulate 1 second playback
-  };
-
-  // Callback for the animation loop to update current time
+  // Animation loop to update current time
   const updateTime = useCallback(() => {
     if (audioRef.current && playingAudio) {
       setCurrentTime(audioRef.current.currentTime);
@@ -98,7 +70,6 @@ const EnglishAlphabets = () => {
     }
   }, [playingAudio]);
 
-  // Effect to start/stop the animation loop when playingAudio changes
   useEffect(() => {
     if (playingAudio) {
       animationRef.current = requestAnimationFrame(updateTime);
@@ -107,7 +78,7 @@ const EnglishAlphabets = () => {
         cancelAnimationFrame(animationRef.current);
       }
     }
-    // Cleanup on component unmount or when playingAudio becomes false
+
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
@@ -115,101 +86,182 @@ const EnglishAlphabets = () => {
     };
   }, [playingAudio, updateTime]);
 
-  // Effect to update highlighting based on current time
-  useEffect(() => {
-    if (playingAudio) {
-      const currentLetterIndex = letterTimings.findIndex(
-        (timing) => currentTime >= timing.startTime && currentTime < timing.endTime
-      );
-
-      if (currentLetterIndex !== -1) {
-        setHighlightedIndex(currentLetterIndex);
-      } else {
-        // If current time is outside any defined range (e.g., at the very end or beginning)
-        setHighlightedIndex(null);
+  const playFullAlphabet = useCallback(async () => {
+    try {
+      if (!audioRef.current) {
+        audioRef.current = new Audio('/audio/alphabet.mp3');
+        
+        audioRef.current.onended = () => {
+          setPlayingAudio(false);
+          setCurrentTime(0);
+          setHighlightedIndex(null);
+        };
+        
+        audioRef.current.onerror = () => {
+          console.error('Audio loading error');
+          setPlayingAudio(false);
+        };
       }
-    } else {
-      // If audio is not playing, no letter should be highlighted
-      setHighlightedIndex(null);
-    }
-  }, [currentTime, playingAudio, letterTimings]);
-
-  // Effect to handle audio ending
-  useEffect(() => {
-    const audio = audioRef.current;
-    const handleAudioEnded = () => {
+      
+      audioRef.current.currentTime = 0;
+      await audioRef.current.play();
+      setPlayingAudio(true);
+      
+    } catch (error) {
+      console.error('Error playing audio:', error);
       setPlayingAudio(false);
-      setCurrentTime(0);
-      setHighlightedIndex(null);
-    };
-
-    if (audio) {
-      audio.addEventListener("ended", handleAudioEnded);
     }
+  }, []);
 
-    return () => {
-      if (audio) {
-        audio.removeEventListener("ended", handleAudioEnded);
+  const stopAudio = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+    
+    if (individualTimeoutRef.current) {
+      clearTimeout(individualTimeoutRef.current);
+    }
+    
+    setPlayingAudio(false);
+    setPlayingIndividualLetter(false);
+    setCurrentTime(0);
+    setHighlightedIndex(null);
+  }, []);
+
+  const playIndividualLetter = useCallback(async (letter: string, index: number) => {
+    if (playingAudio || playingIndividualLetter) return; // Don't allow while any audio is playing
+    
+    try {
+      const timing = letterTimings[index];
+      if (!timing) {
+        console.error(`No timing found for letter ${letter} at index ${index}`);
+        return;
       }
+
+      console.log(`Playing letter ${letter} from ${timing.startTime}s to ${timing.endTime}s`);
+
+      if (!audioRef.current) {
+        audioRef.current = new Audio('/audio/alphabet.mp3');
+      }
+      
+      // Set playing state and highlight immediately
+      setPlayingIndividualLetter(true);
+      setHighlightedIndex(index);
+      
+      // Wait for audio to be ready
+      const waitForCanPlay = new Promise<void>((resolve) => {
+        if (audioRef.current!.readyState >= 2) {
+          resolve();
+        } else {
+          const onCanPlay = () => {
+            audioRef.current!.removeEventListener('canplay', onCanPlay);
+            resolve();
+          };
+          audioRef.current!.addEventListener('canplay', onCanPlay);
+        }
+      });
+
+      await waitForCanPlay;
+      
+      // Set the start time and play
+      audioRef.current.currentTime = timing.startTime;
+      console.log(`Set current time to: ${audioRef.current.currentTime}`);
+      
+      await audioRef.current.play();
+      console.log(`Started playing at: ${audioRef.current.currentTime}`);
+      
+      // Calculate duration and stop after the letter's duration
+      const duration = (timing.endTime - timing.startTime) * 1000;
+      console.log(`Will stop after ${duration}ms`);
+      
+      individualTimeoutRef.current = setTimeout(() => {
+        if (audioRef.current) {
+          audioRef.current.pause();
+          console.log(`Stopped playing at: ${audioRef.current.currentTime}`);
+        }
+        setPlayingIndividualLetter(false);
+        setHighlightedIndex(null);
+      }, duration);
+      
+    } catch (error) {
+      console.error('Error playing letter audio:', error);
+      setPlayingIndividualLetter(false);
+      setHighlightedIndex(null);
+    }
+  }, [playingAudio, playingIndividualLetter]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
       if (individualTimeoutRef.current) {
         clearTimeout(individualTimeoutRef.current);
       }
     };
-  }, []); // Run once on mount
+  }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
-      <div className="absolute top-4 left-4">
-        <Link to="/">
-          <Button variant="ghost" size="icon">
-            <ArrowLeft className="h-6 w-6" />
-          </Button>
+    <div className="min-h-screen blur-bg">
+      <div className="container mx-auto px-4 py-8 md:py-16">
+        <Link to="/learn-english" className="inline-flex items-center text-primary hover:text-primary/80 mb-6 md:mb-8 text-sm md:text-base">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to English
         </Link>
-      </div>
 
-      <h1 className="text-4xl font-bold mb-8">English Alphabets</h1>
+        <div className="text-center mb-12 md:mb-16">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6">English Alphabets</h1>
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto px-4 mb-6">
+            Listen and learn the letters.
+          </p>
+          
+          {/* Play Full Alphabet Button */}
+          <div className="flex justify-center mb-8">
+            {!playingAudio ? (
+              <Button
+                onClick={playFullAlphabet}
+                className="glow-button flex items-center gap-2"
+                size="lg"
+              >
+                <Volume2 className="h-5 w-5" />
+                Play Full Alphabet
+              </Button>
+            ) : (
+              <Button
+                onClick={stopAudio}
+                variant="destructive"
+                className="flex items-center gap-2"
+                size="lg"
+              >
+                <Square className="h-5 w-5" />
+                Stop
+              </Button>
+            )}
+          </div>
+        </div>
 
-      {/* Audio element for the full alphabet */}
-      <audio ref={audioRef} src="/audio/alphabet.mp3" preload="auto" />
-
-      <div className="flex space-x-4 mb-8">
-        <Button onClick={togglePlayPause} className="px-6 py-3 text-lg">
-          {playingAudio ? (
-            <>
-              <Square className="h-5 w-5 mr-2" /> Stop
-            </>
-          ) : (
-            <>
-              <Volume2 className="h-5 w-5 mr-2" /> Play All
-            </>
-          )}
-        </Button>
-      </div>
-
-      <div className="grid grid-cols-6 gap-4 max-w-4xl w-full">
-        {alphabets.map((letter, index) => (
-          <Button
-            key={letter}
-            className={`
-              p-4 text-2xl font-semibold
-              ${highlightedIndex === index ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-800"}
-              hover:bg-blue-600 hover:text-white
-            `}
-            onClick={() => playIndividualLetter(index)}
-            disabled={playingAudio} // Disable individual letter buttons while full audio is playing
-          >
-            {letter}
-          </Button>
-        ))}
-      </div>
-
-      <div className="mt-8 text-lg">
-        Current Time: {currentTime.toFixed(2)}s
-        {highlightedIndex !== null && (
-          <span className="ml-4">
-            - Highlighting: {alphabets[highlightedIndex]}
-          </span>
-        )}
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-6">
+            {alphabets.map((letter, index) => (
+              <div 
+                key={index} 
+                className={`word-card text-center transition-all duration-300 ${
+                  highlightedIndex === index ? 'ring-4 ring-primary bg-primary/10 scale-105' : ''
+                }`}
+              >
+                <div className="text-3xl md:text-4xl lg:text-5xl font-bold mb-3 md:mb-4">{letter}</div>
+                <Button
+                  onClick={() => playIndividualLetter(letter, index)}
+                  className={`audio-button w-full ${highlightedIndex === index ? 'animate-pulse' : ''}`}
+                  size="sm"
+                  disabled={playingAudio || playingIndividualLetter}
+                >
+                  <Volume2 className="h-3 w-3 md:h-4 md:w-4" />
+                  <span className="ml-1 text-xs md:text-sm">Listen</span>
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
