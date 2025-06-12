@@ -22,7 +22,7 @@ const EnglishAlphabets = () => {
     { letter: "A", startTime: 0.0, endTime: 1.0 },
     { letter: "B", startTime: 1.0, endTime: 2.0 },
     { letter: "C", startTime: 2.0, endTime: 3.0 },
-    { letter: "D", startTime: 3.0, endTime: 4.0 },
+    { letter: "D", startTime: 2.9, endTime: 4.0 },
     { letter: "E", startTime: 4.0, endTime: 5.0 },
     { letter: "F", startTime: 5.0, endTime: 6.0 },
     { letter: "G", startTime: 6.0, endTime: 7.0 },
