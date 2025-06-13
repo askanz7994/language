@@ -1,11 +1,13 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, User, BookOpen, Mic, Volume2, Target } from "lucide-react";
+import { ArrowRight, User, BookOpen, Mic, Volume2, Target, CreditCard } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCredits } from "@/hooks/useCredits";
 
 const Index = () => {
   const { user, loading } = useAuth();
+  const { credits, loading: creditsLoading } = useCredits();
 
   return (
     <div className="min-h-screen blur-bg">
@@ -16,12 +18,20 @@ const Index = () => {
           {loading ? (
             <div className="w-8 h-8 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
           ) : user ? (
-            <Link to="/profile">
-              <Button variant="outline" size="sm" className="flex items-center space-x-2">
-                <User className="h-4 w-4" />
-                <span>Profile</span>
-              </Button>
-            </Link>
+            <div className="flex items-center space-x-4">
+              {!creditsLoading && (
+                <div className="flex items-center space-x-2 px-3 py-1 bg-primary/10 rounded-full">
+                  <CreditCard className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium">{credits} credits</span>
+                </div>
+              )}
+              <Link to="/profile">
+                <Button variant="outline" size="sm" className="flex items-center space-x-2">
+                  <User className="h-4 w-4" />
+                  <span>Profile</span>
+                </Button>
+              </Link>
+            </div>
           ) : (
             <Link to="/auth">
               <Button variant="outline" size="sm">
@@ -42,9 +52,16 @@ const Index = () => {
           <p className="text-xl md:text-2xl mb-8 text-muted-foreground max-w-3xl mx-auto">
             Learn English from alphabets to advanced paragraphs. Practice pronunciation, build vocabulary, and achieve fluency with our comprehensive learning platform.
           </p>
-          <Link to={user ? "/learn-english" : "/auth"}>
+          {user && credits === 0 ? (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6 max-w-md mx-auto">
+              <p className="text-yellow-800 text-sm">
+                You have 0 credits remaining. Invite friends to earn more credits!
+              </p>
+            </div>
+          ) : null}
+          <Link to={user && credits > 0 ? "/learn-english" : "/auth"}>
             <Button className="glow-button text-lg px-8 py-[32px] text-[#03022e] bg-[#04cbe0]">
-              Start Now <ArrowRight className="ml-2 h-5 w-5" />
+              {user && credits > 0 ? 'Continue Learning' : 'Start Now'} <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </Link>
         </div>
@@ -148,9 +165,9 @@ const Index = () => {
           <p className="text-xl text-muted-foreground mb-8">
             Join thousands of learners who have improved their English with our platform
           </p>
-          <Link to={user ? "/learn-english" : "/auth"}>
+          <Link to={user && credits > 0 ? "/learn-english" : "/auth"}>
             <Button className="glow-button text-lg px-8 py-4">
-              Begin Your English Journey <ArrowRight className="ml-2 h-5 w-5" />
+              {user && credits > 0 ? 'Continue Your Journey' : 'Begin Your English Journey'} <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </Link>
         </div>

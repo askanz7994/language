@@ -5,8 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { LogOut, User, Globe, ChevronDown } from 'lucide-react';
+import { LogOut, User, Globe, ChevronDown, CreditCard, Copy } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCredits } from '@/hooks/useCredits';
+import { toast } from 'sonner';
 
 const UserProfile = () => {
   const {
@@ -15,6 +17,7 @@ const UserProfile = () => {
     signOut,
     updateProfile
   } = useAuth();
+  const { credits, loading: creditsLoading } = useCredits();
   const [isEditing, setIsEditing] = useState(false);
   const [firstName, setFirstName] = useState(profile?.first_name || '');
   const [lastName, setLastName] = useState(profile?.last_name || '');
@@ -68,6 +71,13 @@ const UserProfile = () => {
     }
   };
 
+  const copyWhatsAppNumber = () => {
+    if (profile?.whatsapp_number) {
+      navigator.clipboard.writeText(profile.whatsapp_number);
+      toast.success('WhatsApp number copied to clipboard!');
+    }
+  };
+
   if (!user || !profile) {
     return null;
   }
@@ -93,6 +103,38 @@ const UserProfile = () => {
       </CardHeader>
 
       <CardContent className="space-y-6">
+        {/* Credits Display */}
+        <div className="bg-primary/10 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <CreditCard className="h-5 w-5 text-primary" />
+              <Label className="text-base font-semibold">Your Credits</Label>
+            </div>
+            <div className="text-2xl font-bold text-primary">
+              {creditsLoading ? '...' : credits}
+            </div>
+          </div>
+          <p className="text-sm text-muted-foreground mt-2">
+            Credits are used to access premium content. Invite friends to earn more!
+          </p>
+        </div>
+
+        {/* WhatsApp Number Display */}
+        <div>
+          <Label className="text-sm text-muted-foreground">Your WhatsApp Number</Label>
+          <div className="flex items-center space-x-2 mt-1">
+            <p className="font-medium flex-1">{profile.whatsapp_number || 'Not set'}</p>
+            {profile.whatsapp_number && (
+              <Button variant="outline" size="sm" onClick={copyWhatsAppNumber}>
+                <Copy className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Share this number with friends to earn 50 credits per referral
+          </p>
+        </div>
+
         {/* Email Display */}
         <div>
           <Label className="text-sm text-muted-foreground">Email</Label>

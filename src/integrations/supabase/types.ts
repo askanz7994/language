@@ -16,7 +16,9 @@ export type Database = {
           id: string
           last_name: string | null
           preferred_language: string | null
+          referrer_whatsapp: string | null
           updated_at: string
+          whatsapp_number: string | null
         }
         Insert: {
           created_at?: string
@@ -24,7 +26,9 @@ export type Database = {
           id: string
           last_name?: string | null
           preferred_language?: string | null
+          referrer_whatsapp?: string | null
           updated_at?: string
+          whatsapp_number?: string | null
         }
         Update: {
           created_at?: string
@@ -32,7 +36,33 @@ export type Database = {
           id?: string
           last_name?: string | null
           preferred_language?: string | null
+          referrer_whatsapp?: string | null
           updated_at?: string
+          whatsapp_number?: string | null
+        }
+        Relationships: []
+      }
+      user_credits: {
+        Row: {
+          created_at: string | null
+          credits: number
+          id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          credits?: number
+          id?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          credits?: number
+          id?: string
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -41,7 +71,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      decrease_user_credits: {
+        Args: { amount?: number }
+        Returns: boolean
+      }
+      get_user_credits: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never

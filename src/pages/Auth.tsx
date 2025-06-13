@@ -14,6 +14,8 @@ const Auth = () => {
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [whatsappNumber, setWhatsappNumber] = useState('');
+  const [referrerWhatsapp, setReferrerWhatsapp] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
@@ -35,7 +37,7 @@ const Auth = () => {
       if (isLogin) {
         await signIn(email, password);
       } else {
-        await signUp(email, password, firstName, lastName);
+        await signUp(email, password, firstName, lastName, whatsappNumber, referrerWhatsapp);
       }
     } catch (error) {
       console.error('Auth error:', error);
@@ -68,28 +70,58 @@ const Auth = () => {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               {!isLogin && (
-                <div className="grid grid-cols-2 gap-4">
+                <>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="firstName">First Name</Label>
+                      <Input
+                        id="firstName"
+                        type="text"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        placeholder="Enter your first name"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="lastName">Last Name</Label>
+                      <Input
+                        id="lastName"
+                        type="text"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        placeholder="Enter your last name"
+                        required
+                      />
+                    </div>
+                  </div>
+
                   <div className="space-y-2">
-                    <Label htmlFor="firstName">First Name</Label>
+                    <Label htmlFor="whatsappNumber">WhatsApp Number *</Label>
                     <Input
-                      id="firstName"
-                      type="text"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      placeholder="Enter your first name"
+                      id="whatsappNumber"
+                      type="tel"
+                      value={whatsappNumber}
+                      onChange={(e) => setWhatsappNumber(e.target.value)}
+                      placeholder="Enter your WhatsApp number"
+                      required
                     />
                   </div>
+
                   <div className="space-y-2">
-                    <Label htmlFor="lastName">Last Name</Label>
+                    <Label htmlFor="referrerWhatsapp">Referrer WhatsApp Number (Optional)</Label>
                     <Input
-                      id="lastName"
-                      type="text"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                      placeholder="Enter your last name"
+                      id="referrerWhatsapp"
+                      type="tel"
+                      value={referrerWhatsapp}
+                      onChange={(e) => setReferrerWhatsapp(e.target.value)}
+                      placeholder="WhatsApp number of person who referred you"
                     />
+                    <p className="text-xs text-muted-foreground">
+                      If someone referred you, enter their WhatsApp number to give them 50 bonus credits!
+                    </p>
                   </div>
-                </div>
+                </>
               )}
 
               <div className="space-y-2">
@@ -152,6 +184,8 @@ const Auth = () => {
                   setPassword('');
                   setFirstName('');
                   setLastName('');
+                  setWhatsappNumber('');
+                  setReferrerWhatsapp('');
                 }}
                 className="text-primary hover:text-primary/80"
               >

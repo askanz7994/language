@@ -9,6 +9,8 @@ interface UserProfile {
   first_name?: string;
   last_name?: string;
   preferred_language?: string;
+  whatsapp_number?: string;
+  referrer_whatsapp?: string;
   created_at: string;
   updated_at: string;
 }
@@ -18,7 +20,7 @@ interface AuthContextType {
   session: Session | null;
   profile: UserProfile | null;
   loading: boolean;
-  signUp: (email: string, password: string, firstName?: string, lastName?: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, firstName?: string, lastName?: string, whatsappNumber?: string, referrerWhatsapp?: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   updateProfile: (updates: Partial<UserProfile>) => Promise<{ error: any }>;
@@ -98,7 +100,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     email: string, 
     password: string, 
     firstName?: string, 
-    lastName?: string
+    lastName?: string,
+    whatsappNumber?: string,
+    referrerWhatsapp?: string
   ) => {
     const redirectUrl = `${window.location.origin}/`;
     
@@ -109,7 +113,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         emailRedirectTo: redirectUrl,
         data: {
           first_name: firstName,
-          last_name: lastName
+          last_name: lastName,
+          whatsapp_number: whatsappNumber,
+          referrer_whatsapp: referrerWhatsapp
         }
       }
     });
