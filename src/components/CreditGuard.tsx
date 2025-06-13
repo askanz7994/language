@@ -20,14 +20,14 @@ const CreditGuard: React.FC<CreditGuardProps> = ({
   deductCredits = false,
   onCreditDeducted 
 }) => {
-  const { credits, loading, decreaseCredits } = useCredits();
+  const { credits, loading, useCredit } = useCredits();
   const { user } = useAuth();
   const [hasDeducted, setHasDeducted] = React.useState(false);
 
   React.useEffect(() => {
     const handleCreditDeduction = async () => {
       if (deductCredits && !hasDeducted && user && credits >= requiredCredits) {
-        const success = await decreaseCredits(requiredCredits);
+        const success = await useCredit();
         if (success) {
           setHasDeducted(true);
           onCreditDeducted?.();

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import CreditGuard from "@/components/CreditGuard";
+import CreditDisplay from "@/components/CreditDisplay";
 
 const EnglishParagraph = () => {
   const topics = [
@@ -67,13 +68,17 @@ const EnglishParagraph = () => {
             Back to English
           </Link>
 
-          <div className="text-center mb-12 md:mb-16">
+          <div className="text-center mb-8 md:mb-12">
             <h1 className="text-4xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6">
               English Reading Topics
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto px-4">
               Explore various topics through English paragraphs with pronunciation practice
             </p>
+          </div>
+
+          <div className="max-w-4xl mx-auto">
+            <CreditDisplay />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto">
@@ -83,7 +88,7 @@ const EnglishParagraph = () => {
                 <p className="text-sm md:text-base text-muted-foreground mb-4 md:mb-6 px-2">{topic.description}</p>
                 <Link to={`/english/paragraph/${topic.id}`}>
                   <Button className="glow-button w-full text-xs md:text-base">
-                    Read & Practice
+                    Read & Practice (1 Credit)
                   </Button>
                 </Link>
               </div>

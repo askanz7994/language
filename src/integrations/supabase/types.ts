@@ -46,6 +46,7 @@ export type Database = {
         Row: {
           created_at: string | null
           credits: number
+          credits_data: Json | null
           id: string
           updated_at: string | null
           user_id: string
@@ -53,6 +54,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           credits?: number
+          credits_data?: Json | null
           id?: string
           updated_at?: string | null
           user_id: string
@@ -60,6 +62,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           credits?: number
+          credits_data?: Json | null
           id?: string
           updated_at?: string | null
           user_id?: string
@@ -71,13 +74,29 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      decrease_user_credits: {
+      add_user_credits: {
         Args: { amount?: number }
         Returns: boolean
+      }
+      get_user_credit_details: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          total_credits: number
+          valid_credits: number
+          next_expiry: string
+        }[]
       }
       get_user_credits: {
         Args: Record<PropertyKey, never>
         Returns: number
+      }
+      migrate_existing_credits: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      use_user_credit: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
     }
     Enums: {
