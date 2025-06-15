@@ -74,14 +74,10 @@ const Auth = () => {
           body: { whatsappNumber: trimmedWhatsapp },
         });
 
-        if (uniquenessError) {
-          console.error('Error validating WhatsApp number:', uniquenessError.message);
-          toast.error('Could not validate WhatsApp number. Please try again.');
-          setIsLoading(false);
-          return;
-        }
-
-        if (!uniquenessData.isUnique) {
+        if (uniquenessError || (uniquenessData && !uniquenessData.isUnique)) {
+          if (uniquenessError) {
+            console.error('Error validating WhatsApp number:', uniquenessError.message);
+          }
           toast.error('WhatsApp number already used.');
           setIsLoading(false);
           return;
