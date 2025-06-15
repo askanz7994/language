@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useCredits } from '@/hooks/useCredits';
 import { useAuth } from '@/contexts/AuthContext';
@@ -190,21 +189,21 @@ const CreditGuard: React.FC<CreditGuardProps> = ({
     <>
       {periodicDeduction && (
         <Card className="fixed top-4 right-4 w-fit z-50 language-card shadow-lg">
-          <CardContent className="p-2">
-            <div className="flex items-center space-x-2">
+          <CardContent className="p-2 md:p-3">
+            <div className="flex items-center space-x-2 md:space-x-3">
               <div className="text-center">
-                <p className="text-[10px] text-muted-foreground">Next deduction in</p>
+                <p className="text-[9px] md:text-[10px] text-muted-foreground">Next deduction in</p>
                 <div className="flex items-center justify-center space-x-1">
-                  <Clock className="h-4 w-4 text-primary" />
-                  <p className="font-bold text-base">{formatTime(remainingTime)}</p>
+                  <Clock className="h-3 w-3 md:h-4 md:w-4 text-primary" />
+                  <p className="font-bold text-sm md:text-base">{formatTime(remainingTime)}</p>
                 </div>
               </div>
-              <div className="border-l h-8 border-muted-foreground/20"></div>
+              <div className="border-l h-6 md:h-8 border-muted-foreground/20"></div>
               <div className="text-center">
-                <p className="text-[10px] text-muted-foreground">Credits left</p>
+                <p className="text-[9px] md:text-[10px] text-muted-foreground">Credits left</p>
                 <div className="flex items-center justify-center space-x-1">
-                  <CreditCard className="h-4 w-4 text-primary" />
-                  <p className="font-bold text-base">{credits}</p>
+                  <CreditCard className="h-3 w-3 md:h-4 md:w-4 text-primary" />
+                  <p className="font-bold text-sm md:text-base">{credits}</p>
                 </div>
               </div>
             </div>
