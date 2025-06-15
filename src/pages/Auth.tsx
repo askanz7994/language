@@ -44,6 +44,25 @@ const Auth = () => {
           toast.success('Signed in successfully!');
         }
       } else {
+        if (referrerWhatsapp && referrerWhatsapp.trim()) {
+          const { data, error: functionError } = await supabase.functions.invoke('validate-referrer', {
+            body: { whatsappNumber: referrerWhatsapp.trim() },
+          });
+
+          if (functionError) {
+            console.error('Error validating referrer:', functionError.message);
+            toast.error('Could not validate referrer number. Please try again.');
+            setIsLoading(false);
+            return;
+          }
+
+          if (!data.isValid) {
+            toast.error('The referrer WhatsApp number is not valid.');
+            setIsLoading(false);
+            return;
+          }
+        }
+
         const { error } = await supabase.auth.signUp({
           email,
           password,
