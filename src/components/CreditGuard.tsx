@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { CreditCard, ArrowLeft, Clock } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface CreditGuardProps {
   children: React.ReactNode;
@@ -24,6 +25,7 @@ const CreditGuard: React.FC<CreditGuardProps> = ({
   const { credits, loading, useCredit } = useCredits();
   const { user } = useAuth();
   const [hasDeducted, setHasDeducted] = React.useState(false);
+  const { toast } = useToast();
 
   const DEDUCTION_INTERVAL = 5 * 60; // 5 minutes
   const [remainingTime, setRemainingTime] = React.useState(DEDUCTION_INTERVAL);
@@ -57,6 +59,10 @@ const CreditGuard: React.FC<CreditGuardProps> = ({
         if (success) {
           setHasDeducted(true);
           onCreditDeducted?.();
+          toast({
+            title: "Credit used",
+            description: "1 credit has been deducted for accessing this content.",
+          });
         }
       }
     };
@@ -64,7 +70,7 @@ const CreditGuard: React.FC<CreditGuardProps> = ({
     if (!loading) {
       handleCreditDeduction();
     }
-  }, [deductCredits, hasDeducted, user, credits, requiredCredits, loading, useCredit, onCreditDeducted]);
+  }, [deductCredits, hasDeducted, user, credits, requiredCredits, loading, useCredit, onCreditDeducted, toast]);
 
   if (loading) {
     return (

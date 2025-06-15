@@ -20,7 +20,7 @@ export const englishRoutes = (
     <Route 
       path="/english/paragraph/:topicId" 
       element={
-        <CreditGuard requiredCredits={1} periodicDeduction>
+        <CreditGuard requiredCredits={1} periodicDeduction deductCredits>
           <EnglishTopicContent />
         </CreditGuard>
       } 

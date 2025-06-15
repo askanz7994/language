@@ -1,13 +1,12 @@
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback } from "react";
 import SpeechRecorder from "@/components/SpeechRecorder";
 import { useToast } from "@/hooks/use-toast";
 import EnglishVocabularySection from "@/components/english/EnglishVocabularySection";
 import EnglishTopicContentDisplay from "@/components/english/EnglishTopicContentDisplay";
 import EnglishTranslationSection from "@/components/english/EnglishTranslationSection";
 import { englishTopicData } from "@/data/englishTopicData";
-import { useCredits } from "@/hooks/useCredits";
 
 const EnglishTopicContent = () => {
   const { topicId } = useParams();
@@ -17,31 +16,8 @@ const EnglishTopicContent = () => {
   const audioChunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
   const { toast } = useToast();
-  const navigate = useNavigate();
-  const { useCredit } = useCredits();
 
   const currentTopic = englishTopicData[topicId || ""] || englishTopicData["kerala-landscapes"];
-
-  useEffect(() => {
-    const consumeCredit = async () => {
-      const success = await useCredit();
-      if (!success) {
-        toast({
-          title: "Not enough credits",
-          description: "You need at least 1 credit to view this topic. Redirecting you.",
-          variant: "destructive",
-        });
-        navigate('/english/paragraph');
-      } else {
-        toast({
-          title: "Credit used",
-          description: "1 credit has been deducted for accessing this topic.",
-        });
-      }
-    };
-
-    consumeCredit();
-  }, [useCredit, navigate, toast]);
 
   const startRecording = useCallback(async () => {
     try {
