@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -14,7 +14,7 @@ export const useCredits = () => {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
-  const fetchCredits = async () => {
+  const fetchCredits = useCallback(async () => {
     if (!user) {
       setCredits(0);
       setCreditDetails(null);
@@ -46,9 +46,9 @@ export const useCredits = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
-  const useCredit = async (): Promise<boolean> => {
+  const useCredit = useCallback(async (): Promise<boolean> => {
     if (!user) return false;
 
     try {
@@ -67,19 +67,19 @@ export const useCredits = () => {
       console.error('Error using credit:', error);
       return false;
     }
-  };
+  }, [user, fetchCredits]);
 
   // Keep the old decreaseCredits function for backward compatibility
-  const decreaseCredits = async (amount: number = 1): Promise<boolean> => {
+  const decreaseCredits = useCallback(async (amount: number = 1): Promise<boolean> => {
     console.warn('decreaseCredits is deprecated, use useCredit instead');
     return useCredit();
-  };
+  }, [useCredit]);
 
   useEffect(() => {
     if (user) {
       fetchCredits();
     }
-  }, [user]);
+  }, [user, fetchCredits]);
 
   return {
     credits,
