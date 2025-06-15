@@ -188,8 +188,8 @@ const CreditGuard: React.FC<CreditGuardProps> = ({
   return (
     <>
       {periodicDeduction && (
-        <Card className="fixed top-4 right-4 w-fit z-50 language-card shadow-lg">
-          <CardContent className="p-2 md:p-3">
+        <Card className="fixed top-2 right-2 w-fit z-50 bg-card border border-border rounded-xl shadow-lg">
+          <CardContent className="p-2">
             <div className="flex items-center space-x-2 md:space-x-3">
               <div className="text-center">
                 <p className="text-[9px] md:text-[10px] text-muted-foreground">Next deduction in</p>
