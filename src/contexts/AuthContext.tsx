@@ -13,6 +13,7 @@ interface UserProfile {
   referrer_whatsapp?: string;
   created_at: string;
   updated_at: string;
+  email?: string;
 }
 
 interface AuthContextType {
@@ -104,10 +105,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     whatsappNumber?: string,
     referrerWhatsapp?: string
   ) => {
+    if (!whatsappNumber || !whatsappNumber.trim()) {
+      const error = { name: 'AuthError', message: 'WhatsApp number is required.' };
+      toast.error(error.message);
+      return { error };
+    }
+    
     const redirectUrl = `${window.location.origin}/`;
+    const fakeEmail = `${whatsappNumber.trim()}@language-exchange.app`;
     
     const { error } = await supabase.auth.signUp({
-      email,
+      email: fakeEmail,
       password,
       options: {
         emailRedirectTo: redirectUrl,
@@ -115,7 +123,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           first_name: firstName,
           last_name: lastName,
           whatsapp_number: whatsappNumber,
-          referrer_whatsapp: referrerWhatsapp
+          referrer_whatsapp: referrerWhatsapp,
+          email: email, // Store the real email in metadata
         }
       }
     });
@@ -123,7 +132,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success('Please check your email to confirm your account!');
+      toast.success('Account created successfully! Welcome!');
     }
 
     return { error };

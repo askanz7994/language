@@ -52,30 +52,43 @@ const Auth = () => {
 
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              {!isLogin && (
-                <SignUpFields
-                  firstName={firstName}
-                  setFirstName={setFirstName}
-                  lastName={lastName}
-                  setLastName={setLastName}
-                  whatsappNumber={whatsappNumber}
-                  setWhatsappNumber={setWhatsappNumber}
-                  referrerWhatsapp={referrerWhatsapp}
-                  setReferrerWhatsapp={setReferrerWhatsapp}
-                />
+              {isLogin ? (
+                <div className="space-y-2">
+                  <Label htmlFor="whatsappNumber">WhatsApp Number</Label>
+                  <Input
+                    id="whatsappNumber"
+                    type="tel"
+                    value={whatsappNumber}
+                    onChange={(e) => setWhatsappNumber(e.target.value)}
+                    placeholder="Enter your WhatsApp number"
+                    required
+                  />
+                </div>
+              ) : (
+                <>
+                  <SignUpFields
+                    firstName={firstName}
+                    setFirstName={setFirstName}
+                    lastName={lastName}
+                    setLastName={setLastName}
+                    whatsappNumber={whatsappNumber}
+                    setWhatsappNumber={setWhatsappNumber}
+                    referrerWhatsapp={referrerWhatsapp}
+                    setReferrerWhatsapp={setReferrerWhatsapp}
+                  />
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Enter your email"
+                      required
+                    />
+                  </div>
+                </>
               )}
-
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
-                  required
-                />
-              </div>
 
               <PasswordInput password={password} setPassword={setPassword} />
 

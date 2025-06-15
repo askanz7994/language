@@ -14,7 +14,7 @@ export const useAuthForm = () => {
   const [referrerWhatsapp, setReferrerWhatsapp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const { user } = useAuth();
+  const { user, signIn, signUp } = useAuth();
   const navigate = useNavigate();
 
   // Redirect if already authenticated
@@ -30,12 +30,8 @@ export const useAuthForm = () => {
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) {
-          toast.error(error.message);
-        } else {
-          toast.success('Signed in successfully!');
-        }
+        const fakeEmail = `${whatsappNumber.trim()}@language-exchange.app`;
+        await signIn(fakeEmail, password);
       } else {
         if (referrerWhatsapp && referrerWhatsapp.trim()) {
           const { data, error: functionError } = await supabase.functions.invoke('validate-referrer', {
@@ -95,25 +91,14 @@ export const useAuthForm = () => {
           return;
         }
 
-        const { error } = await supabase.auth.signUp({
-          email: email.trim(),
+        await signUp(
+          email.trim(),
           password,
-          options: {
-            data: {
-              first_name: firstName.trim(),
-              last_name: lastName.trim(),
-              whatsapp_number: trimmedWhatsapp,
-              referrer_whatsapp: referrerWhatsapp.trim(),
-            },
-            emailRedirectTo: `${window.location.origin}/`,
-          },
-        });
-
-        if (error) {
-          toast.error(error.message);
-        } else {
-          toast.success('Account created successfully! Welcome!');
-        }
+          firstName.trim(),
+          lastName.trim(),
+          trimmedWhatsapp,
+          referrerWhatsapp.trim()
+        );
       }
     } catch (error: any) {
       console.error('Auth error:', error);
