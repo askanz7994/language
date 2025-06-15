@@ -26,21 +26,17 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
 
-    const { data, error } = await supabaseAdmin
+    const { error, count } = await supabaseAdmin
       .from('profiles')
-      .select('id')
+      .select('*', { count: 'exact', head: true })
       .eq('whatsapp_number', whatsappNumber)
-      .limit(1)
-      .single()
 
-    // .single() throws an error if no rows are found (PGRST116).
-    // This is expected if the number is unique.
-    if (error && error.code !== 'PGRST116') {
+    if (error) {
       console.error('Error checking whatsapp uniqueness:', error)
       throw new Error('Error checking whatsapp number uniqueness')
     }
 
-    const isUnique = !data
+    const isUnique = count === 0
 
     return new Response(JSON.stringify({ isUnique }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

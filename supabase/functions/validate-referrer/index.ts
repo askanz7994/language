@@ -26,21 +26,17 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
 
-    const { data, error } = await supabaseAdmin
+    const { error, count } = await supabaseAdmin
       .from('profiles')
-      .select('id')
+      .select('*', { count: 'exact', head: true })
       .eq('whatsapp_number', whatsappNumber)
-      .limit(1)
-      .single()
 
-    // .single() throws an error if no rows are found.
-    // The error code for no rows is PGRST116.
-    if (error && error.code !== 'PGRST116') {
+    if (error) {
       console.error('Error checking referrer:', error)
       throw new Error('Error checking referrer number')
     }
 
-    const isValid = !!data
+    const isValid = count !== null && count > 0
 
     return new Response(JSON.stringify({ isValid }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
