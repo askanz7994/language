@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -24,7 +23,7 @@ const LearnEnglish = () => {
         </div>
 
         {/* Learning Modules */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 md:gap-8 max-w-7xl mx-auto px-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-7xl mx-auto px-4">
           {/* Alphabets Module */}
           <div className="language-card text-center">
             <div className="text-4xl md:text-6xl mb-4 md:mb-6">A</div>
@@ -91,6 +90,20 @@ const LearnEnglish = () => {
             <Link to="/english/paragraph">
               <Button className="glow-button w-full text-sm md:text-base">
                 Read Paragraphs
+              </Button>
+            </Link>
+          </div>
+
+          {/* Conversation Module */}
+          <div className="language-card text-center">
+            <div className="text-4xl md:text-6xl mb-4 md:mb-6">C</div>
+            <h2 className="text-2xl md:text-3xl font-bold mb-3 md:mb-4">Conversation</h2>
+            <p className="text-sm md:text-base text-muted-foreground mb-4 md:mb-6 px-2">
+              Practice speaking with an AI tutor
+            </p>
+            <Link to="/english/conversation">
+              <Button className="glow-button w-full text-sm md:text-base">
+                Start Conversation
               </Button>
             </Link>
           </div>
