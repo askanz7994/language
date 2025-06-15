@@ -88,7 +88,7 @@ const EnglishParagraph = () => {
                 <p className="text-sm md:text-base text-muted-foreground mb-4 md:mb-6 px-2">{topic.description}</p>
                 <Link to={`/english/paragraph/${topic.id}`}>
                   <Button className="glow-button w-full text-xs md:text-base">
-                    Read & Practice (1 Credit)
+                    Read & Practice
                   </Button>
                 </Link>
               </div>
