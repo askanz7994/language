@@ -7,6 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -19,7 +21,7 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
-  const { signUp, signIn, user } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   // Redirect if already authenticated
@@ -35,12 +37,38 @@ const Auth = () => {
 
     try {
       if (isLogin) {
-        await signIn(email, password);
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) {
+          toast.error(error.message);
+        } else {
+          toast.success('Signed in successfully!');
+        }
       } else {
-        await signUp(email, password, firstName, lastName, whatsappNumber, referrerWhatsapp);
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              first_name: firstName,
+              last_name: lastName,
+              whatsapp_number: whatsappNumber,
+              referrer_whatsapp: referrerWhatsapp,
+            },
+            emailRedirectTo: `${window.location.origin}/`,
+          },
+        });
+
+        if (error) {
+          toast.error(error.message);
+        } else {
+          // With email confirmation disabled, user is signed in, and will be redirected.
+          // No "check your email" message needed.
+          toast.success("Account created successfully! Welcome!");
+        }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Auth error:', error);
+      toast.error(error.message || 'An unexpected error occurred.');
     } finally {
       setIsLoading(false);
     }
