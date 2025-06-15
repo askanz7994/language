@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { CreditCard, ArrowLeft, Timer } from 'lucide-react';
+import { CreditCard, ArrowLeft, Clock } from 'lucide-react';
 
 interface CreditGuardProps {
   children: React.ReactNode;
@@ -141,22 +141,22 @@ const CreditGuard: React.FC<CreditGuardProps> = ({
   return (
     <>
       {periodicDeduction && (
-        <Card className="fixed bottom-4 right-4 w-fit z-50 language-card shadow-2xl">
-          <CardContent className="p-3">
-            <div className="flex items-center space-x-4">
+        <Card className="fixed top-4 right-4 w-fit z-50 language-card shadow-lg">
+          <CardContent className="p-2">
+            <div className="flex items-center space-x-2">
               <div className="text-center">
-                <p className="text-xs text-muted-foreground">Next deduction in</p>
-                <div className="flex items-center justify-center space-x-2">
-                  <Timer className="h-5 w-5 text-primary" />
-                  <p className="font-bold text-lg">{formatTime(remainingTime)}</p>
+                <p className="text-[10px] text-muted-foreground">Next deduction in</p>
+                <div className="flex items-center justify-center space-x-1">
+                  <Clock className="h-4 w-4 text-primary" />
+                  <p className="font-bold text-base">{formatTime(remainingTime)}</p>
                 </div>
               </div>
-              <div className="border-l h-10 border-muted-foreground/20"></div>
+              <div className="border-l h-8 border-muted-foreground/20"></div>
               <div className="text-center">
-                <p className="text-xs text-muted-foreground">Credits left</p>
-                <div className="flex items-center justify-center space-x-2">
-                  <CreditCard className="h-5 w-5 text-primary" />
-                  <p className="font-bold text-lg">{credits}</p>
+                <p className="text-[10px] text-muted-foreground">Credits left</p>
+                <div className="flex items-center justify-center space-x-1">
+                  <CreditCard className="h-4 w-4 text-primary" />
+                  <p className="font-bold text-base">{credits}</p>
                 </div>
               </div>
             </div>
