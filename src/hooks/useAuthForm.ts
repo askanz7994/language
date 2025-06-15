@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -50,6 +49,13 @@ export const useAuthForm = () => {
             return;
           }
 
+          if (typeof data?.isValid !== 'boolean') {
+            console.error('Unexpected response from validate-referrer:', data);
+            toast.error('Could not validate referrer number. Please try again.');
+            setIsLoading(false);
+            return;
+          }
+
           if (!data.isValid) {
             toast.error('The referrer WhatsApp number is not valid.');
             setIsLoading(false);
@@ -69,10 +75,21 @@ export const useAuthForm = () => {
           body: { whatsappNumber: trimmedWhatsapp },
         });
 
-        if (uniquenessError || (uniquenessData && !uniquenessData.isUnique)) {
-          if (uniquenessError) {
-            console.error('Error validating WhatsApp number:', uniquenessError.message);
-          }
+        if (uniquenessError) {
+          console.error('Error validating WhatsApp number:', uniquenessError.message);
+          toast.error('Could not validate WhatsApp number. Please try again.');
+          setIsLoading(false);
+          return;
+        }
+        
+        if (typeof uniquenessData?.isUnique !== 'boolean') {
+            console.error('Unexpected response from validate-whatsapp-uniqueness:', uniquenessData);
+            toast.error('Could not validate WhatsApp number. Please try again.');
+            setIsLoading(false);
+            return;
+        }
+
+        if (!uniquenessData.isUnique) {
           toast.error('WhatsApp number already used.');
           setIsLoading(false);
           return;
