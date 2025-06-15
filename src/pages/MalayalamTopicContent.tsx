@@ -3,7 +3,6 @@ import { Link, useParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { useState, useRef, useCallback } from "react";
 import SpeechRecorder from "@/components/SpeechRecorder";
-import { useToast } from "@/hooks/use-toast";
 import VocabularySection from "@/components/malayalam/VocabularySection";
 import TopicContentDisplay from "@/components/malayalam/TopicContentDisplay";
 import { topicData } from "@/data/malayalamTopicData";
@@ -14,7 +13,6 @@ const MalayalamTopicContent = () => {
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
-  const { toast } = useToast();
 
   const currentTopic = topicData[topicId || ""] || topicData["kerala-natural-beauty"];
 
@@ -52,31 +50,17 @@ const MalayalamTopicContent = () => {
       mediaRecorder.start(1000); // Record in 1-second chunks for better quality
       setIsRecording(true);
       
-      toast({
-        title: "Recording started",
-        description: "Read the Malayalam text clearly and slowly.",
-      });
     } catch (error) {
       console.error('Error starting recording:', error);
-      toast({
-        title: "Recording failed",
-        description: "Please check your microphone permissions and ensure it's working properly.",
-        variant: "destructive",
-      });
     }
-  }, [toast]);
+  }, []);
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
-      
-      toast({
-        title: "Recording stopped",
-        description: "Processing your pronunciation for analysis...",
-      });
     }
-  }, [isRecording, toast]);
+  }, [isRecording]);
 
   return (
     <div className="min-h-screen blur-bg">

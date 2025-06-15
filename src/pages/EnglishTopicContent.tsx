@@ -1,8 +1,8 @@
+
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { useState, useRef, useCallback } from "react";
 import SpeechRecorder from "@/components/SpeechRecorder";
-import { useToast } from "@/hooks/use-toast";
 import EnglishVocabularySection from "@/components/english/EnglishVocabularySection";
 import EnglishTopicContentDisplay from "@/components/english/EnglishTopicContentDisplay";
 import EnglishTranslationSection from "@/components/english/EnglishTranslationSection";
@@ -15,7 +15,6 @@ const EnglishTopicContent = () => {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
-  const { toast } = useToast();
 
   const currentTopic = englishTopicData[topicId || ""] || englishTopicData["kerala-landscapes"];
 
@@ -71,11 +70,6 @@ const EnglishTopicContent = () => {
         // Validate audio size
         if (audioBlob.size < 1024) {
           console.warn('Audio blob too small, likely empty recording');
-          toast({
-            title: "Recording too short",
-            description: "Please speak longer and more clearly into the microphone.",
-            variant: "destructive",
-          });
           return;
         }
         
@@ -90,42 +84,23 @@ const EnglishTopicContent = () => {
 
       mediaRecorder.onerror = (event) => {
         console.error('MediaRecorder error:', event);
-        toast({
-          title: "Recording error",
-          description: "There was an error with the recording. Please try again.",
-          variant: "destructive",
-        });
       };
 
       // Start recording with smaller time slices for better quality
       mediaRecorder.start(250);
       setIsRecording(true);
       
-      toast({
-        title: "Recording started",
-        description: "Read the English text clearly and at a natural pace. Speak close to your microphone.",
-      });
     } catch (error) {
       console.error('Error starting recording:', error);
-      toast({
-        title: "Recording failed",
-        description: "Please check your microphone permissions and ensure it's working properly. Refresh the page if needed.",
-        variant: "destructive",
-      });
     }
-  }, [toast]);
+  }, []);
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
-      
-      toast({
-        title: "Recording stopped",
-        description: "Processing your pronunciation for detailed analysis...",
-      });
     }
-  }, [isRecording, toast]);
+  }, [isRecording]);
 
   return (
     <div className="min-h-screen blur-bg">

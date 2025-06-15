@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { CreditCard, ArrowLeft, Clock } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 
 interface CreditGuardProps {
   children: React.ReactNode;
@@ -25,7 +24,6 @@ const CreditGuard: React.FC<CreditGuardProps> = ({
   const { credits, loading, useCredit } = useCredits();
   const { user } = useAuth();
   const [deductionState, setDeductionState] = React.useState<'idle' | 'in_progress' | 'success' | 'failed'>('idle');
-  const { toast } = useToast();
 
   const DEDUCTION_INTERVAL = 5 * 60; // 5 minutes
   const [remainingTime, setRemainingTime] = React.useState(DEDUCTION_INTERVAL);
@@ -59,17 +57,8 @@ const CreditGuard: React.FC<CreditGuardProps> = ({
       if (success) {
         setDeductionState('success');
         onCreditDeducted?.();
-        toast({
-          title: "Credit used",
-          description: "1 credit has been deducted for accessing this content.",
-        });
       } else {
         setDeductionState('failed');
-        toast({
-          title: "Deduction Failed",
-          description: "Could not deduct credit. Please try again later.",
-          variant: "destructive",
-        });
       }
     };
     
@@ -78,7 +67,7 @@ const CreditGuard: React.FC<CreditGuardProps> = ({
       handleCreditDeduction();
     }
     
-  }, [deductCredits, deductionState, loading, user, credits, requiredCredits, useCredit, onCreditDeducted, toast]);
+  }, [deductCredits, deductionState, loading, user, credits, requiredCredits, useCredit, onCreditDeducted]);
 
   if (loading) {
     return (

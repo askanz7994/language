@@ -3,7 +3,6 @@ import React, { useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { getSpeechAnalysisTranslations } from '@/utils/speechAnalysisTranslations';
 
@@ -24,7 +23,6 @@ interface AnalysisResult {
 const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title, audioBlob }) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
-  const { toast } = useToast();
   const { profile } = useAuth();
 
   const analyzeAudio = useCallback(async () => {
@@ -70,16 +68,6 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title, au
           }
 
           setAnalysisResult(data);
-          
-          // Enhanced toast with more context
-          const scoreMessage = data.accuracyScore >= 8 ? "Excellent!" : 
-                              data.accuracyScore >= 6 ? "Good job!" : 
-                              data.accuracyScore >= 4 ? "Keep practicing!" : "Try again!";
-          
-          toast({
-            title: "Analysis complete",
-            description: `${scoreMessage} Score: ${data.accuracyScore}/10`,
-          });
         } catch (analysisError) {
           console.error('Error during analysis:', analysisError);
           throw analysisError;
@@ -93,15 +81,10 @@ const SpeechRecorder: React.FC<SpeechRecorderProps> = ({ originalText, title, au
       reader.readAsDataURL(audioBlob);
     } catch (error) {
       console.error('Error analyzing audio:', error);
-      toast({
-        title: "Analysis failed",
-        description: error instanceof Error ? error.message : "Please try recording again with clear speech.",
-        variant: "destructive",
-      });
     } finally {
       setIsAnalyzing(false);
     }
-  }, [audioBlob, originalText, toast, profile?.preferred_language]);
+  }, [audioBlob, originalText, profile?.preferred_language]);
 
   // Automatically analyze when audioBlob changes
   React.useEffect(() => {
