@@ -22,26 +22,22 @@ export const useCredits = () => {
       return;
     }
 
+    setLoading(true);
     try {
-      // Get credit details with expiration info
+      // Get credit details
       const { data: details, error: detailsError } = await supabase.rpc('get_user_credit_details');
+      
       if (detailsError) {
         console.error('Error fetching credit details:', detailsError);
+        setCredits(0);
+        setCreditDetails(null);
       } else if (details && details.length > 0) {
         const creditInfo = details[0];
         setCreditDetails(creditInfo);
         setCredits(creditInfo.valid_credits || 0);
-      }
-
-      // Also get the simple credit count as fallback
-      const { data: simpleCredits, error: simpleError } = await supabase.rpc('get_user_credits');
-      if (simpleError) {
-        console.error('Error fetching credits:', simpleError);
-        if (!creditDetails) {
-          setCredits(0);
-        }
-      } else if (!creditDetails) {
-        setCredits(simpleCredits || 0);
+      } else {
+        setCredits(0);
+        setCreditDetails(null);
       }
     } catch (error) {
       console.error('Error fetching credits:', error);
@@ -80,18 +76,9 @@ export const useCredits = () => {
   };
 
   useEffect(() => {
-    fetchCredits();
-  }, [user]);
-
-  // Auto-refresh credits every 30 seconds to show updated expiration times
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (user) {
-        fetchCredits();
-      }
-    }, 30000);
-
-    return () => clearInterval(interval);
+    if (user) {
+      fetchCredits();
+    }
   }, [user]);
 
   return {

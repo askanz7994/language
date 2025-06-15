@@ -17,7 +17,9 @@ export type Database = {
           last_name: string | null
           preferred_language: string | null
           referrer_whatsapp: string | null
+          remaining_credits: number
           updated_at: string
+          used_credits: number
           whatsapp_number: string | null
         }
         Insert: {
@@ -27,7 +29,9 @@ export type Database = {
           last_name?: string | null
           preferred_language?: string | null
           referrer_whatsapp?: string | null
+          remaining_credits?: number
           updated_at?: string
+          used_credits?: number
           whatsapp_number?: string | null
         }
         Update: {
@@ -37,35 +41,10 @@ export type Database = {
           last_name?: string | null
           preferred_language?: string | null
           referrer_whatsapp?: string | null
+          remaining_credits?: number
           updated_at?: string
+          used_credits?: number
           whatsapp_number?: string | null
-        }
-        Relationships: []
-      }
-      user_credits: {
-        Row: {
-          created_at: string | null
-          credits: number
-          credits_data: Json | null
-          id: string
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          credits?: number
-          credits_data?: Json | null
-          id?: string
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          credits?: number
-          credits_data?: Json | null
-          id?: string
-          updated_at?: string | null
-          user_id?: string
         }
         Relationships: []
       }
@@ -89,10 +68,6 @@ export type Database = {
       get_user_credits: {
         Args: Record<PropertyKey, never>
         Returns: number
-      }
-      migrate_existing_credits: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
       }
       use_user_credit: {
         Args: Record<PropertyKey, never>
