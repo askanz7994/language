@@ -2,7 +2,6 @@
 import { Button } from "@/components/ui/button";
 import { Volume2, Square, Mic } from "lucide-react";
 import { useState, useRef, useCallback, useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
 import { WordTiming } from "@/data/englishTopicData";
 
 interface EnglishAudioPlayerProps {
@@ -30,7 +29,6 @@ const EnglishAudioPlayer = ({
   const [currentTime, setCurrentTime] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const animationRef = useRef<number>();
-  const { toast } = useToast();
 
   const clearHighlighting = useCallback(() => {
     if (onWordHighlight) {
@@ -108,11 +106,6 @@ const EnglishAudioPlayer = ({
         
         audioRef.current.onerror = () => {
           console.error('Audio loading error');
-          toast({
-            title: "Audio loading failed",
-            description: "Falling back to text-to-speech.",
-            variant: "destructive",
-          });
           // Fallback to speech synthesis
           playAudio();
         };
@@ -121,20 +114,10 @@ const EnglishAudioPlayer = ({
       await audioRef.current.play();
       setIsPlaying(true);
       
-      toast({
-        title: "Playing audio",
-        description: "Listen carefully with word highlighting.",
-      });
-      
     } catch (error) {
       console.error('Error playing audio:', error);
-      toast({
-        title: "Playback failed",
-        description: "Please try again.",
-        variant: "destructive",
-      });
     }
-  }, [audioFile, englishText, toast, onReadingStop, clearHighlighting]);
+  }, [audioFile, englishText, onReadingStop, clearHighlighting]);
 
   const stopAudio = useCallback(() => {
     if (audioRef.current) {
