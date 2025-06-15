@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -63,15 +62,22 @@ const Auth = () => {
           }
         }
 
+        const trimmedWhatsapp = whatsappNumber.trim();
+        if (!trimmedWhatsapp) {
+          toast.error("WhatsApp Number is a required field.");
+          setIsLoading(false);
+          return;
+        }
+
         const { error } = await supabase.auth.signUp({
-          email,
+          email: email.trim(),
           password,
           options: {
             data: {
-              first_name: firstName,
-              last_name: lastName,
-              whatsapp_number: whatsappNumber,
-              referrer_whatsapp: referrerWhatsapp,
+              first_name: firstName.trim(),
+              last_name: lastName.trim(),
+              whatsapp_number: trimmedWhatsapp,
+              referrer_whatsapp: referrerWhatsapp.trim(),
             },
             emailRedirectTo: `${window.location.origin}/`,
           },
