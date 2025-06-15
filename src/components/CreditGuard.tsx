@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useCredits } from '@/hooks/useCredits';
 import { useAuth } from '@/contexts/AuthContext';
@@ -24,7 +25,7 @@ const CreditGuard: React.FC<CreditGuardProps> = ({
 }) => {
   const { credits, loading, useCredit } = useCredits();
   const { user } = useAuth();
-  const [hasDeducted, setHasDeducted] = React.useState(false);
+  const [deductionState, setDeductionState] = React.useState<'idle' | 'in_progress' | 'success' | 'failed'>('idle');
   const { toast } = useToast();
 
   const DEDUCTION_INTERVAL = 5 * 60; // 5 minutes
@@ -54,23 +55,31 @@ const CreditGuard: React.FC<CreditGuardProps> = ({
 
   React.useEffect(() => {
     const handleCreditDeduction = async () => {
-      if (deductCredits && !hasDeducted && user && credits >= requiredCredits) {
-        const success = await useCredit();
-        if (success) {
-          setHasDeducted(true);
-          onCreditDeducted?.();
-          toast({
-            title: "Credit used",
-            description: "1 credit has been deducted for accessing this content.",
-          });
-        }
+      setDeductionState('in_progress');
+      const success = await useCredit();
+      if (success) {
+        setDeductionState('success');
+        onCreditDeducted?.();
+        toast({
+          title: "Credit used",
+          description: "1 credit has been deducted for accessing this content.",
+        });
+      } else {
+        setDeductionState('failed');
+        toast({
+          title: "Deduction Failed",
+          description: "Could not deduct credit. Please try again later.",
+          variant: "destructive",
+        });
       }
     };
-
-    if (!loading) {
+    
+    // Only run deduction if it's enabled, in idle state, and user data is loaded.
+    if (deductCredits && deductionState === 'idle' && !loading && user && credits >= requiredCredits) {
       handleCreditDeduction();
     }
-  }, [deductCredits, hasDeducted, user, credits, requiredCredits, loading, useCredit, onCreditDeducted, toast]);
+    
+  }, [deductCredits, deductionState, loading, user, credits, requiredCredits, useCredit, onCreditDeducted, toast]);
 
   if (loading) {
     return (
@@ -137,6 +146,39 @@ const CreditGuard: React.FC<CreditGuardProps> = ({
       </div>
     );
   }
+
+  if (deductCredits && deductionState !== 'success') {
+    if (deductionState === 'failed') {
+       return (
+        <div className="min-h-screen animated-bg flex items-center justify-center p-4">
+          <Card className="language-card max-w-md">
+            <CardHeader className="text-center">
+              <CreditCard className="h-12 w-12 text-red-500 mx-auto mb-4" />
+              <CardTitle>Credit Deduction Failed</CardTitle>
+              <CardDescription>
+                We were unable to deduct a credit. Please try again or contact support if the issue persists.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="text-center space-y-4">
+              <Link to="/">
+                <Button variant="outline" className="w-full">
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Back to Home
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      );
+    }
+
+    return (
+      <div className="min-h-screen animated-bg flex items-center justify-center">
+        <div className="text-xl">Verifying credits...</div>
+      </div>
+    );
+  }
+
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
