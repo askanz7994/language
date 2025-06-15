@@ -69,6 +69,24 @@ const Auth = () => {
           return;
         }
 
+        // Validate if WhatsApp number is already in use
+        const { data: uniquenessData, error: uniquenessError } = await supabase.functions.invoke('validate-whatsapp-uniqueness', {
+          body: { whatsappNumber: trimmedWhatsapp },
+        });
+
+        if (uniquenessError) {
+          console.error('Error validating WhatsApp number:', uniquenessError.message);
+          toast.error('Could not validate WhatsApp number. Please try again.');
+          setIsLoading(false);
+          return;
+        }
+
+        if (!uniquenessData.isUnique) {
+          toast.error('WhatsApp number already used.');
+          setIsLoading(false);
+          return;
+        }
+
         const { error } = await supabase.auth.signUp({
           email: email.trim(),
           password,
