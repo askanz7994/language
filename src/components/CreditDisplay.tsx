@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { CreditCard, AlertTriangle, Info } from 'lucide-react';
@@ -35,10 +34,15 @@ const CreditDisplay: React.FC = () => {
           <div className="flex items-center">
             <div className="flex items-center space-x-3">
               <CreditCard className={`h-5 w-5 ${credits === 0 ? 'text-red-500' : 'text-primary'}`} />
-              <div className="flex items-center space-x-2">
-                <span className="font-medium text-sm">
-                  {credits} Credit{credits !== 1 ? 's' : ''} remaining
-                </span>
+              <span className="font-medium text-sm">
+                {credits} Credit{credits !== 1 ? 's' : ''} remaining
+              </span>
+            </div>
+            
+            {isLowCredits && (
+              <div className="flex items-center space-x-2 text-orange-600 ml-6">
+                <AlertTriangle className="h-4 w-4" />
+                <span className="text-sm">Low Credits</span>
                 <Tooltip>
                   <TooltipTrigger>
                     <Info className="h-4 w-4 text-muted-foreground" />
@@ -47,13 +51,6 @@ const CreditDisplay: React.FC = () => {
                     <p>refer a friend for extra 50 credits</p>
                   </TooltipContent>
                 </Tooltip>
-              </div>
-            </div>
-            
-            {isLowCredits && (
-              <div className="flex items-center space-x-2 text-orange-600 ml-6">
-                <AlertTriangle className="h-4 w-4" />
-                <span className="text-sm">Low Credits</span>
               </div>
             )}
           </div>
