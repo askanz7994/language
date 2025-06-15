@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -14,7 +15,9 @@ export const useCredits = () => {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
-  const fetchCredits = useCallback(async () => {
+  const fetchCredits = useCallback(async (options: { showLoader?: boolean } = {}) => {
+    const { showLoader = true } = options;
+
     if (!user) {
       setCredits(0);
       setCreditDetails(null);
@@ -22,7 +25,9 @@ export const useCredits = () => {
       return;
     }
 
-    setLoading(true);
+    if (showLoader) {
+      setLoading(true);
+    }
     try {
       // Get credit details
       const { data: details, error: detailsError } = await supabase.rpc('get_user_credit_details');
@@ -44,11 +49,14 @@ export const useCredits = () => {
       setCredits(0);
       setCreditDetails(null);
     } finally {
-      setLoading(false);
+      if (showLoader) {
+        setLoading(false);
+      }
     }
   }, [user]);
 
-  const useCredit = useCallback(async (): Promise<boolean> => {
+  const useCredit = useCallback(async (options: { silent?: boolean } = {}): Promise<boolean> => {
+    const { silent = false } = options;
     if (!user) return false;
 
     try {
@@ -59,7 +67,7 @@ export const useCredits = () => {
       }
       
       if (data) {
-        await fetchCredits(); // Refresh credits
+        await fetchCredits({ showLoader: !silent }); // Refresh credits
         return true;
       }
       return false;
@@ -77,7 +85,7 @@ export const useCredits = () => {
 
   useEffect(() => {
     if (user) {
-      fetchCredits();
+      fetchCredits({ showLoader: true });
     }
   }, [user, fetchCredits]);
 

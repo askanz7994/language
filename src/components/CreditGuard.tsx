@@ -44,7 +44,7 @@ const CreditGuard: React.FC<CreditGuardProps> = ({
     if (!periodicDeduction || !user) return;
 
     if (remainingTime === 0) {
-      useCredit().then((success) => {
+      useCredit({ silent: true }).then((success) => {
         if (success) {
           setRemainingTime(DEDUCTION_INTERVAL);
         }
@@ -55,7 +55,7 @@ const CreditGuard: React.FC<CreditGuardProps> = ({
   React.useEffect(() => {
     const handleCreditDeduction = async () => {
       setDeductionState('in_progress');
-      const success = await useCredit();
+      const success = await useCredit({ silent: true });
       if (success) {
         setDeductionState('success');
         onCreditDeducted?.();
