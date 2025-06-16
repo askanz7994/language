@@ -31,26 +31,57 @@ export const useAuthForm = () => {
 
     try {
       if (isLogin) {
+        console.log('=== LOGIN ATTEMPT ===');
+        console.log('Input WhatsApp number:', whatsappNumber);
+        console.log('Trimmed WhatsApp number:', whatsappNumber.trim());
+        
         // For login, we need to find the user's real email from their WhatsApp number
+        console.log('Querying profiles table for WhatsApp number...');
+        
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('email')
+          .select('email, whatsapp_number, first_name, last_name')
           .eq('whatsapp_number', whatsappNumber.trim())
           .maybeSingle();
 
+        console.log('Profile query result:', { profileData, profileError });
+        console.log('Profile data type:', typeof profileData);
+        console.log('Profile data exists:', !!profileData);
+
         if (profileError) {
           console.error('Error finding user profile:', profileError);
-          toast.error('User not found with this WhatsApp number.');
+          toast.error('Error looking up user account. Please try again.');
           setIsLoading(false);
           return;
         }
 
-        if (!profileData || !profileData.email) {
+        if (!profileData) {
+          console.log('No profile data found for WhatsApp number:', whatsappNumber.trim());
+          
+          // Let's also check what profiles exist in the database
+          const { data: allProfiles, error: allProfilesError } = await supabase
+            .from('profiles')
+            .select('whatsapp_number, email, first_name, last_name')
+            .limit(10);
+          
+          console.log('All profiles sample:', allProfiles);
+          console.log('All profiles error:', allProfilesError);
+          
           toast.error('No account found with this WhatsApp number.');
           setIsLoading(false);
           return;
         }
 
+        if (!profileData.email) {
+          console.log('Profile found but no email:', profileData);
+          toast.error('Account found but email is missing. Please contact support.');
+          setIsLoading(false);
+          return;
+        }
+
+        console.log('Found profile email:', profileData.email);
+        console.log('Attempting to sign in with email:', profileData.email);
+        
         // Use the real email for login
         await signIn(profileData.email, password);
       } else {
