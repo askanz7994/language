@@ -20,13 +20,29 @@ serve(async (req) => {
       throw new Error('Audio data and original text are required');
     }
 
-    // Enhanced audio validation
+    // Enhanced audio validation with stricter criteria
     const audioSize = (audioBase64.length * 3) / 4;
     console.log('Audio size:', audioSize, 'bytes');
 
-    // More sophisticated audio quality checks
-    if (audioSize < 2048) {
-      console.log('Audio too small, likely silent or poor quality');
+    // Calculate minimum expected audio size based on text length
+    const wordCount = originalText.trim().split(/\s+/).length;
+    const expectedMinDuration = wordCount * 0.3; // 0.3 seconds per word minimum
+    const expectedMinSize = expectedMinDuration * 8000; // ~8KB per second for speech
+
+    console.log(`Text has ${wordCount} words, expected min duration: ${expectedMinDuration}s, min size: ${expectedMinSize} bytes`);
+
+    // Strict size validation
+    if (audioSize < Math.max(expectedMinSize, 10240)) { // At least 10KB or calculated minimum
+      console.log('Audio too small for meaningful speech analysis');
+      const silentResponse = generateSilentResponse(preferredLanguage || 'English');
+      return new Response(JSON.stringify(silentResponse), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Advanced audio quality checks
+    if (!isValidAudioData(audioBase64)) {
+      console.log('Invalid or corrupted audio data detected');
       const silentResponse = generateSilentResponse(preferredLanguage || 'English');
       return new Response(JSON.stringify(silentResponse), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -41,63 +57,63 @@ serve(async (req) => {
     const feedbackLanguage = preferredLanguage || 'English';
     const languageInstruction = getLanguageInstruction(feedbackLanguage);
 
-    // Enhanced prompt for more accurate analysis
-    const analysisPrompt = `You are an EXPERT ${language} pronunciation analysis system with PhD-level expertise in phonetics and language learning. Your analysis must be EXTREMELY PRECISE and SCIENTIFICALLY ACCURATE.
+    // Ultra-strict analysis prompt with zero tolerance for gaming
+    const analysisPrompt = `You are an ULTRA-STRICT pronunciation analysis expert with ZERO TOLERANCE for gaming or cheating. Your job is to provide RUTHLESSLY ACCURATE scoring.
 
-ORIGINAL TEXT TO ANALYZE:
+ORIGINAL TEXT (USER MUST READ THIS EXACTLY):
 "${originalText}"
 
 ${languageInstruction}
 
-CRITICAL ANALYSIS REQUIREMENTS:
+CRITICAL ANTI-CHEATING REQUIREMENTS:
 
-1. TRANSCRIPTION ACCURACY:
-   - Provide EXACT transcription of what was spoken
-   - Mark unclear words with [unclear]
-   - Note any background noise or audio issues
-   - If completely silent, write "SILENT_AUDIO"
+1. SILENCE DETECTION (MANDATORY):
+   - If audio contains ONLY silence, background noise, or non-speech sounds: SCORE = 1
+   - If audio is shorter than expected for the text length: MAX SCORE = 2
+   - If you hear breathing, clicking, or ambient noise without clear speech: SCORE = 1
 
-2. SCORING CRITERIA (1-10 scale):
-   - 10: PERFECT pronunciation, timing, and clarity
-   - 9: Near-perfect with 1 minor flaw
-   - 8: Excellent with 2-3 minor issues
-   - 7: Good with some noticeable errors
-   - 6: Average with multiple errors
-   - 5: Below average, needs improvement
-   - 4: Poor with many errors
-   - 3: Very poor, barely understandable
-   - 2: Extremely poor, mostly unintelligible
-   - 1: Silent, noise only, or completely wrong
+2. TRANSCRIPTION ACCURACY (ZERO TOLERANCE):
+   - EXACT transcription required - every word must match
+   - Missing ANY word: -3 points immediately
+   - Wrong ANY word: -2 points per word
+   - Extra words not in original: -2 points per word
+   - Unclear or mumbled words: -2 points per word
 
-3. DETAILED ANALYSIS REQUIREMENTS:
-   - Compare EVERY word spoken vs original text
-   - Identify missing words, extra words, wrong words
-   - Analyze pronunciation accuracy of each syllable
-   - Evaluate rhythm, stress, and intonation
-   - Check for proper pauses and breathing
-   - Assess overall fluency and naturalness
+3. ULTRA-STRICT SCORING (1-10):
+   - 10: PERFECT pronunciation, every word crystal clear, natural rhythm
+   - 9: Near perfect, maybe 1 tiny pronunciation issue
+   - 8: Very good, 1-2 minor errors
+   - 7: Good, some noticeable errors but understandable
+   - 6: Average, multiple errors affecting clarity
+   - 5: Below average, many errors, difficult to understand
+   - 4: Poor, very hard to understand, many wrong words
+   - 3: Very poor, mostly unintelligible, wrong content
+   - 2: Extremely poor, barely any correct speech detected
+   - 1: Silent, noise only, completely wrong, or gaming attempt
 
-4. STRICT PENALTY SYSTEM:
-   - Missing words: -2 points per word
-   - Wrong words: -1.5 points per word
-   - Extra words: -1 point per word
-   - Poor pronunciation: -0.5 to -1 points per word
-   - Unnatural rhythm: -1 point
-   - Silent audio: automatic score of 1
+4. MANDATORY PENALTIES:
+   - Any silence or non-speech: AUTOMATIC SCORE = 1
+   - Audio too short for text: MAX SCORE = 2
+   - Background noise only: SCORE = 1
+   - Incomplete reading: MAX SCORE = 3
+   - Poor audio quality but some speech: MAX SCORE = 4
 
-5. AUDIO QUALITY VALIDATION:
-   - If audio contains only silence, background noise, or non-speech: score = 1
-   - If audio is too short (under 2 seconds for text longer than 5 words): max score = 3
-   - If audio quality is poor but speech is detectable: max score = 6
+5. QUALITY VALIDATION:
+   - Audio must contain clear human speech throughout
+   - Speech must be audible and understandable
+   - Must cover the complete original text
+   - No shortcuts or gaming attempts allowed
 
-Return ONLY valid JSON in ${feedbackLanguage}:
+RESPOND WITH VALID JSON ONLY in ${feedbackLanguage}:
 {
-  "transcription": "exact_transcription_or_SILENT_AUDIO",
-  "accuracyScore": number_1_to_10,
-  "feedback": "detailed_scientific_analysis_in_${feedbackLanguage}",
-  "improvements": "specific_actionable_corrections_in_${feedbackLanguage}",
-  "encouragement": "motivating_educational_message_in_${feedbackLanguage}"
-}`;
+  "transcription": "exact_words_heard_or_SILENT_AUDIO",
+  "accuracyScore": score_1_to_10_following_strict_rules,
+  "feedback": "detailed_analysis_explaining_score_in_${feedbackLanguage}",
+  "improvements": "specific_areas_to_improve_in_${feedbackLanguage}",
+  "encouragement": "motivating_message_in_${feedbackLanguage}"
+}
+
+BE ABSOLUTELY RUTHLESS. NO MERCY FOR GAMING ATTEMPTS.`;
 
     // Call Gemini with enhanced configuration
     const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${geminiApiKey}`, {
@@ -118,10 +134,10 @@ Return ONLY valid JSON in ${feedbackLanguage}:
           ]
         }],
         generationConfig: {
-          temperature: 0.1,
+          temperature: 0.05, // Very low temperature for consistent strict scoring
           maxOutputTokens: 2000,
-          topP: 0.8,
-          topK: 40
+          topP: 0.7,
+          topK: 20
         },
         safetySettings: [
           {
@@ -161,8 +177,8 @@ Return ONLY valid JSON in ${feedbackLanguage}:
       analysisResult = generateFallbackResponse(feedbackLanguage);
     }
 
-    // Enhanced post-processing validation
-    analysisResult = validateAndEnhanceResult(analysisResult, originalText, feedbackLanguage);
+    // Ultra-strict post-processing validation
+    analysisResult = applyUltraStrictValidation(analysisResult, originalText, feedbackLanguage, audioSize, expectedMinSize);
 
     return new Response(JSON.stringify(analysisResult), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -178,81 +194,172 @@ Return ONLY valid JSON in ${feedbackLanguage}:
   }
 });
 
-function validateAndEnhanceResult(result: any, originalText: string, language: string) {
+function isValidAudioData(audioBase64: string): boolean {
+  try {
+    // Check if base64 is valid
+    if (audioBase64.length < 100) return false;
+    
+    // Basic validation of base64 encoding
+    const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
+    if (!base64Regex.test(audioBase64)) return false;
+    
+    // Check for common audio file signatures in base64
+    const decoded = atob(audioBase64.substring(0, 100));
+    const bytes = new Uint8Array(decoded.length);
+    for (let i = 0; i < decoded.length; i++) {
+      bytes[i] = decoded.charCodeAt(i);
+    }
+    
+    // Check for WebM signature (0x1A 0x45 0xDF 0xA3)
+    if (bytes.length >= 4) {
+      if (bytes[0] === 0x1A && bytes[1] === 0x45 && bytes[2] === 0xDF && bytes[3] === 0xA3) {
+        return true;
+      }
+    }
+    
+    // Allow other formats but be more strict
+    return audioBase64.length > 1000; // Minimum reasonable size
+  } catch (error) {
+    console.error('Audio validation error:', error);
+    return false;
+  }
+}
+
+function applyUltraStrictValidation(result: any, originalText: string, language: string, audioSize: number, expectedMinSize: number) {
   // Ensure score is within valid range
   if (result.accuracyScore < 1) result.accuracyScore = 1;
   if (result.accuracyScore > 10) result.accuracyScore = 10;
+
+  console.log('Applying ultra-strict validation...');
+  console.log('Original accuracy score:', result.accuracyScore);
 
   // Enhanced silence detection
   const transcriptionLower = result.transcription?.toLowerCase() || '';
   const silenceIndicators = [
     'silent', 'silence', 'no speech', 'quiet', 'background noise',
-    'silent_audio', 'no audio', 'empty', 'mute', 'nothing'
+    'silent_audio', 'no audio', 'empty', 'mute', 'nothing', 'unclear',
+    'inaudible', 'whisper', 'breathing', 'ambient', 'noise only'
   ];
   
-  if (silenceIndicators.some(indicator => transcriptionLower.includes(indicator))) {
+  if (silenceIndicators.some(indicator => transcriptionLower.includes(indicator)) || 
+      transcriptionLower === 'silent_audio' || 
+      transcriptionLower.length < 10) {
+    console.log('Silence detected, forcing score to 1');
     return generateSilentResponse(language);
   }
 
-  // Word count validation
+  // Strict audio size validation
+  if (audioSize < expectedMinSize) {
+    console.log(`Audio too small: ${audioSize} < ${expectedMinSize}, max score 2`);
+    result.accuracyScore = Math.min(result.accuracyScore, 2);
+  }
+
+  // Word count and content validation
   const originalWords = originalText.trim().split(/\s+/).filter(word => word.length > 0);
   const transcribedWords = result.transcription?.trim().split(/\s+/).filter(word => word.length > 0) || [];
   
-  console.log('Original words:', originalWords.length, 'Transcribed words:', transcribedWords.length);
+  console.log(`Original words: ${originalWords.length}, Transcribed words: ${transcribedWords.length}`);
 
-  // Accuracy penalty based on word differences
-  const wordDifference = Math.abs(originalWords.length - transcribedWords.length);
-  if (wordDifference > originalWords.length * 0.3) {
-    result.accuracyScore = Math.min(result.accuracyScore, 4);
+  // Ultra-strict word count penalties
+  const wordCountDifference = Math.abs(originalWords.length - transcribedWords.length);
+  const missingWordRatio = wordCountDifference / originalWords.length;
+
+  if (transcribedWords.length === 0) {
+    console.log('No transcribed words found, score = 1');
+    return generateSilentResponse(language);
   }
 
-  // If transcription is too short compared to original
-  if (transcribedWords.length < originalWords.length * 0.5) {
+  if (transcribedWords.length < originalWords.length * 0.3) {
+    console.log('Too few words transcribed, max score 2');
+    result.accuracyScore = Math.min(result.accuracyScore, 2);
+  } else if (transcribedWords.length < originalWords.length * 0.6) {
+    console.log('Insufficient words transcribed, max score 3');
     result.accuracyScore = Math.min(result.accuracyScore, 3);
   }
 
-  // Enhanced content matching
-  const similarity = calculateTextSimilarity(originalText, result.transcription || '');
-  if (similarity < 0.3) {
+  if (missingWordRatio > 0.5) {
+    console.log('More than 50% words missing/wrong, max score 3');
+    result.accuracyScore = Math.min(result.accuracyScore, 3);
+  } else if (missingWordRatio > 0.3) {
+    console.log('More than 30% words missing/wrong, max score 4');
     result.accuracyScore = Math.min(result.accuracyScore, 4);
-  } else if (similarity < 0.5) {
+  }
+
+  // Content similarity check
+  const similarity = calculateAdvancedTextSimilarity(originalText, result.transcription || '');
+  console.log('Text similarity:', similarity);
+
+  if (similarity < 0.2) {
+    console.log('Very low similarity, max score 2');
+    result.accuracyScore = Math.min(result.accuracyScore, 2);
+  } else if (similarity < 0.4) {
+    console.log('Low similarity, max score 4');
+    result.accuracyScore = Math.min(result.accuracyScore, 4);
+  } else if (similarity < 0.6) {
+    console.log('Medium similarity, max score 6');
     result.accuracyScore = Math.min(result.accuracyScore, 6);
   }
 
+  // Final validation - if score is still high despite issues, force it down
+  if (result.accuracyScore > 7 && (missingWordRatio > 0.1 || similarity < 0.8)) {
+    console.log('High score with issues detected, reducing to max 6');
+    result.accuracyScore = Math.min(result.accuracyScore, 6);
+  }
+
+  console.log('Final accuracy score:', result.accuracyScore);
   return result;
 }
 
-function calculateTextSimilarity(text1: string, text2: string): number {
-  const words1 = text1.toLowerCase().split(/\s+/).filter(word => word.length > 0);
-  const words2 = text2.toLowerCase().split(/\s+/).filter(word => word.length > 0);
+function calculateAdvancedTextSimilarity(text1: string, text2: string): number {
+  const normalize = (text: string) => text.toLowerCase()
+    .replace(/[^\w\s]/g, '')
+    .split(/\s+/)
+    .filter(word => word.length > 0);
+
+  const words1 = normalize(text1);
+  const words2 = normalize(text2);
   
   if (words1.length === 0 && words2.length === 0) return 1;
   if (words1.length === 0 || words2.length === 0) return 0;
 
-  const commonWords = words1.filter(word => words2.includes(word));
-  return commonWords.length / Math.max(words1.length, words2.length);
+  // Calculate exact matches
+  const exactMatches = words1.filter(word => words2.includes(word));
+  const exactSimilarity = exactMatches.length / Math.max(words1.length, words2.length);
+
+  // Calculate sequence similarity (order matters)
+  let sequenceMatches = 0;
+  const minLength = Math.min(words1.length, words2.length);
+  for (let i = 0; i < minLength; i++) {
+    if (words1[i] === words2[i]) {
+      sequenceMatches++;
+    }
+  }
+  const sequenceSimilarity = sequenceMatches / Math.max(words1.length, words2.length);
+
+  // Weighted combination favoring exact matches
+  return (exactSimilarity * 0.7) + (sequenceSimilarity * 0.3);
 }
 
 function getLanguageInstruction(language: string): string {
   const instructions: Record<string, string> = {
-    'Malayalam': 'നിങ്ങൾ മലയാളത്തിൽ വിശദമായ ഫീഡ്ബാക്ക് നൽകണം. ഉച്ചാരണ വിശകലനം, മെച്ചപ്പെടുത്താനുള്ള മേഖലകൾ, പ്രോത്സാഹനം എന്നിവയെല്ലാം മലയാളത്തിൽ എഴുതുക.',
-    'Spanish': 'Debes proporcionar comentarios detallados en español. Escribe el análisis de pronunciación, áreas de mejora y aliento en español.',
-    'French': 'Vous devez fournir des commentaires détaillés en français. Rédigez l\'analyse de pronunciation, les domaines d\'amélioration et les encouragements en français.',
-    'German': 'Sie müssen detailliertes Feedback auf Deutsch geben. Schreiben Sie die Ausspracheanalyse, Verbesserungsbereiche und Ermutigung auf Deutsch.',
-    'Japanese': '日本語で詳細なフィードバックを提供してください。発音分析、改善点、励ましをすべて日本語で書いてください。',
-    'Korean': '한국어로 상세한 피드백을 제공해야 합니다. 발음 분석, 개선할 점, 격려를 모두 한국어로 작성하세요.',
-    'Portuguese (Brazil)': 'Você deve fornecer feedback detalhado em português brasileiro. Escreva a análise de pronúncia, áreas de melhoria e encorajamento em português.',
-    'Portuguese (Portugal)': 'Deve fornecer feedback detalhado em português europeu. Escreva a análise de pronúncia, áreas de melhoria e encorajamento em português.',
-    'Chinese (Simplified)': '您必须用简体中文提供详细反馈。请用中文写发音分析、改进领域和鼓励。',
-    'Chinese (Traditional)': '您必須用繁體中文提供詳細反饋。請用中文寫發音分析、改進領域和鼓勵。',
-    'Italian': 'Devi fornire feedback dettagliato in italiano. Scrivi l\'analisi della pronuncia, le aree di miglioramento e l\'incoraggiamento in italiano.',
-    'Dutch': 'Je moet gedetailleerde feedback geven in het Nederlands. Schrijf de uitspraakanalyse, verbeterpunten en aanmoediging in het Nederlands.',
-    'Russian': 'Вы должны предоставить подробную обратную связь на русском языке. Напишите анализ произношения, области для улучшения и поощрение на русском языке.',
-    'Arabic': 'يجب عليك تقديم تعليقات مفصلة باللغة العربية. اكتب تحليل النطق ومجالات التحسين والتشجيع بالعربية.',
-    'Hindi': 'आपको हिंदी में विस्तृत फीडबैक देना होगा। उच्चारण विश्लेषण, सुधार के क्षेत्र और प्रोत्साहन हिंदी में लिखें।'
+    'Malayalam': 'നിങ്ങൾ മലയാളത്തിൽ അത്യന്തം കർശനമായ ഫീഡ്ബാക്ക് നൽകണം. വ്യാജ സ്കോറുകൾക്ക് ഇടം നൽകരുത്.',
+    'Spanish': 'Debes proporcionar comentarios extremadamente estrictos en español. No toleres intentos de hacer trampa.',
+    'French': 'Vous devez fournir des commentaires extrêmement stricts en français. Aucune tolérance pour la triche.',
+    'German': 'Sie müssen extrem strenge Bewertungen auf Deutsch geben. Keine Toleranz für Betrugsversuche.',
+    'Japanese': '日本語で極めて厳格なフィードバックを提供してください。不正行為は一切許可しません。',
+    'Korean': '한국어로 극도로 엄격한 피드백을 제공해야 합니다. 부정행위는 절대 용납하지 마세요.',
+    'Portuguese (Brazil)': 'Você deve fornecer feedback extremamente rigoroso em português brasileiro. Não tolere tentativas de trapaça.',
+    'Portuguese (Portugal)': 'Deve fornecer feedback extremamente rigoroso em português europeu. Não tolere tentativas de batota.',
+    'Chinese (Simplified)': '您必须用简体中文提供极其严格的反馈。绝不容忍作弊行为。',
+    'Chinese (Traditional)': '您必須用繁體中文提供極其嚴格的反饋。絕不容忍作弊行為。',
+    'Italian': 'Devi fornire feedback estremamente rigoroso in italiano. Non tollerare tentativi di imbroglio.',
+    'Dutch': 'Je moet extreem strikte feedback geven in het Nederlands. Tolereer geen pogingen tot vals spelen.',
+    'Russian': 'Вы должны предоставить крайне строгую обратную связь на русском языке. Не терпите попыток мошенничества.',
+    'Arabic': 'يجب عليك تقديم تعليقات صارمة للغاية باللغة العربية. لا تتسامح مع محاولات الغش.',
+    'Hindi': 'आपको हिंदी में अत्यंत कठोर फीडबैक देना होगा। धोखाधड़ी के प्रयासों को बर्दाश्त न करें।'
   };
 
-  return instructions[language] || 'You must provide detailed feedback in English. Write the pronunciation analysis, areas for improvement, and encouragement in English.';
+  return instructions[language] || 'You must provide EXTREMELY STRICT feedback in English. NO TOLERANCE for cheating attempts.';
 }
 
 function generateSilentResponse(language: string) {
@@ -260,25 +367,25 @@ function generateSilentResponse(language: string) {
     'Malayalam': {
       transcription: "SILENT_AUDIO",
       accuracyScore: 1,
-      feedback: "റെക്കോർഡിംഗിൽ വ്യക്തമായ സംസാരം കണ്ടെത്താനായില്ല. മൈക്രോഫോൺ പ്രവർത്തിക്കുന്നുണ്ടെന്ന് ഉറപ്പാക്കി നൽകിയിരിക്കുന്ന ടെക്സ്റ്റ് ഉറക്കെ വായിക്കുക.",
-      improvements: "മൈക്രോഫോൺ അനുമതികളും വോളിയം ലെവലും പരിശോധിക്കുക. റെക്കോർഡിംഗ് സമയത്ത് വ്യക്തമായി സംസാരിക്കുന്നുണ്ടെന്ന് ഉറപ്പാക്കുക.",
-      encouragement: "വിഷമിക്കേണ്ട! മൈക്രോഫോൺ ക്രമീകരണങ്ങൾ പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക."
+      feedback: "ഓഡിയോയിൽ വ്യക്തമായ സംസാരം കണ്ടെത്താനായില്ല. പൂർണ്ണമായും നിശ്ശബ്ദമായ അല്ലെങ്കിൽ അപര്യാപ്തമായ ഓഡിയോ റെക്കോർഡിംഗ്. ദയവായി നൽകിയിരിക്കുന്ന ടെക്സ്റ്റ് പൂർണ്ണമായും ഉറക്കെ വായിക്കുക.",
+      improvements: "മൈക്രോഫോൺ ശരിയായി പ്രവർത്തിക്കുന്നുണ്ടെന്ന് ഉറപ്പാക്കുക. ടെക്സ്റ്റിന്റെ ഓരോ വാക്കും വ്യക്തമായി ഉച്ചരിക്കുക. റെക്കോർഡിംഗ് സമയത്ത് പൂർണ്ണ ടെക്സ്റ്റ് വായിക്കുക.",
+      encouragement: "വിഷമിക്കേണ്ട! മൈക്രോഫോൺ ക്രമീകരണങ്ങൾ പരിശോധിച്ച് ടെക്സ്റ്റ് പൂർണ്ണമായി വായിച്ച് വീണ്ടും ശ്രമിക്കുക."
     },
     'Spanish': {
       transcription: "SILENT_AUDIO",
       accuracyScore: 1,
-      feedback: "No se detectó habla clara en la grabación. Verifica que tu micrófono funcione y lee el texto en voz alta.",
-      improvements: "Revisa los permisos del micrófono y el nivel de volumen. Asegúrate de hablar claramente durante la grabación.",
-      encouragement: "¡No te preocupes! Verifica la configuración de tu micrófono e inténtalo de nuevo."
+      feedback: "No se detectó habla clara en la grabación. Audio completamente silencioso o insuficiente. Por favor, lee todo el texto en voz alta.",
+      improvements: "Asegúrate de que tu micrófono funcione correctamente. Pronuncia cada palabra del texto claramente. Lee el texto completo durante la grabación.",
+      encouragement: "¡No te preocupes! Verifica la configuración de tu micrófono y lee el texto completo antes de intentar de nuevo."
     }
   };
 
   return responses[language] || {
     transcription: "SILENT_AUDIO",
     accuracyScore: 1,
-    feedback: "No clear speech detected in the recording. Please ensure your microphone is working and read the text aloud.",
-    improvements: "Check microphone permissions and volume levels. Make sure to speak clearly during recording.",
-    encouragement: "Don't worry! Check your microphone settings and try again."
+    feedback: "No clear speech detected in the recording. Completely silent or insufficient audio recording. Please read the entire provided text aloud.",
+    improvements: "Ensure your microphone is working properly. Pronounce each word of the text clearly. Read the complete text during recording.",
+    encouragement: "Don't worry! Check your microphone settings and read the full text before trying again."
   };
 }
 
@@ -286,8 +393,8 @@ function generateFallbackResponse(language: string) {
   const responses: Record<string, any> = {
     'Malayalam': {
       transcription: "വിശകലനത്തിന് അപര്യാപ്തമായ ഓഡിയോ ഗുണനിലവാരം",
-      accuracyScore: 2,
-      feedback: "ഓഡിയോ ഗുണനിലവാരം മികച്ച വിശകലനത്തിന് അപര്യാപ്തമാണ്. വ്യക്തമായി സംസാരിച്ച് വീണ്ടും ശ്രമിക്കുക.",
+      accuracyScore: 1,
+      feedback: "ഓഡിയോ ഗുണനിലവാരം വിശകലനത്തിന് അപര്യാപ്തമാണ്. വ്യക്തമായി സംസാരിച്ച് വീണ്ടും ശ്രമിക്കുക.",
       improvements: "മികച്ച ഓഡിയോ ഗുണനിലവാരത്തോടെ വീണ്ടും റെക്കോർഡ് ചെയ്യുക. സാവധാനത്തിലും വ്യക്തമായും സംസാരിക്കുക.",
       encouragement: "ഉപേക്ഷിക്കരുത്! വീണ്ടും ശ്രമിക്കുക, കൂടുതൽ വ്യക്തമായി സംസാരിക്കുക."
     }
@@ -295,7 +402,7 @@ function generateFallbackResponse(language: string) {
 
   return responses[language] || {
     transcription: "Audio quality insufficient for analysis",
-    accuracyScore: 2,
+    accuracyScore: 1,
     feedback: "Audio quality was insufficient for detailed analysis. Please try again speaking more clearly.",
     improvements: "Record again with better audio quality. Speak slowly and clearly.",
     encouragement: "Don't give up! Try again speaking more clearly."
