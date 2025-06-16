@@ -112,10 +112,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     
     const redirectUrl = `${window.location.origin}/`;
-    const fakeEmail = `${whatsappNumber.trim()}@language-exchange.app`;
     
+    // Use the real email address for authentication
     const { error } = await supabase.auth.signUp({
-      email: fakeEmail,
+      email: email.trim(), // Use real email for auth
       password,
       options: {
         emailRedirectTo: redirectUrl,
@@ -124,7 +124,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           last_name: lastName,
           whatsapp_number: whatsappNumber,
           referrer_whatsapp: referrerWhatsapp,
-          email: email, // Store the real email in metadata
+          email: email.trim(), // Store real email in metadata too
         }
       }
     });

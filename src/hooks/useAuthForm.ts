@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -30,8 +31,28 @@ export const useAuthForm = () => {
 
     try {
       if (isLogin) {
-        const fakeEmail = `${whatsappNumber.trim()}@language-exchange.app`;
-        await signIn(fakeEmail, password);
+        // For login, we need to find the user's real email from their WhatsApp number
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('whatsapp_number', whatsappNumber.trim())
+          .maybeSingle();
+
+        if (profileError) {
+          console.error('Error finding user profile:', profileError);
+          toast.error('User not found with this WhatsApp number.');
+          setIsLoading(false);
+          return;
+        }
+
+        if (!profileData || !profileData.email) {
+          toast.error('No account found with this WhatsApp number.');
+          setIsLoading(false);
+          return;
+        }
+
+        // Use the real email for login
+        await signIn(profileData.email, password);
       } else {
         if (referrerWhatsapp && referrerWhatsapp.trim()) {
           const { data, error: functionError } = await supabase.functions.invoke('validate-referrer', {
