@@ -12,6 +12,7 @@ const EnglishTopicContent = () => {
   const { topicId } = useParams();
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [recordingStartTime, setRecordingStartTime] = useState<number | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
@@ -64,13 +65,23 @@ const EnglishTopicContent = () => {
       };
 
       mediaRecorder.onstop = async () => {
+        const recordingEndTime = Date.now();
+        const recordingDuration = recordingStartTime ? (recordingEndTime - recordingStartTime) / 1000 : 0;
+        
+        console.log(`Recording duration: ${recordingDuration} seconds`);
+        
         const audioBlob = new Blob(audioChunksRef.current, { type: selectedMimeType });
         console.log('Audio blob created:', audioBlob.size, 'bytes, type:', audioBlob.type);
         
-        // Validate audio size
-        if (audioBlob.size < 1024) {
-          console.warn('Audio blob too small, likely empty recording');
-          return;
+        // Enhanced validation - check both size and duration
+        const wordCount = currentTopic.english.trim().split(/\s+/).length;
+        const expectedMinDuration = wordCount * 0.25; // Minimum 0.25 seconds per word
+        
+        console.log(`Expected minimum duration: ${expectedMinDuration}s for ${wordCount} words`);
+        
+        if (audioBlob.size < 5120 || recordingDuration < expectedMinDuration) {
+          console.warn(`Recording too short: ${recordingDuration}s (expected: ${expectedMinDuration}s) or too small: ${audioBlob.size} bytes`);
+          // Still set the blob but the analysis will handle the validation
         }
         
         setAudioBlob(audioBlob);
@@ -86,14 +97,17 @@ const EnglishTopicContent = () => {
         console.error('MediaRecorder error:', event);
       };
 
+      // Record start time for duration calculation
+      setRecordingStartTime(Date.now());
+      
       // Start recording with smaller time slices for better quality
-      mediaRecorder.start(250);
+      mediaRecorder.start(100); // Capture every 100ms for better accuracy
       setIsRecording(true);
       
     } catch (error) {
       console.error('Error starting recording:', error);
     }
-  }, []);
+  }, [currentTopic.english]);
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && isRecording) {
