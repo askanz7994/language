@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -35,7 +34,7 @@ export const useAuthForm = () => {
         console.log('Input WhatsApp number:', whatsappNumber);
         console.log('Trimmed WhatsApp number:', whatsappNumber.trim());
         
-        // For login, we need to find the user's real email from their WhatsApp number
+        // For login, we need to find the user's email from their WhatsApp number
         console.log('Querying profiles table for WhatsApp number...');
         
         const { data: profileData, error: profileError } = await supabase
@@ -45,8 +44,6 @@ export const useAuthForm = () => {
           .maybeSingle();
 
         console.log('Profile query result:', { profileData, profileError });
-        console.log('Profile data type:', typeof profileData);
-        console.log('Profile data exists:', !!profileData);
 
         if (profileError) {
           console.error('Error finding user profile:', profileError);
@@ -56,18 +53,8 @@ export const useAuthForm = () => {
         }
 
         if (!profileData) {
-          console.log('No profile data found for WhatsApp number:', whatsappNumber.trim());
-          
-          // Let's also check what profiles exist in the database
-          const { data: allProfiles, error: allProfilesError } = await supabase
-            .from('profiles')
-            .select('whatsapp_number, email, first_name, last_name')
-            .limit(10);
-          
-          console.log('All profiles sample:', allProfiles);
-          console.log('All profiles error:', allProfilesError);
-          
-          toast.error('No account found with this WhatsApp number.');
+          console.log('No profile found for WhatsApp number:', whatsappNumber.trim());
+          toast.error('No account found with this WhatsApp number. Please check your number or sign up first.');
           setIsLoading(false);
           return;
         }
@@ -79,12 +66,13 @@ export const useAuthForm = () => {
           return;
         }
 
-        console.log('Found profile email:', profileData.email);
+        console.log('Found profile with email:', profileData.email);
         console.log('Attempting to sign in with email:', profileData.email);
         
-        // Use the real email for login
+        // Use the email from the profile to authenticate
         await signIn(profileData.email, password);
       } else {
+        // Sign up logic remains the same
         if (referrerWhatsapp && referrerWhatsapp.trim()) {
           const { data, error: functionError } = await supabase.functions.invoke('validate-referrer', {
             body: { whatsappNumber: referrerWhatsapp.trim() },
