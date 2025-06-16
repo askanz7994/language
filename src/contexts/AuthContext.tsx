@@ -66,7 +66,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state change:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
 
@@ -85,7 +84,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('Initial session check:', session?.user?.email);
       setSession(session);
       setUser(session?.user ?? null);
       
@@ -115,8 +113,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     const redirectUrl = `${window.location.origin}/`;
     
-    console.log('Signing up with email:', email);
-    
     // Use the real email address for authentication
     const { error } = await supabase.auth.signUp({
       email: email.trim(), // Use real email for auth
@@ -134,10 +130,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     if (error) {
-      console.error('Sign up error:', error);
       toast.error(error.message);
     } else {
-      console.log('Sign up successful');
       toast.success('Account created successfully! Welcome!');
     }
 
@@ -145,18 +139,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signIn = async (email: string, password: string) => {
-    console.log('Attempting to sign in with email:', email);
-    
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (error) {
-      console.error('Sign in error:', error);
       toast.error(error.message);
     } else {
-      console.log('Sign in successful');
       toast.success('Welcome back!');
     }
 

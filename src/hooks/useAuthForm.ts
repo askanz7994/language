@@ -31,33 +31,25 @@ export const useAuthForm = () => {
 
     try {
       if (isLogin) {
-        console.log('Login attempt with WhatsApp number:', whatsappNumber.trim());
-        
         // For login, we need to find the user's real email from their WhatsApp number
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('email, id')
+          .select('email')
           .eq('whatsapp_number', whatsappNumber.trim())
           .maybeSingle();
 
-        console.log('Profile lookup result:', { profileData, profileError });
-
         if (profileError) {
           console.error('Error finding user profile:', profileError);
-          toast.error('Error looking up user profile.');
+          toast.error('User not found with this WhatsApp number.');
           setIsLoading(false);
           return;
         }
 
         if (!profileData || !profileData.email) {
-          console.log('No profile found or email missing for WhatsApp:', whatsappNumber.trim());
           toast.error('No account found with this WhatsApp number.');
           setIsLoading(false);
           return;
         }
-
-        console.log('Found profile with email:', profileData.email);
-        console.log('Attempting to sign in with email:', profileData.email);
 
         // Use the real email for login
         await signIn(profileData.email, password);
