@@ -8,7 +8,6 @@ import EnglishGrammar from "@/pages/EnglishGrammar";
 import EnglishParagraph from "@/pages/EnglishParagraph";
 import EnglishTopicContent from "@/pages/EnglishTopicContent";
 import CreditGuard from "@/components/CreditGuard";
-import EnglishConversation from "@/pages/EnglishConversation";
 
 export const englishRoutes = (
   <>
@@ -23,14 +22,6 @@ export const englishRoutes = (
       element={
         <CreditGuard requiredCredits={1} periodicDeduction deductCredits>
           <EnglishTopicContent />
-        </CreditGuard>
-      } 
-    />
-    <Route 
-      path="/english/conversation" 
-      element={
-        <CreditGuard requiredCredits={2} periodicDeduction deductCredits>
-          <EnglishConversation />
         </CreditGuard>
       } 
     />
