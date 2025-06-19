@@ -30,108 +30,49 @@ export const useAuthForm = () => {
 
     try {
       if (isLogin) {
-        console.log('=== COMPREHENSIVE LOGIN DEBUG ===');
+        console.log('=== LOGIN ATTEMPT ===');
         console.log('Input WhatsApp number:', whatsappNumber);
         console.log('Trimmed WhatsApp number:', whatsappNumber.trim());
         
-        // Step 1: Check profiles table
-        console.log('1. Querying profiles table for WhatsApp number...');
+        // For login, we need to find the user's email from their WhatsApp number
+        console.log('Querying profiles table for WhatsApp number...');
+        
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('email, whatsapp_number, first_name, last_name, id')
+          .select('email, whatsapp_number, first_name, last_name')
           .eq('whatsapp_number', whatsappNumber.trim())
           .maybeSingle();
 
-        console.log('Profiles table query result:', { profileData, profileError });
+        console.log('Profile query result:', { profileData, profileError });
 
-        // Step 2: Get ALL profiles to see what's in the database
-        console.log('2. Getting all profiles to debug...');
-        const { data: allProfiles, error: allProfilesError } = await supabase
-          .from('profiles')
-          .select('whatsapp_number, email, first_name, last_name, id')
-          .limit(20);
-        
-        console.log('All profiles in database:', allProfiles);
-        console.log('All profiles error:', allProfilesError);
-
-        // Step 3: Check if we can access auth.users metadata (this might not work due to RLS)
-        console.log('3. Attempting to check auth users...');
-        try {
-          const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
-          console.log('Auth users (if accessible):', authUsers);
-          console.log('Auth users error:', authError);
-        } catch (e) {
-          console.log('Cannot access auth.users directly (expected):', e);
-        }
-
-        // Step 4: Try to find user by different WhatsApp number variations
-        console.log('4. Trying different WhatsApp number variations...');
-        const variations = [
-          whatsappNumber.trim(),
-          whatsappNumber.trim().replace(/\s+/g, ''),
-          whatsappNumber.trim().replace(/[^\d]/g, ''),
-          '+' + whatsappNumber.trim().replace(/[^\d]/g, ''),
-        ];
-
-        console.log('Testing variations:', variations);
-
-        let foundProfile = null;
-        for (const variation of variations) {
-          const { data: varProfile } = await supabase
-            .from('profiles')
-            .select('email, whatsapp_number, first_name, last_name, id')
-            .eq('whatsapp_number', variation)
-            .maybeSingle();
-          
-          if (varProfile) {
-            console.log(`Found profile with variation "${variation}":`, varProfile);
-            foundProfile = varProfile;
-            break;
-          }
-        }
-
-        // Step 5: Check for partial matches
-        console.log('5. Checking for partial matches...');
-        const { data: partialMatches } = await supabase
-          .from('profiles')
-          .select('email, whatsapp_number, first_name, last_name, id')
-          .ilike('whatsapp_number', `%${whatsappNumber.trim().replace(/[^\d]/g, '')}%`);
-        
-        console.log('Partial matches:', partialMatches);
-
-        // Now try to proceed with login
-        const finalProfile = foundProfile || profileData;
-        
         if (profileError) {
-          console.error('Error querying profiles:', profileError);
+          console.error('Error finding user profile:', profileError);
           toast.error('Error looking up user account. Please try again.');
           setIsLoading(false);
           return;
         }
 
-        if (!finalProfile) {
-          console.log('=== NO PROFILE FOUND ===');
-          console.log('Searched for:', whatsappNumber.trim());
-          console.log('Available WhatsApp numbers in database:', allProfiles?.map(p => p.whatsapp_number));
-          toast.error('No account found with this WhatsApp number. Please check the number or sign up.');
+        if (!profileData) {
+          console.log('No profile found for WhatsApp number:', whatsappNumber.trim());
+          toast.error('No account found with this WhatsApp number. Please check your number or sign up first.');
           setIsLoading(false);
           return;
         }
 
-        if (!finalProfile.email) {
-          console.log('Profile found but no email:', finalProfile);
+        if (!profileData.email) {
+          console.log('Profile found but no email:', profileData);
           toast.error('Account found but email is missing. Please contact support.');
           setIsLoading(false);
           return;
         }
 
-        console.log('=== PROCEEDING WITH LOGIN ===');
-        console.log('Found profile email:', finalProfile.email);
-        console.log('Complete profile data:', finalProfile);
+        console.log('Found profile with email:', profileData.email);
+        console.log('Attempting to sign in with email:', profileData.email);
         
-        // Use the real email for login
-        await signIn(finalProfile.email, password);
+        // Use the email from the profile to authenticate
+        await signIn(profileData.email, password);
       } else {
+        // Sign up logic remains the same
         if (referrerWhatsapp && referrerWhatsapp.trim()) {
           const { data, error: functionError } = await supabase.functions.invoke('validate-referrer', {
             body: { whatsappNumber: referrerWhatsapp.trim() },

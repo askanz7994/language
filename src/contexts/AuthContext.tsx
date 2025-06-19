@@ -66,6 +66,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state change:', event, 'Session:', !!session);
         setSession(session);
         setUser(session?.user ?? null);
 
@@ -84,6 +85,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session check:', !!session);
       setSession(session);
       setUser(session?.user ?? null);
       
@@ -113,6 +115,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     const redirectUrl = `${window.location.origin}/`;
     
+    console.log('Attempting signup with email:', email);
+    
     // Use the real email address for authentication
     const { error } = await supabase.auth.signUp({
       email: email.trim(), // Use real email for auth
@@ -130,6 +134,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     if (error) {
+      console.error('Signup error:', error);
       toast.error(error.message);
     } else {
       toast.success('Account created successfully! Welcome!');
@@ -139,13 +144,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signIn = async (email: string, password: string) => {
+    console.log('Attempting signin with email:', email);
+    
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (error) {
-      toast.error(error.message);
+      console.error('Signin error:', error);
+      // Provide more specific error messages
+      if (error.message.includes('Invalid login credentials')) {
+        toast.error('Incorrect password. Please try again.');
+      } else if (error.message.includes('Email not confirmed')) {
+        toast.error('Please check your email and confirm your account before signing in.');
+      } else {
+        toast.error(error.message);
+      }
     } else {
       toast.success('Welcome back!');
     }
